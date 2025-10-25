@@ -229,6 +229,7 @@ Received positive feedback from recruiters at NVIDIA and Google during networkin
 - **Collaboration**: Multi-user file editing and sync
 - **Advanced Search**: File content and metadata search
 - **Smart Organization**: AI-powered file categorization
+- **Graph Integration**: Link files in a knowledge graph
 
 **Integration Expansion:**
 - **Cloud Sync**: Synchronize with cloud storage providers
