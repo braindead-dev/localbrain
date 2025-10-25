@@ -8,19 +8,11 @@ FastAPI server. Implements the Model Context Protocol specification.
 Usage:
     python stdio_server.py
 
-Configuration in Claude Desktop (claude_desktop_config.json):
-    {
-      "mcpServers": {
-        "localbrain": {
-          "command": "python",
-          "args": ["/absolute/path/to/stdio_server.py"],
-          "env": {
-            "VAULT_PATH": "/path/to/vault",
-            "MCP_API_KEY": "your-api-key"
-          }
-        }
-      }
-    }
+Configuration via Claude Desktop extension (.mcpb):
+    - MCP_BASE_URL: http://127.0.0.1:8766 (MCP FastAPI server)
+    - MCP_API_KEY: dev-key-local-only (default)
+    
+Note: Vault path is configured in ~/.localbrain/config.json, not via environment variables.
 """
 
 import os
@@ -50,12 +42,11 @@ class LocalBrainMCPServer:
     def __init__(self):
         """Initialize the MCP server."""
         self.server = Server("localbrain")
-        self.api_base_url = os.getenv("MCP_BASE_URL", "http://127.0.0.1:8765")
+        self.api_base_url = os.getenv("MCP_BASE_URL", "http://127.0.0.1:8766")
         self.api_key = os.getenv("MCP_API_KEY", "dev-key-local-only")
-        self.vault_path = os.getenv("VAULT_PATH")
-
-        if not self.vault_path:
-            raise ValueError("VAULT_PATH environment variable required")
+        
+        # Vault path is now handled by the MCP FastAPI server config system
+        # (reads from ~/.localbrain/config.json)
 
         # Setup tool handlers
         self._setup_tools()

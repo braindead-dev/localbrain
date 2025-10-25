@@ -57,24 +57,29 @@ class Search:
         """
         print(f"🔍 Agentic search: {query}")
         
-        # System prompt for search agent
-        system_prompt = f"""You are a search agent for a personal knowledge vault.
+        # System prompt for search agent (OpenCode-inspired: ultra-concise)
+        system_prompt = f"""You are a search agent. Answer questions by searching markdown files. Be direct.
 
-Your task: Answer the user's query by searching and reading their markdown files.
+Tools:
+- grep_vault(pattern) - Search files, returns matches with line numbers
+- read_file(filepath) - Read file
 
-Available tools:
-1. grep_vault(pattern, limit=20) - Search markdown files for pattern (regex supported)
-2. read_file(filepath) - Read a specific markdown file
+IMPORTANT: Minimize output. Answer directly without explanation.
 
-Vault location: {self.vault_path}
+Example:
+Q: Which device first, Samsung S22 or Dell XPS?
+1. grep_vault("Samsung.*S22") → tech/devices.md:5 "Purchased Feb 20, 2023"
+2. grep_vault("Dell.*XPS") → tech/devices.md:10 "Arrived Feb 25, 2023"
+3. Compare: Feb 20 < Feb 25
+Answer: Samsung Galaxy S22
 
 Strategy:
-- Use grep_vault to find relevant files (sorted by modification time - recent = relevant)
-- Read the most promising files
-- Synthesize answer from file contents
-- Include citations [filename] in your answer
+1. Grep for key terms
+2. Check line numbers and dates
+3. Read files ONLY if grep insufficient
+4. Answer with facts, no hedging
 
-Be thorough but efficient. Don't read more than 5 files unless necessary."""
+Vault: {self.vault_path}"""
 
         # Define tools for LLM
         tools = [
@@ -195,16 +200,17 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
     
     def _extract_contexts(self, messages: List[Dict]) -> List[Dict]:
         """
-        Extract context chunks from read_file tool results.
+        Extract context chunks from grep_vault AND read_file tool results.
         
         Returns list of contexts with:
-        - text: Actual content from .md file
+        - text: Actual content
         - file: File path
-        - citations: Array of citation objects referenced in text
+        - citations: Array of citation objects (if from read_file)
         """
         contexts = []
+        seen_files = set()
         
-        # Find all read_file tool results in messages
+        # Find all tool results in messages
         for msg in messages:
             if msg.get("role") != "user":
                 continue
@@ -221,6 +227,40 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
                 try:
                     result_str = item.get("content", "{}")
                     result = json.loads(result_str)
+                    
+                    # Handle grep_vault results - read full files for better context
+                    if "matches" in result:
+                        for match in result.get("matches", []):
+                            file = match.get("file")
+                            if file and file not in seen_files:
+                                # Read full file content for better context
+                                try:
+                                    from utils.file_ops import read_file
+                                    file_path = self.vault_path / file
+                                    content = read_file(file_path)
+                                    
+                                    # Extract first few paragraphs as context
+                                    paragraphs = self._extract_paragraphs(content)
+                                    text = "\n\n".join(paragraphs[:5]) if paragraphs else content[:1000]
+                                    
+                                    contexts.append({
+                                        "file": file,
+                                        "text": text,
+                                        "citations": []
+                                    })
+                                    seen_files.add(file)
+                                except Exception as e:
+                                    # Fallback to just the match line
+                                    contexts.append({
+                                        "file": file,
+                                        "text": match.get("match_text", match.get("preview", "")),
+                                        "line_number": match.get("line_number"),
+                                        "citations": []
+                                    })
+                                    seen_files.add(file)
+                        continue
+                    
+                    # Handle read_file results
                     
                     if "content" not in result or "filepath" not in result:
                         continue
@@ -316,30 +356,33 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
             )
             
             if result.returncode == 0:
-                files = result.stdout.strip().split('\n')
-                files = [f for f in files if f]  # Remove empty lines
-                files = files[:limit]  # Limit results
-                
-                # Convert to relative paths and get preview
+                # Parse ripgrep output with line numbers
+                # Format: filepath:line_number:line_content
                 results = []
-                for file_path in files:
-                    rel_path = Path(file_path).relative_to(self.vault_path)
+                for line in result.stdout.strip().split('\n'):
+                    if not line:
+                        continue
                     
-                    # Get a snippet from the file
-                    try:
-                        content = read_file(Path(file_path))
-                        lines = content.split('\n')
-                        # Find line with match
-                        matching_lines = [l for l in lines if pattern.lower() in l.lower()]
-                        preview = matching_lines[0] if matching_lines else lines[0] if lines else ""
-                        preview = preview[:100] + "..." if len(preview) > 100 else preview
-                    except:
-                        preview = ""
-                    
-                    results.append({
-                        "file": str(rel_path),
-                        "preview": preview
-                    })
+                    parts = line.split(':', 2)
+                    if len(parts) >= 3:
+                        file_path = Path(parts[0])
+                        line_num = parts[1]
+                        match_text = parts[2]
+                        
+                        try:
+                            rel_path = file_path.relative_to(self.vault_path)
+                            
+                            results.append({
+                                "file": str(rel_path),
+                                "line_number": int(line_num),
+                                "match_text": match_text.strip(),
+                                "preview": match_text.strip()[:150]
+                            })
+                        except:
+                            continue
+                
+                # Limit and group by file
+                results = results[:limit * 2]  # More results for better coverage
                 
                 return {
                     "matches": results,
@@ -351,7 +394,7 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
             # Fallback to simple file walk if ripgrep not available
             pass
         
-        # Fallback: manual search
+        # Fallback: manual search with line numbers
         results = []
         for md_file in self.vault_path.rglob("*.md"):
             if md_file.name.startswith('.'):
@@ -359,26 +402,25 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
             
             try:
                 content = read_file(md_file)
-                if pattern.lower() in content.lower():
-                    rel_path = md_file.relative_to(self.vault_path)
-                    
-                    # Get preview
-                    lines = content.split('\n')
-                    matching_lines = [l for l in lines if pattern.lower() in l.lower()]
-                    preview = matching_lines[0] if matching_lines else ""
-                    preview = preview[:100] + "..." if len(preview) > 100 else preview
-                    
-                    results.append({
-                        "file": str(rel_path),
-                        "preview": preview,
-                        "modified": md_file.stat().st_mtime
-                    })
+                lines = content.split('\n')
+                rel_path = md_file.relative_to(self.vault_path)
+                
+                # Find all matching lines with line numbers
+                for line_num, line in enumerate(lines, 1):
+                    if pattern.lower() in line.lower():
+                        results.append({
+                            "file": str(rel_path),
+                            "line_number": line_num,
+                            "match_text": line.strip(),
+                            "preview": line.strip()[:150],
+                            "modified": md_file.stat().st_mtime
+                        })
             except:
                 continue
         
         # Sort by modification time
         results.sort(key=lambda x: x.get('modified', 0), reverse=True)
-        results = results[:limit]
+        results = results[:limit * 2]
         
         return {
             "matches": results,

@@ -8,10 +8,16 @@ Optimized for ingesting large amounts of content quickly by:
 """
 
 import json
+import os
 from pathlib import Path
 from typing import List, Dict, Any
 from datetime import datetime
 from collections import defaultdict
+from dotenv import load_dotenv
+
+# Load environment
+dotenv_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path)
 
 from anthropic import Anthropic
 from utils.file_ops import read_file, write_file
@@ -120,7 +126,7 @@ class BulkIngestionPipeline:
         existing_files = self._list_existing_files()
         
         # Single LLM call for entire batch
-        prompt = f"""You are organizing multiple related pieces of content into a personal knowledge vault.
+        prompt = f"""You are organizing content into a personal knowledge vault. Be concise and direct.
 
 BATCH CONTENT ({len(batch)} items from {source}):
 {batch_text}
@@ -128,23 +134,34 @@ BATCH CONTENT ({len(batch)} items from {source}):
 EXISTING VAULT STRUCTURE:
 {json.dumps(existing_files, indent=2)}
 
-TASK: Organize all {len(batch)} items efficiently into the vault.
+FOLDER NAMING RULES (CRITICAL):
+1. Use Title Case with spaces: "Food and Dining" NOT "food_and_dining"
+2. Create nested folders 2-3 levels deep: "Personal/Events" NOT "personal_events"  
+3. Group by broad category first: "Personal/Shopping" NOT "shopping"
+4. No underscores in folder names - use spaces
 
-RULES:
-1. Group similar items into same file when possible
+EXAMPLES:
+✅ GOOD: "Personal/Events/weddings.md"
+✅ GOOD: "Work and Career/job_search.md"
+✅ GOOD: "Health/Fitness/workouts.md"
+❌ BAD: "personal_events/weddings.md"
+❌ BAD: "work_and_career/job_search.md"
+❌ BAD: "health_and_fitness/workouts.md"
+
+CONTENT RULES:
+1. Group similar items into same file
 2. Create new files only when content is distinct
-3. Use clear, descriptive filenames
-4. Organize by topic/category
-5. Be efficient - prefer appending over creating many files
+3. Prefer appending over creating many files
+4. Match existing folder structure when possible
 
-OUTPUT FORMAT (JSON):
+OUTPUT FORMAT (JSON only, no markdown fences):
 {{
   "actions": [
     {{
       "action": "append|create",
-      "file": "category/filename.md",
+      "file": "Category/Subcategory/filename.md",
       "content": "combined content from items...",
-      "items": [0, 1, 2],  // which batch items this includes
+      "items": [0, 1, 2],
       "reason": "why grouped this way"
     }}
   ]

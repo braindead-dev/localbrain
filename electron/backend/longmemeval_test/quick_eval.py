@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Simple eval - use daemon as-is, generate answers from contexts."""
+"""Quick eval on first 20 questions to test improved prompt."""
 
 import json
 import requests
@@ -11,21 +11,13 @@ from anthropic import Anthropic
 # Load env
 load_dotenv(Path(__file__).parent.parent / '.env')
 
-# Setup logging
-log_file = open('longmemeval_test/eval.log', 'w', buffering=1)
-
-def log(msg):
-    print(msg)
-    print(msg, file=log_file)
-    log_file.flush()
-
 # Setup
 daemon_url = "http://localhost:8765"
 client = Anthropic()
 
-# Load data
+# Load data - just first 20
 with open('longmemeval_test/longmemeval_oracle.json') as f:
-    data = json.load(f)[:50]  # First 50
+    data = json.load(f)[:20]
 
 predictions = []
 
@@ -33,8 +25,8 @@ for i, item in enumerate(data, 1):
     qid = item['question_id']
     question = item['question']
     
-    log(f"[{i}/50] {qid}")
-    log(f"Q: {question}")
+    print(f"[{i}/20] {qid}")
+    print(f"Q: {question}")
     
     # Call daemon
     try:
@@ -45,7 +37,7 @@ for i, item in enumerate(data, 1):
             contexts = result.get('contexts', [])
             
             if contexts:
-                log(f"✅ {len(contexts)} contexts")
+                print(f"✅ {len(contexts)} contexts")
                 
                 # Generate answer from contexts
                 context_text = "\n\n".join([f"{c['file']}:\n{c['text']}" for c in contexts[:3]])
@@ -73,32 +65,40 @@ Answer (be direct):"""
                 )
                 
                 hypothesis = answer_resp.content[0].text.strip()
-                log(f"A: {hypothesis[:100]}...")
+                print(f"A: {hypothesis[:100]}...")
                 
                 predictions.append({'question_id': qid, 'hypothesis': hypothesis})
             else:
-                log("⚠️  No contexts")
+                print("⚠️  No contexts")
                 predictions.append({'question_id': qid, 'hypothesis': "I don't have information to answer this."})
         else:
-            log(f"❌ Error: {resp.status_code}")
+            print(f"❌ Error: {resp.status_code}")
             predictions.append({'question_id': qid, 'hypothesis': "Error."})
     
     except Exception as e:
-        log(f"❌ {e}")
+        print(f"❌ {e}")
         predictions.append({'question_id': qid, 'hypothesis': "Error."})
     
-    log("")
+    print("")
 
 # Save
-with open('longmemeval_test/predictions.jsonl', 'w') as f:
+with open('longmemeval_test/predictions_quick.jsonl', 'w') as f:
     for p in predictions:
         f.write(json.dumps(p) + '\n')
 
-log(f"\n✅ Saved {len(predictions)} predictions")
-log("\nTo evaluate:")
-log("cd /Users/henry/Documents/GitHub/LongMemEval")
-log("python src/evaluation/evaluate_qa.py gpt-4o-mini \\")
-log("  /Users/henry/Documents/GitHub/localbrain/electron/backend/longmemeval_test/predictions.jsonl \\")
-log("  /Users/henry/Documents/GitHub/localbrain/electron/backend/longmemeval_test/longmemeval_oracle.json")
+print(f"\n✅ Saved {len(predictions)} predictions to predictions_quick.jsonl")
+print("\nRunning evaluation...")
 
-log_file.close()
+# Run evaluator
+import subprocess
+result = subprocess.run([
+    'python', 
+    '/Users/henry/Documents/GitHub/LongMemEval/src/evaluation/evaluate_qa.py',
+    'gpt-4o-mini',
+    'longmemeval_test/predictions_quick.jsonl',
+    'longmemeval_test/longmemeval_oracle.json'
+], capture_output=True, text=True, cwd='/Users/henry/Documents/GitHub/LongMemEval')
+
+print(result.stdout)
+if result.stderr:
+    print("Errors:", result.stderr)
