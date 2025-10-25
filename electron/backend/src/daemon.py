@@ -33,6 +33,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from agentic_ingest import AgenticIngestionPipeline
 from agentic_search import Search
+from utils.file_ops import read_file
 
 # Setup logging
 logging.basicConfig(
@@ -162,12 +163,12 @@ async def handle_search(request: Request):
         result = searcher.search(query)
         
         if result.get('success'):
-            logger.info(f"✅ Search complete ({result.get('iterations', 0)} iterations)")
+            logger.info(f"✅ Search complete: {result.get('total_results', 0)} contexts found")
             return JSONResponse(content={
                 'success': True,
-                'answer': result['answer'],
-                'iterations': result.get('iterations', 0),
-                'query': query
+                'query': result['query'],
+                'contexts': result['contexts'],
+                'total_results': result['total_results']
             })
         else:
             logger.error(f"❌ Search failed: {result.get('error', 'Unknown error')}")
@@ -182,6 +183,64 @@ async def handle_search(request: Request):
     
     except Exception as e:
         logger.exception("Error handling search")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.get("/file/{filepath:path}")
+async def get_file(filepath: str):
+    """
+    Fetch full file content from vault.
+    
+    Allows AI apps to dive deeper after getting context chunks from search.
+    
+    Example:
+        GET /file/career/Job%20Search.md
+    """
+    try:
+        file_path = VAULT_PATH / filepath
+        
+        # Security: ensure file is within vault
+        if not file_path.is_relative_to(VAULT_PATH):
+            return JSONResponse(
+                status_code=403,
+                content={'error': 'Access denied: file outside vault'}
+            )
+        
+        if not file_path.exists():
+            return JSONResponse(
+                status_code=404,
+                content={'error': f'File not found: {filepath}'}
+            )
+        
+        # Read file content
+        content = read_file(file_path)
+        
+        # Read citations if available
+        json_path = file_path.with_suffix('.json')
+        citations = {}
+        if json_path.exists():
+            import json
+            try:
+                citations = json.loads(read_file(json_path))
+            except:
+                pass
+        
+        # Get file metadata
+        stat = file_path.stat()
+        
+        return JSONResponse(content={
+            'path': filepath,
+            'content': content,
+            'citations': citations,
+            'size': stat.st_size,
+            'last_modified': stat.st_mtime
+        })
+        
+    except Exception as e:
+        logger.exception("Error fetching file")
         return JSONResponse(
             status_code=500,
             content={'error': str(e)}

@@ -174,16 +174,17 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
                 })
                 
             else:
-                # LLM is done, return final answer
-                final_answer = response.content[0].text if response.content else "No answer generated"
-                
+                # LLM is done - extract context chunks
                 print(f"✅ Search complete ({iteration} iterations)")
+                
+                # Extract files that were read
+                contexts = self._extract_contexts(messages)
                 
                 return {
                     "success": True,
-                    "answer": final_answer,
-                    "iterations": iteration,
-                    "query": query
+                    "query": query,
+                    "contexts": contexts,
+                    "total_results": len(contexts)
                 }
         
         return {
@@ -191,6 +192,103 @@ Be thorough but efficient. Don't read more than 5 files unless necessary."""
             "error": "Max iterations reached",
             "iterations": iteration
         }
+    
+    def _extract_contexts(self, messages: List[Dict]) -> List[Dict]:
+        """
+        Extract context chunks from read_file tool results.
+        
+        Returns list of contexts with:
+        - text: Actual content from .md file
+        - file: File path
+        - citations: Array of citation objects referenced in text
+        """
+        contexts = []
+        
+        # Find all read_file tool results in messages
+        for msg in messages:
+            if msg.get("role") != "user":
+                continue
+            
+            content = msg.get("content", [])
+            if not isinstance(content, list):
+                continue
+            
+            for item in content:
+                if item.get("type") != "tool_result":
+                    continue
+                
+                # Parse tool result
+                try:
+                    result_str = item.get("content", "{}")
+                    result = json.loads(result_str)
+                    
+                    if "content" not in result or "filepath" not in result:
+                        continue
+                    
+                    file_content = result["content"]
+                    filepath = result["filepath"]
+                    all_citations = result.get("citations", {})
+                    
+                    # Extract relevant paragraphs (simplified: take first few paragraphs)
+                    # In production, could use LLM to identify most relevant sections
+                    paragraphs = self._extract_paragraphs(file_content)
+                    
+                    if not paragraphs:
+                        continue
+                    
+                    # Take first 3 paragraphs as context
+                    text = "\n\n".join(paragraphs[:3])
+                    
+                    # Find which citations are referenced in this text
+                    cited_ids = self._find_citation_ids(text)
+                    
+                    # Build citations array
+                    citations = []
+                    for cid in cited_ids:
+                        if str(cid) in all_citations:
+                            citation_data = all_citations[str(cid)]
+                            citations.append({
+                                "id": cid,
+                                "platform": citation_data.get("platform"),
+                                "timestamp": citation_data.get("timestamp"),
+                                "url": citation_data.get("url"),
+                                "quote": citation_data.get("quote"),
+                                "note": citation_data.get("note")
+                            })
+                    
+                    contexts.append({
+                        "text": text,
+                        "file": filepath,
+                        "citations": citations
+                    })
+                    
+                except Exception as e:
+                    print(f"  ⚠️  Error extracting context: {e}")
+                    continue
+        
+        return contexts
+    
+    def _extract_paragraphs(self, content: str) -> List[str]:
+        """Extract non-empty paragraphs from markdown content."""
+        # Split by double newlines
+        paragraphs = content.split('\n\n')
+        
+        # Filter out headers, empty lines, and about.md sections
+        result = []
+        for p in paragraphs:
+            p = p.strip()
+            # Skip if empty, is a header, or is the about.md boilerplate
+            if not p or p.startswith('#') or 'This file contains' in p:
+                continue
+            result.append(p)
+        
+        return result
+    
+    def _find_citation_ids(self, text: str) -> List[int]:
+        """Find all citation markers [1], [2], etc. in text."""
+        import re
+        matches = re.findall(r'\[(\d+)\]', text)
+        return sorted(set(int(m) for m in matches))
     
     def _grep_vault(self, pattern: str, limit: int = 20) -> Dict:
         """
