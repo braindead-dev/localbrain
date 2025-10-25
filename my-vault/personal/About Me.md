@@ -26,6 +26,17 @@ Exploring local-first software architectures and privacy-preserving ML technique
 - GitHub: github.com/henrywang
 - Location: Riverside, CA / Bay Area
 
+
+## Job Offers
+
+**NVIDIA - Software Engineer**
+- Offer received October 25, 2025 [7]
+- Position: Full-time Software Engineer - Deep Learning [2]
+- Start Date: July 14, 2025 [2]
+- Location: Santa Clara headquarters [2]
+- Compensation: $155,000 base salary, $25,000 sign-on bonus, $180,000 RSUs (4-year vest) [2]
+- Deadline to accept: October 31, 2025 [2]
+
 ## Related
 
 - [[Career Goals]]

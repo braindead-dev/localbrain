@@ -14,6 +14,7 @@ Usage:
 import sys
 import json
 import logging
+import asyncio
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, unquote
 from datetime import datetime
@@ -21,6 +22,7 @@ from typing import Dict, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from dotenv import load_dotenv
 
@@ -51,10 +53,68 @@ logger = logging.getLogger('localbrain-daemon')
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
 
+# Add CORS middleware to allow frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
 # Load config
 CONFIG = load_config()
 VAULT_PATH = get_vault_path()
 PORT = CONFIG.get('port', 8765)
+
+# Background task for auto-syncing Gmail
+async def auto_sync_gmail():
+    """Background task that syncs Gmail every 10 minutes."""
+    await asyncio.sleep(60)  # Wait 1 minute after startup before first sync
+    
+    while True:
+        try:
+            logger.info("🔄 Auto-sync: Checking Gmail...")
+            from connectors.gmail.gmail_connector import GmailConnector
+            
+            connector = GmailConnector(vault_path=VAULT_PATH)
+            
+            if connector.is_authenticated():
+                logger.info("🔄 Auto-sync: Syncing Gmail...")
+                result = connector.sync(max_results=50, minutes=15)
+                
+                if result['success'] and result['emails']:
+                    logger.info(f"🔄 Auto-sync: Found {len(result['emails'])} new emails, ingesting...")
+                    pipeline = AgenticIngestionPipeline(VAULT_PATH)
+                    
+                    ingested = 0
+                    for email_data in result['emails']:
+                        try:
+                            pipeline.ingest(
+                                context=email_data['text'],
+                                source_metadata=email_data['metadata']
+                            )
+                            ingested += 1
+                        except Exception as e:
+                            logger.error(f"Failed to ingest email: {e}")
+                    
+                    logger.info(f"✅ Auto-sync: Successfully ingested {ingested}/{len(result['emails'])} emails")
+                else:
+                    logger.info("🔄 Auto-sync: No new emails found")
+            else:
+                logger.debug("Auto-sync: Gmail not connected, skipping")
+                
+        except Exception as e:
+            logger.error(f"Auto-sync error: {e}")
+        
+        # Wait 10 minutes before next sync
+        await asyncio.sleep(600)  # 600 seconds = 10 minutes
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on app startup."""
+    asyncio.create_task(auto_sync_gmail())
+    logger.info("📅 Auto-sync task started (runs every 10 minutes)")
 
 
 @app.get("/health")
@@ -508,6 +568,211 @@ async def parse_protocol_url(url: str):
         )
 
 
+# ============================================================================
+# Gmail Connector Endpoints
+# ============================================================================
+
+@app.post("/connectors/gmail/auth/start")
+async def gmail_auth_start():
+    """Start Gmail OAuth flow."""
+    try:
+        from connectors.gmail.gmail_connector import GmailConnector
+        connector = GmailConnector()
+        auth_url = connector.start_auth_flow()
+        return {"auth_url": auth_url, "success": True}
+    except FileNotFoundError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    except Exception as e:
+        logger.exception("Error starting Gmail auth")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/connectors/gmail/auth/callback")
+async def gmail_auth_callback(request: Request):
+    """Handle Gmail OAuth callback."""
+    try:
+        from connectors.gmail.gmail_connector import GmailConnector
+        connector = GmailConnector()
+        
+        # Get full callback URL
+        authorization_response = str(request.url)
+        user_info = connector.handle_callback(authorization_response)
+        
+        # Return HTML success page
+        email = user_info.get('email', 'Unknown')
+        html_content = f"""
+        <html>
+            <head>
+                <title>Gmail Connected</title>
+                <style>
+                    body {{ 
+                        font-family: system-ui, -apple-system, sans-serif;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    }}
+                    .container {{
+                        background: white;
+                        padding: 3rem;
+                        border-radius: 1rem;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        text-align: center;
+                    }}
+                    h1 {{ color: #10b981; margin: 0 0 1rem 0; }}
+                    p {{ color: #6b7280; margin: 0; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>✓ Gmail Connected Successfully!</h1>
+                    <p>Connected as: <strong>{email}</strong></p>
+                    <p style="margin-top: 1rem;">You can close this window now.</p>
+                </div>
+                <script>
+                    setTimeout(() => window.close(), 3000);
+                </script>
+            </body>
+        </html>
+        """
+        
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        logger.exception("Error in Gmail callback")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/connectors/gmail/auth/revoke")
+async def gmail_auth_revoke():
+    """Revoke Gmail access."""
+    try:
+        from connectors.gmail.gmail_connector import GmailConnector
+        connector = GmailConnector()
+        connector.revoke_access()
+        return {"success": True, "message": "Gmail disconnected"}
+    except Exception as e:
+        logger.exception("Error revoking Gmail")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/connectors/gmail/status")
+async def gmail_status():
+    """Get Gmail connection status."""
+    try:
+        from connectors.gmail.gmail_connector import GmailConnector
+        connector = GmailConnector()
+        status = connector.get_status()
+        return status
+    except Exception as e:
+        logger.exception("Error getting Gmail status")
+        return {"connected": False, "error": str(e)}
+
+
+@app.post("/connectors/gmail/sync")
+async def gmail_sync(max_results: int = 100, minutes: int = 10, ingest: bool = False):
+    """Trigger Gmail sync from last N minutes."""
+    try:
+        from connectors.gmail.gmail_connector import GmailConnector
+        
+        connector = GmailConnector(vault_path=VAULT_PATH)
+        
+        if not connector.is_authenticated():
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Not authenticated. Please connect Gmail first."}
+            )
+        
+        result = connector.sync(max_results=max_results, minutes=minutes)
+        
+        # Ingest each email as a separate document
+        if ingest and result['success'] and result['emails']:
+            try:
+                logger.info(f"Starting ingestion of {len(result['emails'])} emails...")
+                pipeline = AgenticIngestionPipeline(VAULT_PATH)
+                
+                ingested_emails = []
+                failed_emails = []
+                
+                for i, email_data in enumerate(result['emails'], 1):
+                    try:
+                        logger.info(f"Ingesting email {i}/{len(result['emails'])}...")
+                        
+                        # Ingest this email as a separate document
+                        pipeline.ingest(
+                            context=email_data['text'],
+                            source_metadata=email_data['metadata']
+                        )
+                        
+                        ingested_emails.append(email_data['metadata'].get('quote', f'Email {i}'))
+                        logger.info(f"✓ Successfully ingested: {email_data['metadata'].get('quote', 'No subject')}")
+                    except Exception as e:
+                        failed_emails.append({
+                            'subject': email_data['metadata'].get('quote', 'Unknown'),
+                            'error': str(e)
+                        })
+                        logger.error(f"✗ Failed to ingest email {i}: {e}")
+                        continue
+                
+                result['ingested_count'] = len(ingested_emails)
+                result['failed_count'] = len(failed_emails)
+                result['ingested_subjects'] = ingested_emails
+                if failed_emails:
+                    result['failed_emails'] = failed_emails
+                    
+                logger.info(f"✅ Ingestion complete: {len(ingested_emails)} succeeded, {len(failed_emails)} failed")
+            except Exception as e:
+                logger.exception("Error in ingestion pipeline")
+                result['ingestion_error'] = str(e)
+                result['ingested_count'] = 0
+        else:
+            result['ingested_count'] = 0
+            result['ingestion_skipped'] = True
+        
+        # Simplify response - only return text content for display (not when ingesting)
+        if not ingest:
+            result['emails'] = [email['text'] for email in result['emails']]
+        else:
+            # When ingesting, show which emails were processed
+            result['emails'] = [email['metadata'].get('quote', 'No subject') for email in result['emails']]
+        
+        return result
+    except Exception as e:
+        logger.exception("Error syncing Gmail")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/connectors/gmail/emails/recent")
+async def gmail_recent_emails(days: int = 7, max_results: int = 50):
+    """Fetch recent emails without syncing."""
+    try:
+        from connectors.gmail.gmail_connector import GmailConnector
+        
+        connector = GmailConnector()
+        
+        if not connector.is_authenticated():
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Not authenticated. Please connect Gmail first."}
+            )
+        
+        emails = connector.fetch_recent_emails(days=days, max_results=max_results)
+        
+        # Simplify response - only return text content
+        email_texts = [email['text'] for email in emails]
+        
+        return {
+            "success": True,
+            "count": len(email_texts),
+            "emails": email_texts
+        }
+    except Exception as e:
+        logger.exception("Error fetching recent emails")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 def main():
     """Start the daemon service."""
     logger.info("="*60)
@@ -517,8 +782,19 @@ def main():
     logger.info(f"Port: {PORT}")
     logger.info(f"Protocol: localbrain://")
     logger.info("")
-    logger.info("Available commands:")
-    logger.info("  localbrain://ingest?text=...&platform=...&timestamp=...&url=...")
+    logger.info("Available endpoints:")
+    logger.info("  POST /protocol/ingest - Ingest content")
+    logger.info("  POST /protocol/search - Natural language search")
+    logger.info("  GET  /file/<path>      - Get file contents")
+    logger.info("  GET  /list/<path>      - List directory")
+    logger.info("")
+    logger.info("Gmail Connector:")
+    logger.info("  POST /connectors/gmail/auth/start    - Start OAuth")
+    logger.info("  GET  /connectors/gmail/auth/callback - OAuth callback")
+    logger.info("  POST /connectors/gmail/auth/revoke   - Disconnect Gmail")
+    logger.info("  GET  /connectors/gmail/status        - Connection status")
+    logger.info("  POST /connectors/gmail/sync          - Sync & ingest emails")
+    logger.info("  GET  /connectors/gmail/emails/recent - Fetch recent emails")
     logger.info("")
     logger.info("Service running. Press Ctrl+C to stop.")
     logger.info("="*60)

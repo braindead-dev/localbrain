@@ -116,25 +116,19 @@ class ConfigLoader:
         - MCP_AUTH_CONFIG: Path to auth config file (optional)
         - MCP_LOG_DIR: Audit log directory (optional)
         """
-        # --- NEW: Path Resolution Logic ---
-        # Project root is 6 .parent calls from config.py file
-        # config.py is at: electron/backend/src/core/mcp/config.py
-        # Path: config.py -> mcp/ -> core/ -> src/ -> backend/ -> electron/ -> project_root/
-        project_root = Path(__file__).parent.parent.parent.parent.parent.parent.resolve()
-
-        vault_path_str = os.getenv("VAULT_PATH")
-        if not vault_path_str:
-            raise ValueError("VAULT_PATH environment variable required")
-
-        # Expand ~ BEFORE checking if path is absolute
-        vault_path = Path(vault_path_str).expanduser()
-        if not vault_path.is_absolute():
-            # If the path is relative, resolve it from the project root
-            vault_path = (project_root / vault_path).resolve()
-        else:
-            # If already absolute, just resolve to canonical form
-            vault_path = vault_path.resolve()
-        # --- END NEW LOGIC ---
+        # Load vault path from LocalBrain config system (not environment variables)
+        import sys
+        from pathlib import Path
+        
+        # Add src to path to import config module
+        src_path = Path(__file__).parent.parent.parent
+        if str(src_path) not in sys.path:
+            sys.path.insert(0, str(src_path))
+        
+        from config import get_vault_path
+        
+        # Get vault path from LocalBrain config (~/.localbrain/config.json)
+        vault_path = get_vault_path()
 
         # ChromaDB API key is optional in proxy mode (daemon handles the actual DB connection)
         chroma_api_key = os.getenv("CHROMA_API_KEY")

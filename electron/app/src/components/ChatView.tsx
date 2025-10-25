@@ -2,9 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { Send, User, Brain, MessageSquare } from "lucide-react";
+import { Send, User, Brain, MessageSquare, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { TypingMessage } from "./TypingMessage";
+import { api } from "../lib/api";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -30,6 +32,7 @@ interface ChatViewProps {
 export function ChatView({ autoQuery, onQueryProcessed }: ChatViewProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -52,9 +55,9 @@ export function ChatView({ autoQuery, onQueryProcessed }: ChatViewProps) {
     }
   }, [autoQuery]);
 
-  const handleSend = (queryText?: string) => {
+  const handleSend = async (queryText?: string) => {
     const messageText = queryText || input;
-    if (!messageText.trim()) return;
+    if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -65,17 +68,54 @@ export function ChatView({ autoQuery, onQueryProcessed }: ChatViewProps) {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
 
-    // Simulate assistant response
-    setTimeout(() => {
+    try {
+      // Call real search API
+      const result = await api.search(messageText);
+
+      let responseContent = '';
+      
+      if (result.success && result.contexts.length > 0) {
+        // Format the contexts into a readable response
+        responseContent = `Found ${result.total_results} relevant context${result.total_results === 1 ? '' : 's'} in your vault:\n\n`;
+        
+        result.contexts.forEach((ctx, idx) => {
+          responseContent += `**[${idx + 1}] ${ctx.file}**`;
+          if (ctx.line_start) {
+            responseContent += ` (lines ${ctx.line_start}-${ctx.line_end})`;
+          }
+          responseContent += `\n\`\`\`\n${ctx.text || ctx.content}\n\`\`\`\n\n`;
+        });
+        
+        responseContent += `\n---\n\n💡 You can click on any file in the Vault sidebar to view the full content.`;
+      } else {
+        responseContent = `No results found for "${messageText}".\n\nTry:\n- Using different keywords\n- Being more specific\n- Checking if content has been ingested into your vault`;
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: `> PROCESSING QUERY: "${messageText}"\n> SCANNING KNOWLEDGE BASE...\n> SEARCHING CONNECTED DATA SOURCES...\n\n[DEMO MODE] Query received and processed. In production, this would search through your GitHub repositories, Gmail inbox, Google Drive files, and other connected integrations to provide relevant context.\n\n> STATUS: COMPLETE\n> RESPONSE_TIME: 1.2s`,
+        content: responseContent,
         timestamp: new Date(),
       };
+      
       setMessages((prev) => [...prev, assistantMessage]);
-    }, 1000);
+    } catch (error: any) {
+      console.error('Search error:', error);
+      toast.error(error.message || 'Search failed. Is the daemon running?');
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `❌ Search failed: ${error.message}\n\nMake sure the LocalBrain daemon is running:\n\`\`\`bash\ncd electron/backend\npython src/daemon.py\n\`\`\``,
+        timestamp: new Date(),
+      };
+      
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -151,9 +191,13 @@ export function ChatView({ autoQuery, onQueryProcessed }: ChatViewProps) {
             onClick={() => handleSend()}
             size="icon"
             className="h-[60px] w-[60px] shrink-0 shadow-sm"
-            disabled={!input.trim()}
+            disabled={!input.trim() || isLoading}
           >
-            <Send className="h-5 w-5" />
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
