@@ -81,7 +81,7 @@ def main():
                 print("   Continuing with default metadata...\n")
     
     # Vault path (hardcoded for now, can be made configurable)
-    vault_path = Path.home() / "Documents" / "GitHub" / "localbrain" / "my-vault"
+    vault_path = Path.home() / "Documents" / "GitHub" / "localbrain" / "test-vault"
     
     if not vault_path.exists():
         print(f"❌ Vault not found at: {vault_path}")

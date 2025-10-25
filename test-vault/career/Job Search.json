@@ -1,0 +1,68 @@
+{
+  "1": {
+    "platform": "Gmail",
+    "timestamp": "2024-09-15T10:00:00Z",
+    "url": null,
+    "quote": "Thanks for submitting your application to Google! I'm Sarah Chen, and I referred you for the Infrastructure SWE role. The team works on distributed storage systems - really exciting stuff!"
+  },
+  "2": {
+    "platform": "Greenhouse",
+    "timestamp": "2024-09-20T14:30:00Z",
+    "url": "https://stripe.com/jobs/applications",
+    "quote": "Application submitted for Software Engineer, Payments Platform - New Grad 2025"
+  },
+  "3": {
+    "platform": "Gmail",
+    "timestamp": "2024-09-25T09:15:00Z",
+    "url": null,
+    "quote": "Hi Henry, I'm Alex from Stripe recruiting. I'd love to schedule a phone screen for the Payments Platform role. Quick heads up - we're expanding the team significantly next year with 15 new engineer positions."
+  },
+  "4": {
+    "platform": "Lever",
+    "timestamp": "2024-10-01T11:00:00Z",
+    "url": "https://databricks.com/careers",
+    "quote": "Application received: Software Engineer - Query Engine Team (New Grad 2025)"
+  },
+  "5": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-18T16:45:00Z",
+    "url": null,
+    "quote": "Thanks for the phone screen today! You did really well - solved both problems with optimal time/space complexity in about 38 minutes. Moving you forward to the onsite round."
+  },
+  "6": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-21T10:00:00Z",
+    "url": null,
+    "quote": "Your onsite interview is confirmed for November 12, 2024. You'll meet with 4 engineers covering coding, system design, and behavioral rounds."
+  },
+  "7": {
+    "platform": "Amazon Jobs Portal",
+    "timestamp": "2024-08-25T13:20:00Z",
+    "url": "https://amazon.jobs/en/jobs/123456",
+    "quote": "Application submitted: SDE I - AWS S3 Team (2025 Start)"
+  },
+  "8": {
+    "platform": "Gmail",
+    "timestamp": "2024-09-10T15:30:00Z",
+    "url": null,
+    "quote": "Congratulations! You've passed the phone screen. Your coding was solid - clean solutions with good edge case handling."
+  },
+  "9": {
+    "platform": "Amazon Chime",
+    "timestamp": "2024-10-15T09:00:00Z",
+    "url": null,
+    "quote": "Final round interview day: 4 back-to-back 45-minute sessions covering coding (2 rounds), system design (1 round), and behavioral (1 round)"
+  },
+  "10": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-22T11:00:00Z",
+    "url": null,
+    "quote": "Thanks for interviewing with Amazon. While your coding skills were strong, the team felt you need more depth in distributed systems design. We encourage you to reapply in 6-12 months."
+  },
+  "11": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-25T10:30:00Z",
+    "url": null,
+    "quote": "Got an offer from Meta for Software Engineer role. Base salary is $160k with $40k sign-on bonus. Start date is June 1st, 2025."
+  }
+}
