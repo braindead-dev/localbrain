@@ -23,3 +23,12 @@ electron/backend/src/core/mcp/__pycache__
 *.pyc
 /electron/dist/win-unpacked
 *.pyc
+.DS_Store
+electron/.DS_Store
+electron/backend/.DS_Store
+/electron/backend/longmemeval_test/test-vault
+electron/backend/longmemeval_test/eval.log
+electron/backend/longmemeval_test/longmemeval_oracle.json
+electron/backend/longmemeval_test/ingestion_results.json
+electron/backend/longmemeval_test/predictions.jsonl
+electron/backend/longmemeval_test/progress.log
