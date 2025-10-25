@@ -20,8 +20,11 @@ if (process.defaultApp) {
 let mainWindow;
 let tray = null;
 let daemonProcess = null;
+let mcpProcess = null;
 const DAEMON_PORT = 8765;
 const DAEMON_URL = `http://127.0.0.1:${DAEMON_PORT}`;
+const MCP_PORT = 8766;
+const MCP_URL = `http://127.0.0.1:${MCP_PORT}`;
 
 function createWindow() {
   // Create the browser window
@@ -204,18 +207,125 @@ async function startDaemon() {
       console.log('❌ Daemon failed to start (likely port 8765 already in use)');
     }
     daemonProcess = null;
-    updateTrayStatus(false);
+    
+    // Stop MCP server if daemon stops
+    if (mcpProcess) {
+      console.log('Stopping MCP server (daemon stopped)...');
+      stopMCPServer();
+    }
+    
+    updateTrayStatus(false, false);
   });
 
-  // Wait a bit for daemon to start
-  setTimeout(() => checkDaemonHealth(), 2000);
+  // Wait a bit for daemon to start, then start MCP server
+  setTimeout(async () => {
+    const daemonHealthy = await checkDaemonHealth();
+    if (daemonHealthy) {
+      await startMCPServer();
+    }
+  }, 2000);
 }
 
 function stopDaemon() {
   if (daemonProcess) {
     console.log('Stopping Python daemon...');
+    // Stop MCP first
+    if (mcpProcess) {
+      stopMCPServer();
+    }
     daemonProcess.kill('SIGTERM');
     daemonProcess = null;
+  }
+}
+
+// MCP Server Management
+async function startMCPServer() {
+  if (mcpProcess) {
+    console.log('MCP server already running');
+    return;
+  }
+
+  // Check if daemon is running first
+  const daemonHealthy = await checkDaemonHealth();
+  if (!daemonHealthy) {
+    console.log('❌ Cannot start MCP server - daemon not running');
+    return;
+  }
+
+  // Check if MCP port is already in use
+  const isPortInUse = await checkMCPHealth();
+  if (isPortInUse) {
+    console.log('✅ MCP server already running on port 8766');
+    updateTrayStatus(true, true);
+    return;
+  }
+
+  const backendDir = path.join(__dirname, '../backend');
+  const mcpScript = 'src.core.mcp.server';
+  
+  console.log('Starting MCP server...');
+
+  // Use same conda python as daemon
+  const homeDir = require('os').homedir();
+  const condaPaths = [
+    path.join(homeDir, 'miniconda3', 'envs', 'localbrain', 'bin', 'python'),
+    path.join(homeDir, 'anaconda3', 'envs', 'localbrain', 'bin', 'python'),
+    path.join(homeDir, 'miniforge3', 'envs', 'localbrain', 'bin', 'python'),
+  ];
+  
+  let pythonCmd = 'python3';
+  for (const condaPath of condaPaths) {
+    if (fs.existsSync(condaPath)) {
+      pythonCmd = condaPath;
+      break;
+    }
+  }
+  
+  mcpProcess = spawn(pythonCmd, ['-m', mcpScript], {
+    cwd: backendDir,
+    env: { ...process.env },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  mcpProcess.stdout.on('data', (data) => {
+    console.log(`[MCP] ${data.toString().trim()}`);
+  });
+
+  mcpProcess.stderr.on('data', (data) => {
+    console.error(`[MCP Error] ${data.toString().trim()}`);
+  });
+
+  mcpProcess.on('close', (code) => {
+    console.log(`MCP server process exited with code ${code}`);
+    if (code === 1) {
+      console.log('❌ MCP server failed to start (likely port 8766 already in use)');
+    }
+    mcpProcess = null;
+    updateTrayStatus(daemonProcess !== null, false);
+  });
+
+  // Wait a bit for MCP to start
+  setTimeout(() => checkMCPHealth(), 2000);
+}
+
+function stopMCPServer() {
+  if (mcpProcess) {
+    console.log('Stopping MCP server...');
+    mcpProcess.kill('SIGTERM');
+    mcpProcess = null;
+    updateTrayStatus(daemonProcess !== null, false);
+  }
+}
+
+async function checkMCPHealth() {
+  try {
+    const response = await axios.get(`${MCP_URL}/health`, { timeout: 2000 });
+    const isHealthy = response.status === 200;
+    updateTrayStatus(daemonProcess !== null, isHealthy);
+    return isHealthy;
+  } catch (error) {
+    updateTrayStatus(daemonProcess !== null, false);
+    return false;
   }
 }
 
@@ -223,10 +333,11 @@ async function checkDaemonHealth() {
   try {
     const response = await axios.get(`${DAEMON_URL}/health`, { timeout: 2000 });
     const isHealthy = response.status === 200;
-    updateTrayStatus(isHealthy);
+    const mcpHealthy = mcpProcess !== null ? await checkMCPHealth() : false;
+    updateTrayStatus(isHealthy, mcpHealthy);
     return isHealthy;
   } catch (error) {
-    updateTrayStatus(false);
+    updateTrayStatus(false, false);
     return false;
   }
 }
@@ -273,10 +384,14 @@ function createTray() {
   setInterval(checkDaemonHealth, 5000);
 }
 
-function updateTrayMenu(daemonRunning) {
+function updateTrayMenu(daemonRunning, mcpRunning) {
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: daemonRunning ? '● Backend Running' : '○ Backend Stopped',
+      label: daemonRunning ? '● Daemon Running' : '○ Daemon Stopped',
+      enabled: false
+    },
+    {
+      label: mcpRunning ? '● MCP Server Running' : '○ MCP Server Stopped',
       enabled: false
     },
     { type: 'separator' },
@@ -300,12 +415,23 @@ function updateTrayMenu(daemonRunning) {
     },
     { type: 'separator' },
     {
-      label: daemonRunning ? 'Stop Backend' : 'Start Backend',
+      label: daemonRunning ? 'Stop Daemon' : 'Start Daemon',
       click: () => {
         if (daemonRunning) {
           stopDaemon();
         } else {
           startDaemon();
+        }
+      }
+    },
+    {
+      label: mcpRunning ? 'Stop MCP Server' : 'Start MCP Server',
+      enabled: daemonRunning, // Only enable if daemon is running
+      click: () => {
+        if (mcpRunning) {
+          stopMCPServer();
+        } else {
+          startMCPServer();
         }
       }
     },
@@ -321,14 +447,21 @@ function updateTrayMenu(daemonRunning) {
   tray.setContextMenu(contextMenu);
 }
 
-function updateTrayStatus(isRunning) {
+function updateTrayStatus(daemonRunning, mcpRunning) {
   if (!tray) {
     console.log('⚠️  Tray not initialized yet, skipping status update');
     return;
   }
-  updateTrayMenu(isRunning);
+  updateTrayMenu(daemonRunning, mcpRunning);
   // Use emoji for better visibility
-  tray.setTitle(isRunning ? '🟢' : '⚫');
+  // Green if both running, yellow if only daemon, red if none
+  if (daemonRunning && mcpRunning) {
+    tray.setTitle('🟢');
+  } else if (daemonRunning) {
+    tray.setTitle('🟡');
+  } else {
+    tray.setTitle('⚫');
+  }
 }
 
 // IPC handlers
@@ -460,19 +593,22 @@ if (!gotTheLock) {
 
 // Clean shutdown when quitting
 app.on('before-quit', (event) => {
-  console.log('App quitting - stopping daemon...');
+  console.log('App quitting - stopping services...');
+  stopMCPServer();
   stopDaemon();
 });
 
 // Also handle SIGINT/SIGTERM
 process.on('SIGINT', () => {
   console.log('Received SIGINT');
+  stopMCPServer();
   stopDaemon();
   app.quit();
 });
 
 process.on('SIGTERM', () => {
   console.log('Received SIGTERM');
+  stopMCPServer();
   stopDaemon();
   app.quit();
 });
