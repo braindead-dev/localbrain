@@ -34,53 +34,20 @@ class MCPResponse(BaseModel):
 
 class SearchRequest(BaseModel):
     """
-    Request model for semantic search tool.
-
-    Natural language search across personal knowledge base.
+    Pure proxy search request - ONLY query, no other parameters.
+    Backend handles everything.
     """
-    query: Union[str, List[str]] = Field(
-        ...,
-        description="Natural language query or list of queries"
-    )
-    top_k: int = Field(10, ge=1, le=100, description="Number of results to return")
-    filters: Optional[Dict[str, Any]] = Field(None, description="Optional metadata filters")
-    min_similarity: float = Field(0.0, ge=0.0, le=1.0, description="Minimum similarity threshold")
+    query: str = Field(..., description="Natural language search query")
 
     @validator('query')
     def validate_query(cls, v):
-        """Ensure query is not empty."""
-        if isinstance(v, str):
-            if not v.strip():
-                raise ValueError("Query cannot be empty")
-        elif isinstance(v, list):
-            if not v or all(not q.strip() for q in v):
-                raise ValueError("Query list cannot be empty")
+        if not v.strip():
+            raise ValueError("Query cannot be empty")
         return v
 
 
-class SearchAgenticRequest(BaseModel):
-    """
-    Request model for agentic search tool.
-
-    Structured search with specific parameters and filters.
-    """
-    keywords: Optional[List[str]] = Field(None, description="Specific keywords to search for")
-    date_from: Optional[str] = Field(None, description="Start date (ISO format)")
-    date_to: Optional[str] = Field(None, description="End date (ISO format)")
-    days: Optional[int] = Field(None, ge=1, description="Search within last N days")
-    platform: Optional[str] = Field(None, description="Filter by platform (Gmail, Discord, etc.)")
-    file_path: Optional[str] = Field(None, description="Filter by file path pattern")
-    top_k: int = Field(10, ge=1, le=100, description="Number of results to return")
-
-    @validator('date_from', 'date_to')
-    def validate_date_format(cls, v):
-        """Validate ISO date format."""
-        if v:
-            try:
-                datetime.fromisoformat(v)
-            except ValueError:
-                raise ValueError(f"Invalid date format: {v}. Use ISO format (YYYY-MM-DD)")
-        return v
+# SearchAgenticRequest REMOVED - duplicate tool deleted
+# Daemon has ONE search endpoint, MCP has ONE search tool
 
 
 class OpenRequest(BaseModel):

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from loguru import logger
 
 from .models import (
-    SearchRequest, SearchAgenticRequest, OpenRequest,
+    SearchRequest, OpenRequest,
     SummarizeRequest, ListRequest,
     SearchResponse, OpenResponse, SummarizeResponse, ListResponse,
     SearchResult, FileMetadata, ListItem
@@ -50,24 +50,14 @@ class MCPTools:
 
     async def search(self, request: SearchRequest) -> SearchResponse:
         """
-        Natural language search - proxies to daemon /protocol/search.
-
-        Args:
-            request: SearchRequest with query and parameters
-
-        Returns:
-            SearchResponse with results
+        PURE PROXY - forward search to daemon with ZERO logic.
         """
         logger.info(f"MCP proxy search: '{request.query}'")
 
-        # Handle multiple queries
-        query = request.query if isinstance(request.query, str) else " ".join(request.query)
-
-        # Forward to daemon
         try:
             response = await self.client.post(
                 f"{self.daemon_url}/protocol/search",
-                json={"q": query}
+                json={"q": request.query}
             )
             response.raise_for_status()
             data = response.json()
@@ -78,23 +68,27 @@ class MCPTools:
             # Convert daemon response to MCP SearchResponse format
             contexts = data.get('contexts', [])
             results = []
-            for ctx in contexts[:request.top_k]:
+            for i, ctx in enumerate(contexts):
+                # Map daemon fields to MCP SearchResult fields
+                file_path = ctx.get('file', '')  # daemon uses 'file' not 'file_path'
+                text = ctx.get('text', '')
+                
                 results.append(SearchResult(
-                    chunk_id=ctx.get('chunk_id', ''),
-                    text=ctx.get('text', ''),
-                    snippet=ctx.get('snippet', ctx.get('text', '')[:200]),
-                    file_path=ctx.get('file_path', ''),
-                    similarity_score=ctx.get('similarity_score', 0.0),
-                    final_score=ctx.get('final_score', ctx.get('similarity_score', 0.0)),
+                    chunk_id=f"{file_path}:{i}",  # Generate ID from file + index
+                    text=text,
+                    snippet=text[:200] if len(text) > 200 else text,
+                    file_path=file_path,
+                    similarity_score=1.0,  # daemon doesn't return scores yet
+                    final_score=1.0,
                     platform=ctx.get('platform'),
                     timestamp=ctx.get('timestamp'),
-                    chunk_position=ctx.get('chunk_position', 0),
-                    source=ctx.get('source', {})
+                    chunk_position=i,
+                    source={}  # Empty dict - daemon citations are list, not dict
                 ))
 
             return SearchResponse(
-                query=query,
-                processed_query=data.get('query', query),
+                query=request.query,
+                processed_query=data.get('query', request.query),
                 results=results,
                 total=len(results),
                 took_ms=0  # Calculated by caller
@@ -104,74 +98,9 @@ class MCPTools:
             logger.error(f"Daemon request failed: {e}")
             raise RuntimeError(f"Failed to connect to daemon: {e}")
 
-    # ========================================================================
-    # TOOL: search_agentic
-    # ========================================================================
-
-    async def search_agentic(self, request: SearchAgenticRequest) -> SearchResponse:
-        """
-        Structured search - proxies to daemon /protocol/search with structured params.
-
-        Args:
-            request: SearchAgenticRequest with filters
-
-        Returns:
-            SearchResponse with filtered results
-        """
-        logger.info(f"MCP proxy search_agentic: keywords={request.keywords}, platform={request.platform}")
-
-        # Build query from keywords
-        query = " ".join(request.keywords) if request.keywords else ""
-
-        # Add platform and other filters to query for daemon
-        query_parts = [query] if query else []
-        if request.platform:
-            query_parts.append(f"platform:{request.platform}")
-        if request.file_path:
-            query_parts.append(f"file:{request.file_path}")
-
-        full_query = " ".join(query_parts)
-
-        # Forward to daemon
-        try:
-            response = await self.client.post(
-                f"{self.daemon_url}/protocol/search",
-                json={"q": full_query}
-            )
-            response.raise_for_status()
-            data = response.json()
-
-            if not data.get('success'):
-                raise RuntimeError(data.get('error', 'Search failed'))
-
-            # Convert daemon response to MCP SearchResponse format
-            contexts = data.get('contexts', [])
-            results = []
-            for ctx in contexts[:request.top_k]:
-                results.append(SearchResult(
-                    chunk_id=ctx.get('chunk_id', ''),
-                    text=ctx.get('text', ''),
-                    snippet=ctx.get('snippet', ctx.get('text', '')[:200]),
-                    file_path=ctx.get('file_path', ''),
-                    similarity_score=ctx.get('similarity_score', 0.0),
-                    final_score=ctx.get('final_score', ctx.get('similarity_score', 0.0)),
-                    platform=ctx.get('platform'),
-                    timestamp=ctx.get('timestamp'),
-                    chunk_position=ctx.get('chunk_position', 0),
-                    source=ctx.get('source', {})
-                ))
-
-            return SearchResponse(
-                query=full_query,
-                processed_query=data.get('query', full_query),
-                results=results,
-                total=len(results),
-                took_ms=0  # Calculated by caller
-            )
-
-        except httpx.HTTPError as e:
-            logger.error(f"Daemon request failed: {e}")
-            raise RuntimeError(f"Failed to connect to daemon: {e}")
+    # search_agentic REMOVED - it was duplicate bullshit
+    # Daemon only has ONE search endpoint: /protocol/search
+    # MCP should only have ONE search tool that forwards to it
 
     # ========================================================================
     # TOOL: open

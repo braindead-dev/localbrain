@@ -61,53 +61,16 @@ class LocalBrainMCPServer:
             return [
                 types.Tool(
                     name="search",
-                    description="Natural language semantic search across your knowledge base. Returns relevant information from your vault.",
+                    description="Natural language search across your knowledge base. Pure proxy to backend.",
                     inputSchema={
                         "type": "object",
                         "properties": {
                             "query": {
                                 "type": "string",
                                 "description": "Natural language search query"
-                            },
-                            "top_k": {
-                                "type": "number",
-                                "description": "Number of results to return (default: 10)",
-                                "default": 10
-                            },
-                            "min_similarity": {
-                                "type": "number",
-                                "description": "Minimum similarity threshold (0.0-1.0)",
-                                "default": 0.0
                             }
                         },
                         "required": ["query"]
-                    }
-                ),
-                types.Tool(
-                    name="search_agentic",
-                    description="Structured search with specific filters (keywords, dates, platforms). Use for precise searches with known criteria.",
-                    inputSchema={
-                        "type": "object",
-                        "properties": {
-                            "keywords": {
-                                "type": "array",
-                                "items": {"type": "string"},
-                                "description": "Specific keywords to search for"
-                            },
-                            "days": {
-                                "type": "number",
-                                "description": "Search within last N days"
-                            },
-                            "platform": {
-                                "type": "string",
-                                "description": "Filter by platform (Gmail, Discord, LinkedIn, etc.)"
-                            },
-                            "top_k": {
-                                "type": "number",
-                                "description": "Number of results to return",
-                                "default": 10
-                            }
-                        }
                     }
                 ),
                 types.Tool(
@@ -189,7 +152,6 @@ class LocalBrainMCPServer:
                 # Map tool name to endpoint
                 endpoint_map = {
                     "search": "/mcp/search",
-                    "search_agentic": "/mcp/search_agentic",
                     "open": "/mcp/open",
                     "summarize": "/mcp/summarize",
                     "list": "/mcp/list"
@@ -221,7 +183,7 @@ class LocalBrainMCPServer:
                             data = result.get("data", {})
 
                             # Format response based on tool type
-                            if name == "search" or name == "search_agentic":
+                            if name == "search":
                                 return self._format_search_results(data)
                             elif name == "open":
                                 return self._format_open_results(data)

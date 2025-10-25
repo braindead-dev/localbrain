@@ -7,7 +7,6 @@ routing them to appropriate MCP tools.
 Examples:
   localbrain://search?q=internship+applications
   localbrain://open?filepath=career/job-search.md
-  localbrain://search_agentic?keywords=internship,nvidia&days=7
   localbrain://summarize?filepath=finance/taxes.md
   localbrain://list?path=projects
 """
@@ -17,7 +16,7 @@ from urllib.parse import urlparse, parse_qs, unquote
 from loguru import logger
 
 from .models import (
-    SearchRequest, SearchAgenticRequest, OpenRequest,
+    SearchRequest, OpenRequest,
     SummarizeRequest, ListRequest
 )
 
@@ -26,7 +25,7 @@ class ProtocolHandler:
     """
     Handles localbrain:// protocol URLs and converts them to MCP tool requests.
 
-    Supports all MCP tools: search, search_agentic, open, summarize, list.
+    Supports all MCP tools: search, open, summarize, list.
     """
 
     def __init__(self, tools_client=None):
@@ -93,8 +92,6 @@ class ProtocolHandler:
         try:
             if tool == "search":
                 return self._create_search_request(params)
-            elif tool == "search_agentic":
-                return self._create_search_agentic_request(params)
             elif tool == "open":
                 return self._create_open_request(params)
             elif tool == "summarize":
@@ -109,42 +106,13 @@ class ProtocolHandler:
             raise ValueError(f"Invalid parameters for {tool}: {e}")
 
     def _create_search_request(self, params: Dict[str, Any]) -> SearchRequest:
-        """Create SearchRequest from parameters."""
+        """Create SearchRequest from parameters - pure proxy, only query."""
         query = params.get('q') or params.get('query')
 
         if not query:
             raise ValueError("Missing required parameter: q or query")
 
-        # Handle multiple queries (comma-separated)
-        if isinstance(query, str) and ',' in query:
-            query = [q.strip() for q in query.split(',')]
-
-        return SearchRequest(
-            query=query,
-            top_k=int(params.get('top_k', 10)),
-            min_similarity=float(params.get('min_similarity', 0.0)),
-            filters=self._parse_filters(params)
-        )
-
-    def _create_search_agentic_request(self, params: Dict[str, Any]) -> SearchAgenticRequest:
-        """Create SearchAgenticRequest from parameters."""
-        # Parse keywords
-        keywords = params.get('keywords')
-        if keywords:
-            if isinstance(keywords, str):
-                keywords = [k.strip() for k in keywords.split(',')]
-        else:
-            keywords = None
-
-        return SearchAgenticRequest(
-            keywords=keywords,
-            date_from=params.get('date_from'),
-            date_to=params.get('date_to'),
-            days=int(params['days']) if params.get('days') else None,
-            platform=params.get('platform'),
-            file_path=params.get('file_path') or params.get('filepath'),
-            top_k=int(params.get('top_k', 10))
-        )
+        return SearchRequest(query=query)
 
     def _create_open_request(self, params: Dict[str, Any]) -> OpenRequest:
         """Create OpenRequest from parameters."""
@@ -189,25 +157,6 @@ class ProtocolHandler:
             file_types=file_types
         )
 
-    def _parse_filters(self, params: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Parse filter parameters from URL params."""
-        filters = {}
-
-        # Extract filter parameters
-        if params.get('platform'):
-            filters['platform'] = params['platform']
-
-        if params.get('file_path'):
-            filters['file_path'] = params['file_path']
-
-        if params.get('date_from'):
-            filters['date_from'] = params['date_from']
-
-        if params.get('date_to'):
-            filters['date_to'] = params['date_to']
-
-        return filters if filters else None
-
     async def handle_url(self, url: str) -> Dict[str, Any]:
         """
         Handle protocol URL end-to-end.
@@ -236,8 +185,6 @@ class ProtocolHandler:
         # Execute tool
         if tool == "search":
             result = await self.tools_client.search(request)
-        elif tool == "search_agentic":
-            result = await self.tools_client.search_agentic(request)
         elif tool == "open":
             result = await self.tools_client.open(request)
         elif tool == "summarize":
@@ -247,7 +194,7 @@ class ProtocolHandler:
         else:
             raise ValueError(f"Unknown tool: {tool}")
 
-        return result.dict()
+        return result.model_dump()
 
     @staticmethod
     def build_url(tool: str, **params) -> str:
@@ -262,8 +209,8 @@ class ProtocolHandler:
             Protocol URL string
 
         Examples:
-            >>> build_url("search", q="test", top_k=5)
-            'localbrain://search?q=test&top_k=5'
+            >>> build_url("search", q="test")
+            'localbrain://search?q=test'
         """
         from urllib.parse import urlencode
 
@@ -306,9 +253,8 @@ if __name__ == "__main__":
     print("="*80)
 
     urls = [
-        ProtocolHandler.build_url("search", q="test query", top_k=10),
+        ProtocolHandler.build_url("search", q="test query"),
         ProtocolHandler.build_url("open", filepath="readme.md"),
-        ProtocolHandler.build_url("search_agentic", keywords="test,example", days=7),
         ProtocolHandler.build_url("summarize", filepath="document.md", style="bullets"),
         ProtocolHandler.build_url("list", path="projects", recursive=True),
     ]

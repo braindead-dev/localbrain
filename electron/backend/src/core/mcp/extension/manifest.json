@@ -44,11 +44,7 @@
   "tools": [
     {
       "name": "search",
-      "description": "Semantic search across your knowledge vault using natural language queries"
-    },
-    {
-      "name": "search_agentic",
-      "description": "Structured search with specific filters (keywords, dates, platforms)"
+      "description": "Search your knowledge vault using natural language queries. Pure proxy to daemon backend."
     },
     {
       "name": "open",

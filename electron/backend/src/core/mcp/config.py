@@ -27,9 +27,6 @@ class ServerConfig(BaseModel):
 
 class ToolConfig(BaseModel):
     """Configuration for MCP tools."""
-    search_top_k_default: int = Field(10, ge=1, le=100, description="Default number of search results")
-    search_top_k_max: int = Field(100, ge=1, le=1000, description="Maximum search results allowed")
-    min_similarity_threshold: float = Field(0.0, ge=0.0, le=1.0, description="Minimum similarity score")
     max_file_size_mb: int = Field(50, ge=1, description="Maximum file size for open/summarize (MB)")
     cache_enabled: bool = Field(True, description="Enable result caching")
     cache_ttl_seconds: int = Field(300, ge=0, description="Cache TTL in seconds")
@@ -144,7 +141,6 @@ class ConfigLoader:
                 timeout_seconds=int(os.getenv("MCP_TIMEOUT", "30")),
             ),
             tools=ToolConfig(
-                search_top_k_default=int(os.getenv("MCP_SEARCH_TOP_K", "10")),
                 cache_enabled=os.getenv("MCP_CACHE_ENABLED", "true").lower() == "true",
                 cache_ttl_seconds=int(os.getenv("MCP_CACHE_TTL", "300")),
             ),
@@ -234,7 +230,7 @@ class ConfigLoader:
         path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(path, 'w') as f:
-            json.dump(config.dict(), f, indent=2, default=str)
+            json.dump(config.model_dump(), f, indent=2, default=str)
 
         logger.info(f"Saved MCP configuration to {config_path}")
 

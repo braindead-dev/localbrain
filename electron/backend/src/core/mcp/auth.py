@@ -203,15 +203,6 @@ class MCPAuthManager:
                 ext = file_path.split('.')[-1]
                 if ext not in allowed_types:
                     return False, f"Access denied: file type '{ext}' not allowed"
-
-        # Check max_results restriction
-        if 'max_results' in restrictions:
-            max_results = restrictions['max_results']
-            top_k = request_params.get('top_k')
-
-            if top_k and top_k > max_results:
-                return False, f"Request exceeds max_results: {max_results}"
-
         return True, None
 
     @staticmethod
@@ -283,7 +274,7 @@ class MCPAuthManager:
         try:
             data = {
                 "clients": [
-                    client.dict() for client in self.clients.values()
+                    client.model_dump() for client in self.clients.values()
                 ]
             }
 

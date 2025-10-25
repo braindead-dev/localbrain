@@ -341,7 +341,7 @@ class AuditLogger:
 
             with open(output_file, 'w') as f:
                 json.dump(
-                    [entry.dict() for entry in logs],
+                    [entry.model_dump() for entry in logs],
                     f,
                     indent=2,
                     default=str

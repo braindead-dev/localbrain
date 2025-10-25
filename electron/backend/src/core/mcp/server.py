@@ -16,7 +16,7 @@ from loguru import logger
 
 from .models import (
     MCPResponse,
-    SearchRequest, SearchAgenticRequest, OpenRequest,
+    SearchRequest, OpenRequest,
     SummarizeRequest, ListRequest
 )
 from .tools import MCPTools
@@ -165,19 +165,7 @@ class MCPServer:
                 request_id=request_id
             )
 
-        @self.app.post("/mcp/search_agentic", response_model=MCPResponse)
-        async def search_agentic_endpoint(
-            request: SearchAgenticRequest,
-            client: MCPClientAuth = Depends(self._get_current_client),
-            request_id: Optional[str] = None
-        ):
-            """Agentic search tool endpoint."""
-            return await self._execute_tool(
-                client=client,
-                tool="search_agentic",
-                request=request,
-                request_id=request_id
-            )
+        # search_agentic endpoint REMOVED - duplicate tool deleted
 
         @self.app.post("/mcp/open", response_model=MCPResponse)
         async def open_endpoint(
@@ -246,27 +234,22 @@ class MCPServer:
                     {
                         "name": "search",
                         "description": "Natural language search across knowledge base",
-                        "input_schema": SearchRequest.schema()
-                    },
-                    {
-                        "name": "search_agentic",
-                        "description": "Structured search with filters",
-                        "input_schema": SearchAgenticRequest.schema()
+                        "input_schema": SearchRequest.model_json_schema()
                     },
                     {
                         "name": "open",
                         "description": "Retrieve full file contents",
-                        "input_schema": OpenRequest.schema()
+                        "input_schema": OpenRequest.model_json_schema()
                     },
                     {
                         "name": "summarize",
                         "description": "Generate file or content summary",
-                        "input_schema": SummarizeRequest.schema()
+                        "input_schema": SummarizeRequest.model_json_schema()
                     },
                     {
                         "name": "list",
                         "description": "List directory contents",
-                        "input_schema": ListRequest.schema()
+                        "input_schema": ListRequest.model_json_schema()
                     }
                 ]
             }
@@ -353,7 +336,7 @@ class MCPServer:
             )
 
         # Check scope restrictions
-        request_params = request.dict()
+        request_params = request.model_dump()
         allowed, error = self.auth_manager.check_scope_restriction(
             client, tool, request_params
         )
@@ -381,8 +364,6 @@ class MCPServer:
             # Route to appropriate tool method
             if tool == "search":
                 result = await self.tools.search(request)
-            elif tool == "search_agentic":
-                result = await self.tools.search_agentic(request)
             elif tool == "open":
                 result = await self.tools.open(request)
             elif tool == "summarize":
@@ -415,7 +396,7 @@ class MCPServer:
             # Return success response
             return MCPResponse(
                 success=True,
-                data=result.dict(),
+                data=result.model_dump(),
                 error=None,
                 took_ms=elapsed_ms,
                 request_id=request_id
