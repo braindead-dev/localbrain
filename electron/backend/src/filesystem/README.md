@@ -54,6 +54,7 @@ Users can select any directory on their filesystem to act as their LocalBrain va
 ├── career/               # Professional and career content
 │   ├── about.md         # Career overview
 │   ├── job-search.md
+│   ├── job-search.json  # Citations for job-search.md
 │   └── ...
 ├── projects/             # Personal projects and side work
 │   ├── about.md
@@ -74,6 +75,7 @@ Users can select any directory on their filesystem to act as their LocalBrain va
 - **Default categories**: Auto-created on vault initialization
 - **Custom folders**: Users can create additional categories as needed
 - **about.md files**: Optional overview file in each category folder
+- **JSON citation files**: Each markdown file has a corresponding `.json` file with source metadata
 
 ## File Management
 
@@ -84,36 +86,64 @@ Users can select any directory on their filesystem to act as their LocalBrain va
 - **Version Control**: Track file versions and changes
 
 **Standardized File Format:**
+
+**job-search.md:**
 ```markdown
-# "Job Search.md"
+# job-search
 
 Purpose summary paragraph explaining what this file contains.
 
 ## Insights & Observations
 
-Applied to over 200 internships but received no responses[^1]. Most applications were for software engineering roles at tech companies[^2]. The lack of response might indicate issues with resume formatting or timing.
+Applied to over 200 internships but received no responses [1]. Most applications were for software engineering roles at tech companies [2]. The lack of response might indicate issues with resume formatting or timing.
 
-Received positive feedback from recruiters at NVIDIA and Google during networking events[^3], suggesting the issue isn't technical skills but application approach.
+Received positive feedback from recruiters at NVIDIA and Google during networking events [3], suggesting the issue isn't technical skills but application approach.
 
 ## Related Topics
 
 - [[resume-optimization]]
 - [[networking-strategies]]
 - [[interview-prep]]
+```
 
----
-
-[^1]: Gmail analysis, Jan-Mar 2024, automated rejection emails from 180+ companies
-[^2]: LinkedIn job application history, https://linkedin.com/jobs/applications, Jan-Mar 2024
-[^3]: Career fair notes, Feb 15 2024, conversations with Sarah (NVIDIA) and Mike (Google)
+**job-search.json:**
+```json
+{
+  "1": {
+    "platform": "Gmail",
+    "timestamp": "2024-01-15T10:30:00Z",
+    "date_range": "Jan-Mar 2024",
+    "description": "Gmail analysis showing automated rejection emails from 180+ companies",
+    "url": null,
+    "quote": null
+  },
+  "2": {
+    "platform": "LinkedIn",
+    "timestamp": "2024-03-01T14:20:00Z",
+    "description": "LinkedIn job application history",
+    "url": "https://linkedin.com/jobs/applications",
+    "quote": null
+  },
+  "3": {
+    "platform": "Manual",
+    "timestamp": "2024-02-15T16:00:00Z",
+    "description": "Career fair notes",
+    "url": null,
+    "quote": "Really impressed with your React experience! We'd love to see an application."
+  }
+}
 ```
 
 **Source Citation System:**
-- **Inline references**: Use `[^1]` syntax for factual claims
-- **Footnotes section**: Bottom of file with full source details
+- **Inline references**: Use `[1]` syntax for factual claims
+- **Separate JSON file**: Each `file.md` has a `file.json` with citation metadata
 - **Not every sentence**: Only factual claims that need verification
-- **Source format**: `[Platform/Source], [Date], [Direct quote or URL]`
-- **Wikipedia-style**: Clean inline citations with detailed footnotes
+- **JSON schema**: 
+  - `platform`: Source platform (Gmail, Discord, Manual, etc.)
+  - `timestamp`: ISO 8601 timestamp
+  - `description`: What this citation refers to
+  - `url`: Link if applicable (can be null)
+  - `quote`: Direct quotation if applicable (can be null)
 
 ## Integration Points
 
