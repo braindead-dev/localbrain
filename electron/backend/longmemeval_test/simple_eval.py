@@ -55,7 +55,20 @@ for i, item in enumerate(data, 1):
                     max_tokens=200,
                     messages=[{
                         "role": "user",
-                        "content": f"Answer based ONLY on this context:\n\n{context_text}\n\nQuestion: {question}\n\nBe direct and concise:"
+                        "content": f"""Extract the answer from the context below. State facts directly from the text.
+
+Context:
+{context_text}
+
+Question: {question}
+
+Instructions:
+1. Find relevant dates, names, or facts in context
+2. Compare them if needed
+3. State the answer directly - no hedging
+4. If truly insufficient info, say "Insufficient information" (rare)
+
+Answer (be direct):"""
                     }]
                 )
                 
