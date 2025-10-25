@@ -72,28 +72,35 @@ Users can select any directory on their filesystem to act as their LocalBrain va
 
 **Standardized File Format:**
 ```markdown
+# "Job Search.md"
+
+Purpose summary paragraph explaining what this file contains.
+
+## Insights & Observations
+
+Applied to over 200 internships but received no responses[^1]. Most applications were for software engineering roles at tech companies[^2]. The lack of response might indicate issues with resume formatting or timing.
+
+Received positive feedback from recruiters at NVIDIA and Google during networking events[^3], suggesting the issue isn't technical skills but application approach.
+
+## Related Topics
+
+- [[resume-optimization]]
+- [[networking-strategies]]
+- [[interview-prep]]
+
 ---
-title: "File Purpose Summary"
-created: "2024-01-15T10:30:00Z"
-updated: "2024-01-15T10:30:00Z"
-source: "manual"  # manual, gmail, discord, etc.
-tags: ["project", "research"]
----
 
-# Main Content
-
-## Observations
-- Key insight 1 with source citation
-- Key insight 2 with supporting evidence
-
-## Sources
-**Source 1:** [Platform] - [Timestamp]
-[Direct quotation or evidence]
-[URL if applicable]
-
-**Source 2:** [Platform] - [Timestamp]
-[Supporting documentation]
+[^1]: Gmail analysis, Jan-Mar 2024, automated rejection emails from 180+ companies
+[^2]: LinkedIn job application history, https://linkedin.com/jobs/applications, Jan-Mar 2024
+[^3]: Career fair notes, Feb 15 2024, conversations with Sarah (NVIDIA) and Mike (Google)
 ```
+
+**Source Citation System:**
+- **Inline references**: Use `[^1]` syntax for factual claims
+- **Footnotes section**: Bottom of file with full source details
+- **Not every sentence**: Only factual claims that need verification
+- **Source format**: `[Platform/Source], [Date], [Direct quote or URL]`
+- **Wikipedia-style**: Clean inline citations with detailed footnotes
 
 ## Integration Points
 

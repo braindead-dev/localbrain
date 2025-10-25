@@ -90,6 +90,175 @@ Handles search queries and returns relevant information from stored data. Provid
 - Content preference modeling
 - Adaptive ranking based on interaction patterns
 
+## Retrieval Process Architecture
+
+**Complete Flow (Query → Results):**
+
+```
+1. Query Reception
+   ↓
+2. Query Preprocessing
+   ↓
+3. Embedding Generation
+   ↓
+4. Vector Search
+   ↓
+5. Metadata Filtering
+   ↓
+6. Result Ranking
+   ↓
+7. Response Formatting
+   ↓
+8. Return to User
+```
+
+### Detailed Process Breakdown
+
+**1. Query Reception** (`src/core/retrieval/query_handler.py`)
+- Receive query from protocol handler or MCP API
+- Parse query parameters (filters, limits, etc.)
+- Validate request and check permissions
+
+**2. Query Preprocessing** (`src/core/retrieval/preprocessor.py`)
+- Clean and normalize query text
+- Expand abbreviations and synonyms
+- Extract intent and entities
+- Handle multi-part queries
+
+**3. Embedding Generation** (`src/core/retrieval/embedder.py`)
+- Generate embedding vector for query
+- Use same model as document chunks (consistency)
+- Batch process for multiple queries
+- Cache frequent queries
+
+**4. Vector Search** (`src/database/embeddings/vector_search.py`)
+- Cosine similarity search against chunk embeddings
+- Return top K most similar chunks (K=50-100)
+- Include similarity scores
+- Filter by minimum similarity threshold
+
+**5. Metadata Filtering** (`src/core/retrieval/filter.py`)
+- Apply user filters (date range, file type, source)
+- Respect bridge access permissions
+- Filter by vault directory scope
+- Exclude archived or deleted content
+
+**6. Result Ranking** (`src/core/retrieval/ranker.py`)
+- Multi-factor scoring algorithm:
+  - Base: Vector similarity score
+  - Recency: Newer content ranked higher
+  - Source quality: Verified sources boosted
+  - Context fit: File-level relevance
+  - Diversity: Avoid redundant results
+- Combine scores with learned weights
+- Re-rank top results
+
+**7. Response Formatting** (`src/core/retrieval/formatter.py`)
+- Group chunks by file
+- Extract surrounding context for snippets
+- Generate file summaries if needed
+- Add metadata (file path, timestamp, source)
+- Highlight matching terms
+- Generate natural language response (optional)
+
+**8. Return to User**
+- Send formatted results via protocol response
+- Log query for analytics and audit
+- Update query history and suggestions
+- Trigger related content recommendations
+
+### Code Organization
+
+```
+src/core/retrieval/
+├── query_handler.py      # Entry point, request routing
+├── preprocessor.py       # Query cleaning and expansion
+├── embedder.py           # Embedding generation
+├── filter.py             # Metadata and permission filtering
+├── ranker.py             # Multi-factor result ranking
+├── formatter.py          # Response formatting
+├── cache.py              # Query and result caching
+└── models.py             # Data models and types
+```
+
+### Search Types
+
+**Semantic Search** (`search()`)
+- Natural language query
+- Vector similarity matching
+- Returns relevant chunks with context
+- Best for: "find information about X"
+
+**Agentic Search** (`search_agentic()`)
+- Structured query with filters
+- Keyword matching + metadata filters
+- Exact term matching when needed
+- Best for: "emails from X in the last 7 days"
+
+**Hybrid Search** (automatic)
+- Combines semantic and keyword approaches
+- Used when query has both concepts and specific terms
+- Balances precision and recall
+
+### Performance Optimizations
+
+**Query Caching:**
+- Cache embeddings for frequent queries
+- Cache results for common searches
+- Invalidate on content updates
+
+**Precomputation:**
+- Precompute file-level summaries
+- Index frequently accessed chunks
+- Maintain popularity scores
+
+**Parallel Processing:**
+- Parallel vector search across shards
+- Concurrent metadata filtering
+- Async result formatting
+
+### Example Query Flow
+
+```python
+# Input
+query = "internship application emails from last month"
+
+# Step 1-2: Reception and preprocessing
+processed_query = "internship application communication recent"
+filters = {"source": "gmail", "date_range": "last_30_days"}
+
+# Step 3: Embedding
+query_vector = embed_model.encode(processed_query)  # [768-dim vector]
+
+# Step 4: Vector search
+chunks = vector_db.search(query_vector, top_k=100)
+# Returns: [
+#   {chunk_id: "abc123", similarity: 0.89, text: "Applied to NVIDIA..."},
+#   {chunk_id: "def456", similarity: 0.85, text: "Received rejection..."},
+#   ...
+# ]
+
+# Step 5: Filter
+filtered = filter_by_metadata(chunks, filters)
+# Keeps only chunks from gmail in last 30 days
+
+# Step 6: Rank
+ranked = multi_factor_rank(filtered, query_vector)
+# Applies recency boost, deduplicates, diversifies
+
+# Step 7: Format
+results = format_response(ranked, include_context=True)
+# Groups by file, adds snippets, generates summary
+
+# Step 8: Return
+return {
+  "results": results,
+  "total": len(results),
+  "query": processed_query,
+  "took_ms": 45
+}
+```
+
 ## Integration Points
 
 - **Frontend**: Receive and display search results
@@ -97,3 +266,5 @@ Handles search queries and returns relevant information from stored data. Provid
 - **MCP Server**: Provide search tools for external integrations
 - **Bridge Service**: Enforce access permissions and logging
 - **Database**: Query vector stores and metadata
+- **Protocol Handler**: Process `localbrain://search` commands
+- **Cache Layer**: Store and retrieve frequent queries
