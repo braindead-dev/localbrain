@@ -7,7 +7,8 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Read(///**)"
     ],
     "deny": [],
     "ask": []

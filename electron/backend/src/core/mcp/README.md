@@ -6,6 +6,25 @@ Provides a Model Context Protocol (MCP) interface for external tools and integra
 
 ✅ **COMPLETE** - Full MCP server implementation with proxy architecture, authentication, and audit logging.
 
+## Access Options
+
+The local MCP server provides two ways to access your LocalBrain:
+
+### 1. Local Access (This Server)
+- **Use case**: Claude Desktop, local tools, same machine
+- **Port**: 8766 (localhost only)
+- **Security**: Local API key authentication
+- **Setup**: See Quick Start below
+
+### 2. Remote Access (Optional Bridge)
+- **Use case**: External tools, mobile apps, remote access
+- **Location**: `remote-mcp/` directory at project root
+- **Security**: WebSocket tunnel + multi-layer auth
+- **Features**: Zero data storage, rate limiting, revocable access
+- **Setup**: See [Remote MCP Bridge README](../../../../../remote-mcp/README.md)
+
+**Choose local access for Claude Desktop and local tools. Use remote bridge only if you need external/mobile access.**
+
 ## Architecture
 
 The MCP server is a **thin proxy layer** that:
@@ -205,13 +224,37 @@ localbrain://list?path=projects
 - **Response Limits**: Maximum results returned
 - **Caching**: Response caching strategies
 
-## Future Enhancements
+## Remote Access
 
-**Online MCP Proxy (Optional):**
-- Remote URL endpoint for local MCP access
-- Authentication and API key management
-- Request forwarding to local MCP server
-- Usage analytics and monitoring
+**Remote MCP Bridge** ✅ **IMPLEMENTED**
+
+For external access to your LocalBrain from anywhere (ChatGPT, mobile apps, remote devices):
+
+- **Location**: `remote-mcp/` directory at project root
+- **Architecture**: WebSocket tunnel + public bridge server
+- **Security**: Multi-layer auth, rate limiting, zero data storage
+- **Features**:
+  - Access LocalBrain from any device/network
+  - No port forwarding or VPN required
+  - Complete control and privacy
+  - Self-hosted or official hosted service (coming soon)
+
+**Quick Start:**
+```bash
+cd remote-mcp
+./start_bridge.sh    # Terminal 1: Start bridge
+./start_tunnel.sh    # Terminal 2: Connect tunnel
+```
+
+**Documentation:**
+- [Remote MCP README](../../../../../remote-mcp/README.md) - Overview
+- [Remote MCP Quick Start](../../../../../remote-mcp/QUICKSTART.md) - 5-minute setup
+- [Remote MCP Implementation](../../../../../remote-mcp/IMPLEMENTATION.md) - Complete guide
+- [Remote MCP Architecture](../../../../../remote-mcp/ARCHITECTURE.md) - Technical details
+
+**Important**: The remote bridge is completely optional. Local MCP works fully without it.
+
+## Future Enhancements
 
 **Advanced Tools:**
 - **batch_search**: Multiple queries in single request
@@ -219,11 +262,18 @@ localbrain://list?path=projects
 - **timeline**: Search within date ranges
 - **export**: Export content in various formats
 
+**Remote Bridge Improvements** (see remote-mcp/ for full roadmap):
+- Docker deployment
+- Official hosted bridge service
+- Custom domain support
+- Advanced rate limiting and monitoring
+
 ## Integration Points
 
 - **Frontend**: Route UI search requests through MCP interface
+- **Claude Desktop**: Direct integration via stdio wrapper (see Extension.md)
 - **Protocol Handler**: Process localbrain:// URLs via MCP tools
-- **Bridge Service**: Enforce access permissions and logging
+- **Remote Bridge**: Enable external access via WebSocket tunnels (see remote-mcp/)
 - **External Tools**: Provide API access for third-party applications
 - **Connectors**: Use MCP tools for data validation and processing
 

@@ -7,11 +7,13 @@ Complete guide for setting up and using the LocalBrain Model Context Protocol (M
 1. [Quick Start](#quick-start)
 2. [Configuration](#configuration)
 3. [Running the Server](#running-the-server)
-4. [API Reference](#api-reference)
-5. [Protocol Handler](#protocol-handler)
-6. [Authentication](#authentication)
-7. [Examples](#examples)
-8. [Troubleshooting](#troubleshooting)
+4. [Remote Access (Optional)](#remote-access-optional)
+5. [API Reference](#api-reference)
+6. [Protocol Handler](#protocol-handler)
+7. [Authentication](#authentication)
+8. [Examples](#examples)
+9. [Troubleshooting](#troubleshooting)
+10. [Claude Desktop Integration](#claude-desktop-integration)
 
 ---
 
@@ -181,6 +183,87 @@ Load the service:
 ```bash
 launchctl load ~/Library/LaunchAgents/com.localbrain.mcp.plist
 ```
+
+---
+
+## Remote Access (Optional)
+
+The local MCP server runs on localhost and is perfect for Claude Desktop and local tools. For external access (ChatGPT, mobile apps, remote devices), use the **Remote MCP Bridge**.
+
+### What is the Remote Bridge?
+
+The Remote MCP Bridge is an optional relay system that enables secure external access to your LocalBrain:
+
+- **Zero data storage**: Bridge only relays requests (100% ephemeral)
+- **Multi-layer authentication**: Remote API key + local API key
+- **Rate limiting**: 60 requests/minute per user
+- **Complete control**: Stop tunnel = instant revocation
+- **Self-hosted**: Run your own bridge or use official service (coming soon)
+
+### Architecture
+
+```
+External Tool → Bridge Server → WebSocket Tunnel → MCP Server → Daemon
+  (Internet)    (Public VPS)      (Encrypted)      (Port 8766)  (Port 8765)
+```
+
+### Quick Setup
+
+1. **Navigate to remote bridge**:
+   ```bash
+   cd remote-mcp  # From project root
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure tunnel client**:
+   ```bash
+   cp .env.example .env
+   # Generate credentials and edit .env
+   python3 -c "import uuid; print('USER_ID=' + str(uuid.uuid4()))"
+   python3 -c "import secrets; print('REMOTE_API_KEY=lb_' + secrets.token_urlsafe(32))"
+   vim .env
+   ```
+
+4. **Start bridge** (for local testing):
+   ```bash
+   ./start_bridge.sh  # Terminal 1
+   ```
+
+5. **Start tunnel**:
+   ```bash
+   ./start_tunnel.sh  # Terminal 2
+   ```
+
+6. **Test it**:
+   ```bash
+   python3 test_bridge.py
+   ```
+
+### Documentation
+
+- [Remote MCP README](../../../../../remote-mcp/README.md) - Overview and architecture
+- [Remote MCP Quick Start](../../../../../remote-mcp/QUICKSTART.md) - 5-minute setup guide
+- [Remote MCP Implementation](../../../../../remote-mcp/IMPLEMENTATION.md) - Complete implementation guide
+- [Remote MCP Architecture](../../../../../remote-mcp/ARCHITECTURE.md) - Technical details
+
+### When to Use Remote Bridge
+
+**Use Local MCP Server (port 8766) for:**
+- Claude Desktop integration
+- Local development and testing
+- Same-machine tools and apps
+
+**Use Remote Bridge for:**
+- ChatGPT custom actions
+- Mobile app access
+- Remote device access
+- Multi-device workflows
+
+**Important**: The remote bridge is completely optional. Local MCP works fully without it.
 
 ---
 

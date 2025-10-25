@@ -24,6 +24,24 @@ FastAPI Server (port 8765)
 LocalBrain Vault
 ```
 
+### Access Options
+
+LocalBrain provides two ways to integrate with AI tools:
+
+**1. Claude Desktop Extension (This Guide)**
+- **Use case**: Direct integration with Claude Desktop app
+- **Architecture**: stdio wrapper + local MCP server
+- **Security**: Local-only, no external access
+- **Setup**: Install .mcpb extension in Claude Desktop
+
+**2. Remote Bridge (Optional)**
+- **Use case**: External access (ChatGPT, mobile apps, other AI tools)
+- **Architecture**: WebSocket tunnel + public bridge server
+- **Security**: Multi-layer auth, zero data storage
+- **Setup**: See [Remote MCP Bridge](../../../../../remote-mcp/README.md)
+
+**This guide covers Claude Desktop integration.** For external/remote access, see the Remote MCP Bridge documentation.
+
 ---
 
 ## Prerequisites
@@ -420,9 +438,14 @@ Users can install by:
 
 ## Additional Resources
 
+### LocalBrain Documentation
+- [LocalBrain MCP Server Usage](./USAGE.md) - Complete MCP server usage guide
+- [LocalBrain MCP Server README](./README.md) - MCP server overview and architecture
+- [Remote MCP Bridge](../../../../../remote-mcp/README.md) - External access option
+
+### External Documentation
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
 - [Claude Desktop Extensions Guide](https://www.anthropic.com/engineering/desktop-extensions)
-- [LocalBrain MCP Server Usage](./USAGE.md)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 
 ---
