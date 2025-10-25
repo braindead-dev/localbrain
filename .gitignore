@@ -15,3 +15,4 @@ electron/backend/src/core/mcp/__pycache__
 .Python
 *.pyc
 *.pyc
+/electron/dist/win-unpacked
