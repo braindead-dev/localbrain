@@ -1,4 +1,4 @@
-# GEMINI Project Implementation Plan
+# localbrain Project Implementation Plan
 
 This document provides a detailed, implementation-ready plan for the GEMINI local-first context management system, designed for the Gemini CLI to implement using Python and Electron. The plan covers all major subsystems, package choices, module structure, and integration notes for challenge tracks.
 
@@ -6,7 +6,7 @@ This document provides a detailed, implementation-ready plan for the GEMINI loca
 
 ## Overview
 
-GEMINI is a local-first model context management system that empowers AI applications with relevant context from files, exports, and live connectors. It stores ingested information semantically using embeddings and exposes a secure local API for LLM queries. The system is designed for modularity, extensibility, and high performance with a focus on Python backend and an Electron desktop frontend.
+localbrain is a local-first model context management system that empowers AI applications with relevant context from files, exports, and live connectors. It stores ingested information semantically using embeddings and exposes a secure local API for LLM queries. The system is designed for modularity, extensibility, and high performance with a focus on Python backend and an Electron desktop frontend.
 
 ---
 

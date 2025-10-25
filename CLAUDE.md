@@ -4,44 +4,119 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-LocalBrain is a desktop application built with Electron and Next.js. The project consists of three main components:
-
-1. **Electron Desktop App** (`electron/`) - Wraps the Next.js frontend in an Electron shell for desktop deployment
-2. **Next.js Frontend** (`electron/app/`) - The user interface, configured for static export
-3. **Remote MCP Proxy** (`remote-mcp/`) - A planned proxy service to enable local MCP access via public URLs
+Localbrain is a local-first model context management system that empowers AI applications with relevant context from files, exports, and live connectors. It stores ingested information semantically using embeddings and exposes a secure local API for LLM queries. The system is designed for modularity, extensibility, and high performance with a focus on Python backend and an Electron desktop frontend.
 
 ## Architecture
 
-### Electron + Next.js Integration
+### 1. Electron Desktop Application (Frontend)
 
-The desktop app uses a hybrid development/production architecture:
+**Purpose:**  
+User interface for interacting with GEMINI, including note-taking, search, settings, and ingestion management.
 
-- **Development mode**: Electron loads Next.js dev server at `http://localhost:3000`
-- **Production mode**: Electron loads statically exported Next.js files from `electron/app/out/` using `file://` protocol
+**Technology:**  
+- Electron (Node.js + Chromium)  
+- React + TypeScript for UI components  
+- IPC (Inter-Process Communication) to communicate with MCP daemon
 
-The Electron main process (`electron/main.js`) creates a BrowserWindow that:
-- Starts maximized with minimum dimensions of 800x600
-- Displays "LocalBrain" in the macOS dock (not "Electron")
-- Uses security best practices (no nodeIntegration, contextIsolation enabled)
-- Includes platform-specific menu templates for macOS
+**Implementation Instructions:**  
+- Scaffold Electron app with React and TypeScript  
+- Implement UI modules:  
+  - Notes and quick search interface  
+  - Ingestion pipeline control panel (e.g., enable/disable connectors)  
+  - Settings and user preferences  
+- Use Electron IPC to call MCP daemon endpoints over local HTTP or direct IPC bridge  
+- Package the Electron app with `electron-builder` for cross-platform distribution
 
-### Next.js Configuration
+**Module Structure:**  
+- `/src/electron/` — Electron main process  
+- `/src/ui/` — React components and pages  
+- `/src/ipc/` — IPC handlers and client wrappers
 
-The Next.js app is configured for static export in `electron/app/next.config.ts`:
-- `output: 'export'` - Generates static HTML/CSS/JS files
-- `trailingSlash: true` - Ensures file:// protocol compatibility
-- `images: { unoptimized: true }` - Disables image optimization for static export
-- `assetPrefix: './'` - Uses relative paths for assets
+### 2. MCP Daemon (Python Backend API Server)
 
-This configuration is critical for Electron compatibility. Do not change these settings without understanding the implications for the desktop app.
+**Purpose:**  
+Core backend service exposing local API endpoints for LLM queries, ingestion control, ACL enforcement, and audit logging.
 
-### Backend (Planned)
+**Technology:**  
+- FastAPI for high-performance async API  
+- Uvicorn as ASGI server  
+- Pydantic for data validation and ACL models  
+- Loguru for structured logging
 
-The `electron/backend/` directory is reserved for a background service that will run independently, controlled via macOS menu bar icon. Planned features:
-- Connection fetching
-- Ingestion agent
-- Retrieval agent
-- Local MCP bridge
+**Implementation Instructions:**  
+- Create FastAPI app with routes for:  
+  - Semantic search & retrieval  
+  - Ingestion job management (start/stop connectors)  
+  - LLM query proxying and orchestration  
+  - Audit log retrieval and ACL enforcement  
+- Implement ACL middleware using Pydantic models and dependency injection  
+- Integrate logging with Loguru, capturing request and audit events  
+- Package as a standalone Python service with dependency management (Poetry or pipenv)
+
+**Module Structure:**  
+- `/mcp/api.py` — FastAPI app and route definitions  
+- `/mcp/auth.py` — ACL and authentication models  
+- `/mcp/logging.py` — Audit and structured logging setup  
+- `/mcp/llm_client.py` — Wrappers for GPT, Claude, local LLMs  
+- `/mcp/config.py` — Configuration and environment management
+
+### 3. Ingestion Layer
+
+**Purpose:**  
+Connectors and pipelines to ingest data from multiple sources, generate embeddings, and store data in vector DB.
+
+**Technology:**  
+- Python connectors for Gmail, Google Drive, Slack, iMessage, Notion, etc.  
+- Sentence-Transformers for embedding generation  
+- Chroma as the primary vector database (Python SDK)  
+- Asyncio for concurrent ingestion tasks
+
+**Implementation Instructions:**  
+- Build modular connector classes for each data source with unified ingestion interface  
+- Implement embedding generation pipeline using sentence-transformers  
+- Store embeddings and metadata in Chroma vector DB  
+- Design ingestion scheduler and job manager to run ingestion tasks periodically or on-demand  
+- Provide error handling, retry logic, and ingestion status reporting
+
+**Module Structure:**  
+- `/ingestion/connectors/` — Source-specific connector modules  
+- `/ingestion/embedding.py` — Embedding generation utilities  
+- `/ingestion/storage.py` — Chroma vector DB interface  
+- `/ingestion/scheduler.py` — Task scheduling and job management
+
+### 4. Retrieval Layer
+
+**Purpose:**  
+Query vector DB and optionally graph DB to retrieve relevant context for LLM queries.
+
+**Technology:**  
+- Chroma for vector search  
+- Optional lightweight graph storage with networkx (in-memory prototype)  
+- Python wrappers to integrate retrieval results with LLM clients
+
+**Implementation Instructions:**  
+- Implement retrieval API to query Chroma with semantic similarity search  
+- Aggregate results with metadata for context construction  
+- If graph DB is enabled, augment retrieval with graph traversal results  
+- Integrate retrieval layer with MCP daemon query endpoints  
+- Optimize retrieval latency and caching for common queries
+
+**Module Structure:**  
+- `/retrieval/vector_search.py` — Chroma query interface  
+- `/retrieval/graph_search.py` — Networkx graph utilities (optional)  
+- `/retrieval/context_builder.py` — Context aggregation and formatting
+
+## Package Choices Summary
+
+| Subsystem      | Packages / Libraries                                   |
+|----------------|------------------------------------------------------|
+| Frontend       | Electron, React, TypeScript, electron-builder        |
+| Backend API    | FastAPI, Uvicorn, Pydantic, Loguru                    |
+| Embedding      | sentence-transformers                                 |
+| Vector DB      | Chroma Python SDK                                    |
+| Graph DB       | networkx (prototype), py2neo / neo4j-driver (future) |
+| Connectors     | google-api-python-client, slack-sdk, imessage-reader, notion-client, PyPDF2, Pillow, OpenCV |
+| Utilities      | asyncio, watchdog (filesystem monitoring)             |
 
 ## Development Commands
 
