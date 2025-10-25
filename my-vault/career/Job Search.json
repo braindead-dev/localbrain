@@ -1,0 +1,20 @@
+{
+  "1": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-15T14:30:00Z",
+    "url": null,
+    "quote": "Thank you for your application to Google. Your application has been received and is under review."
+  },
+  "2": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-20T09:15:00Z",
+    "url": null,
+    "quote": "We'd like to invite you to a phone screen for our Production Engineering Intern role."
+  },
+  "3": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-18T16:45:00Z",
+    "url": null,
+    "quote": "Your application for the AI/ML Internship position has been submitted successfully."
+  }
+}

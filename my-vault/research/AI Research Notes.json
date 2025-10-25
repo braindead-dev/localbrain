@@ -1,0 +1,20 @@
+{
+  "1": {
+    "platform": "ArXiv",
+    "timestamp": "2017-06-12T00:00:00Z",
+    "url": "https://arxiv.org/abs/1706.03762",
+    "quote": null
+  },
+  "2": {
+    "platform": "ArXiv",
+    "timestamp": "2021-10-16T00:00:00Z",
+    "url": "https://arxiv.org/abs/2106.09685",
+    "quote": null
+  },
+  "3": {
+    "platform": "UCR AI Lab",
+    "timestamp": "2024-01-15T00:00:00Z",
+    "url": null,
+    "quote": null
+  }
+}
