@@ -1,0 +1,126 @@
+{
+  "clients": [
+    {
+      "client_id": "local_electron",
+      "api_key": "lb_dev_electron_local_only",
+      "permissions": [
+        {
+          "tool": "search",
+          "allowed": true,
+          "scope_restrictions": {
+            "max_results": 100
+          }
+        },
+        {
+          "tool": "search_agentic",
+          "allowed": true,
+          "scope_restrictions": {
+            "max_results": 100
+          }
+        },
+        {
+          "tool": "open",
+          "allowed": true,
+          "scope_restrictions": {
+            "allowed_directories": [
+              "career/",
+              "personal/",
+              "projects/",
+              "research/"
+            ]
+          }
+        },
+        {
+          "tool": "summarize",
+          "allowed": true,
+          "scope_restrictions": {
+            "allowed_file_types": ["md", "txt", "json"]
+          }
+        },
+        {
+          "tool": "list",
+          "allowed": true
+        }
+      ],
+      "rate_limit": 1000,
+      "enabled": true
+    },
+    {
+      "client_id": "external_app_readonly",
+      "api_key": "lb_readonly_example_key_change_me",
+      "permissions": [
+        {
+          "tool": "search",
+          "allowed": true,
+          "scope_restrictions": {
+            "max_results": 20
+          }
+        },
+        {
+          "tool": "search_agentic",
+          "allowed": true,
+          "scope_restrictions": {
+            "max_results": 20
+          }
+        },
+        {
+          "tool": "open",
+          "allowed": false
+        },
+        {
+          "tool": "summarize",
+          "allowed": true
+        },
+        {
+          "tool": "list",
+          "allowed": false
+        }
+      ],
+      "rate_limit": 100,
+      "enabled": true
+    },
+    {
+      "client_id": "automation_bot",
+      "api_key": "lb_bot_example_key_change_me",
+      "permissions": [
+        {
+          "tool": "search",
+          "allowed": true,
+          "scope_restrictions": {
+            "max_results": 50,
+            "allowed_directories": ["projects/"]
+          }
+        },
+        {
+          "tool": "search_agentic",
+          "allowed": true,
+          "scope_restrictions": {
+            "max_results": 50,
+            "allowed_directories": ["projects/"]
+          }
+        },
+        {
+          "tool": "open",
+          "allowed": true,
+          "scope_restrictions": {
+            "allowed_directories": ["projects/"],
+            "allowed_file_types": ["md", "txt"]
+          }
+        },
+        {
+          "tool": "summarize",
+          "allowed": true
+        },
+        {
+          "tool": "list",
+          "allowed": true,
+          "scope_restrictions": {
+            "allowed_directories": ["projects/"]
+          }
+        }
+      ],
+      "rate_limit": 500,
+      "enabled": true
+    }
+  ]
+}
