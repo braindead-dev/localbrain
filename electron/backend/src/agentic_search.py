@@ -394,8 +394,17 @@ Vault: {self.vault_path}"""
             # Fallback to simple file walk if ripgrep not available
             pass
         
-        # Fallback: manual search with line numbers
+        # Fallback: manual search with line numbers using regex
+        import re
+        
         results = []
+        # Compile pattern as regex (case-insensitive)
+        try:
+            regex = re.compile(pattern, re.IGNORECASE)
+        except re.error:
+            # If pattern isn't valid regex, treat as literal string
+            regex = re.compile(re.escape(pattern), re.IGNORECASE)
+        
         for md_file in self.vault_path.rglob("*.md"):
             if md_file.name.startswith('.'):
                 continue
@@ -405,9 +414,9 @@ Vault: {self.vault_path}"""
                 lines = content.split('\n')
                 rel_path = md_file.relative_to(self.vault_path)
                 
-                # Find all matching lines with line numbers
+                # Find all matching lines with line numbers using regex
                 for line_num, line in enumerate(lines, 1):
-                    if pattern.lower() in line.lower():
+                    if regex.search(line):
                         results.append({
                             "file": str(rel_path),
                             "line_number": line_num,
