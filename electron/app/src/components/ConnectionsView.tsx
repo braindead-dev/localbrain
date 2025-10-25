@@ -121,6 +121,14 @@ const initialIntegrations: Integration[] = [
     category: "communication",
   },
   {
+    id: "discord",
+    name: "Discord",
+    description: "Sync and search your Discord DMs",
+    icon: <MessageSquare className="h-6 w-6" />,
+    connected: false,
+    category: "communication",
+  },
+  {
     id: "gmail",
     name: "Gmail",
     description: "Index and search email content",
@@ -196,9 +204,10 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
   const [isSyncing, setIsSyncing] = useState(false);
   const highlightedRef = useRef<HTMLDivElement>(null);
 
-  // Check Gmail status on mount
+  // Check Gmail and Discord status on mount
   useEffect(() => {
     checkGmailStatus();
+    checkDiscordStatus();
   }, []);
 
   // Notify parent of integration changes
@@ -216,6 +225,17 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
       ));
     } catch (error) {
       console.error('Error checking Gmail status:', error);
+    }
+  };
+
+  const checkDiscordStatus = async () => {
+    try {
+      const status = await api.discordStatus();
+      setIntegrations(prev => prev.map(int => 
+        int.id === 'discord' ? { ...int, connected: status.connected } : int
+      ));
+    } catch (error) {
+      console.error('Error checking Discord status:', error);
     }
   };
 
@@ -270,7 +290,14 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
         toast.error(error.message || 'Failed to start Gmail authentication');
         setIsConnecting(false);
       }
-    } else {
+    }
+    // Special handling for Discord - show token input
+    else if (integration.id === 'discord') {
+      setSelectedIntegration(integration);
+      setApiKey("");
+      setConnectDialogOpen(true);
+    }
+    else {
       // For other integrations, show API key dialog
       setSelectedIntegration(integration);
       setApiKey("");
@@ -278,19 +305,45 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
     }
   };
 
-  const handleConfirmConnect = () => {
+  const handleConfirmConnect = async () => {
     if (!selectedIntegration) return;
 
-    // Update the integration status
-    setIntegrations(integrations.map(int => 
-      int.id === selectedIntegration.id 
-        ? { ...int, connected: true }
-        : int
-    ));
+    // Special handling for Discord - save token via API
+    if (selectedIntegration.id === 'discord') {
+      try {
+        setIsConnecting(true);
+        await api.discordSaveToken(apiKey);
+        
+        // Check status to get username
+        const status = await api.discordStatus();
+        
+        setIntegrations(integrations.map(int => 
+          int.id === 'discord' 
+            ? { ...int, connected: true }
+            : int
+        ));
 
-    toast.success(`Successfully connected to ${selectedIntegration.name}!`);
-    setConnectDialogOpen(false);
-    setApiKey("");
+        toast.success(`Successfully connected to Discord as ${status.username}!`);
+        setConnectDialogOpen(false);
+        setApiKey("");
+      } catch (error: any) {
+        console.error('Discord connection error:', error);
+        toast.error(error.message || 'Failed to connect Discord');
+      } finally {
+        setIsConnecting(false);
+      }
+    } else {
+      // Update the integration status for other integrations
+      setIntegrations(integrations.map(int => 
+        int.id === selectedIntegration.id 
+          ? { ...int, connected: true }
+          : int
+      ));
+
+      toast.success(`Successfully connected to ${selectedIntegration.name}!`);
+      setConnectDialogOpen(false);
+      setApiKey("");
+    }
   };
 
   const handleDisconnect = async (integration: Integration) => {
@@ -308,7 +361,23 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
         console.error('Gmail disconnect error:', error);
         toast.error(error.message || 'Failed to disconnect Gmail');
       }
-    } else {
+    }
+    // Special handling for Discord
+    else if (integration.id === 'discord') {
+      try {
+        await api.discordRevoke();
+        setIntegrations(integrations.map(int => 
+          int.id === integration.id 
+            ? { ...int, connected: false }
+            : int
+        ));
+        toast.success(`Disconnected from ${integration.name}`);
+      } catch (error: any) {
+        console.error('Discord disconnect error:', error);
+        toast.error(error.message || 'Failed to disconnect Discord');
+      }
+    }
+    else {
       setIntegrations(integrations.map(int => 
         int.id === integration.id 
           ? { ...int, connected: false }
@@ -338,7 +407,29 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
       } finally {
         setIsSyncing(false);
       }
-    } else {
+    }
+    // Special handling for Discord - trigger sync
+    else if (integration.id === 'discord') {
+      try {
+        setIsSyncing(true);
+        toast.info('Syncing and ingesting Discord DMs from the last 24 hours...');
+        
+        const result = await api.discordSync(100, 24, true); // max 100 messages, last 24 hours, ingest=true
+        
+        if (result.success) {
+          const count = result.messages_fetched || result.count || 0;
+          toast.success(`Synced ${count} messages. Ingested: ${result.ingested_count || 0}, Failed: ${result.failed_count || 0}`);
+        } else {
+          toast.error(result.error || 'Sync failed');
+        }
+      } catch (error: any) {
+        console.error('Discord sync error:', error);
+        toast.error(error.message || 'Failed to sync Discord');
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+    else {
       setSelectedIntegration(integration);
       setApiKey("");
       setConfigureDialogOpen(true);
@@ -456,10 +547,10 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
                             size="sm"
                             className="flex-1 shadow-sm hover:shadow-md transition-shadow"
                             onClick={() => handleConfigure(integration)}
-                            disabled={isSyncing && integration.id === 'gmail'}
+                            disabled={isSyncing && (integration.id === 'gmail' || integration.id === 'discord')}
                           >
                             <Settings className="h-4 w-4 mr-2" />
-                            {integration.id === 'gmail' ? (isSyncing ? 'Syncing...' : 'Sync') : 'Configure'}
+                            {(integration.id === 'gmail' || integration.id === 'discord') ? (isSyncing ? 'Syncing...' : 'Sync') : 'Configure'}
                           </Button>
                           <Button
                             variant="outline"
@@ -475,9 +566,9 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
                           size="sm"
                           className="flex-1 shadow-sm hover:shadow-md transition-shadow"
                           onClick={() => handleConnect(integration)}
-                          disabled={isConnecting && integration.id === 'gmail'}
+                          disabled={isConnecting && (integration.id === 'gmail' || integration.id === 'discord')}
                         >
-                          {isConnecting && integration.id === 'gmail' ? 'Connecting...' : 'Connect'}
+                          {isConnecting && (integration.id === 'gmail' || integration.id === 'discord') ? 'Connecting...' : 'Connect'}
                         </Button>
                       )}
                     </div>
@@ -500,23 +591,72 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
           <DialogHeader>
             <DialogTitle>Connect to {selectedIntegration?.name}</DialogTitle>
             <DialogDescription>
-              Enter your API key or credentials to connect to {selectedIntegration?.name}
+              {selectedIntegration?.id === 'discord' 
+                ? 'Enter your Discord user token to sync your personal DMs'
+                : `Enter your API key or credentials to connect to ${selectedIntegration?.name}`
+              }
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="apiKey">API Key / Access Token</Label>
+              <Label htmlFor="apiKey">
+                {selectedIntegration?.id === 'discord' ? 'Discord User Token' : 'API Key / Access Token'}
+              </Label>
               <Input
                 id="apiKey"
                 type="password"
-                placeholder="Enter your API key..."
+                placeholder={selectedIntegration?.id === 'discord' ? 'Paste your Discord token...' : 'Enter your API key...'}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 className="shadow-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Your API key will be stored locally and never sent to external servers.
-              </p>
+              {selectedIntegration?.id === 'discord' ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground font-medium">How to get your Discord token (choose easiest method):</p>
+                  
+                  <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded p-3">
+                    <p className="text-xs text-green-800 dark:text-green-200 font-bold mb-2">✅ EASIEST: Network Tab Method</p>
+                    <ol className="text-xs text-green-700 dark:text-green-300 space-y-1.5 ml-4 list-decimal">
+                      <li>Open discord.com in browser and login</li>
+                      <li>Press <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">F12</kbd> → <strong>Network</strong> tab</li>
+                      <li>Reload page (<kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">Ctrl+R</kbd>)</li>
+                      <li>In filter, type: <code className="bg-white dark:bg-gray-800 px-1 rounded">library</code></li>
+                      <li>Click the <strong>library</strong> request</li>
+                      <li>Click <strong>Headers</strong> tab → scroll to <strong>Request Headers</strong></li>
+                      <li>Find <code className="bg-white dark:bg-gray-800 px-1 rounded">authorization:</code> - copy the long string after it</li>
+                    </ol>
+                  </div>
+
+                  <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded p-3">
+                    <p className="text-xs text-blue-800 dark:text-blue-200 font-bold mb-2">🔧 Alternative: Application/Storage Tab</p>
+                    <ol className="text-xs text-blue-700 dark:text-blue-300 space-y-1.5 ml-4 list-decimal">
+                      <li>Open discord.com and press <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">F12</kbd></li>
+                      <li>Go to <strong>Application</strong> tab (Chrome) or <strong>Storage</strong> (Firefox)</li>
+                      <li>Expand <strong>Session Storage</strong> → click <strong>https://discord.com</strong></li>
+                      <li>Look for a key containing "token" - copy its value (remove quotes)</li>
+                    </ol>
+                  </div>
+
+                  <div className="bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded p-3">
+                    <p className="text-xs text-purple-800 dark:text-purple-200 font-bold mb-2">🖥️ Desktop App Method</p>
+                    <ol className="text-xs text-purple-700 dark:text-purple-300 space-y-1.5 ml-4 list-decimal">
+                      <li>Open Discord Desktop App</li>
+                      <li>Press <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">Ctrl+Shift+I</kbd> (Windows) or <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">Cmd+Option+I</kbd> (Mac)</li>
+                      <li>Go to <strong>Console</strong> tab</li>
+                      <li>Type: <code className="bg-white dark:bg-gray-800 px-1 rounded block mt-1">{`Object.values(window.webpackChunkdiscord_app.push([[],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}])).find(x=>x?.exports?.default?.getToken).exports.default.getToken()`}</code></li>
+                    </ol>
+                  </div>
+
+                  <p className="text-xs text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded p-2">
+                    ⚠️ WARNING: Self-bots violate Discord TOS. This is for authorized personal use only.
+                  </p>
+                  <p className="text-xs text-muted-foreground">Token stored locally only - never sent to external servers.</p>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Your API key will be stored locally and never sent to external servers.
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -530,9 +670,9 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
             <Button 
               onClick={handleConfirmConnect}
               className="shadow-sm hover:shadow-md transition-shadow"
-              disabled={!apiKey.trim()}
+              disabled={!apiKey.trim() || isConnecting}
             >
-              Connect
+              {isConnecting ? 'Connecting...' : 'Connect'}
             </Button>
           </DialogFooter>
         </DialogContent>

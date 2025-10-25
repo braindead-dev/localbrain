@@ -773,6 +773,189 @@ async def gmail_recent_emails(days: int = 7, max_results: int = 50):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+# ============================================================================
+# Discord Connector Endpoints
+# ============================================================================
+
+@app.post("/connectors/discord/auth/save-token")
+async def discord_save_token(request: Request):
+    """Save Discord bot token."""
+    try:
+        from connectors.discord.discord_connector import DiscordConnector
+        
+        data = await request.json()
+        bot_token = data.get('token', '').strip()
+        
+        if not bot_token:
+            return JSONResponse(
+                status_code=400,    
+                content={"error": "Bot token is required"}
+            )
+        
+        connector = DiscordConnector()
+        result = connector.save_token(bot_token)
+        
+        if result['success']:
+            return {"success": True, "message": "Discord bot connected successfully"}
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={"error": result.get('error', 'Failed to save token')}
+            )
+    except Exception as e:
+        logger.exception("Error saving Discord token")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/connectors/discord/auth/revoke")
+async def discord_auth_revoke():
+    """Revoke Discord access."""
+    try:
+        from connectors.discord.discord_connector import DiscordConnector
+        connector = DiscordConnector()
+        connector.revoke_access()
+        return {"success": True, "message": "Discord disconnected"}
+    except Exception as e:
+        logger.exception("Error revoking Discord")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/connectors/discord/status")
+async def discord_status():
+    """Get Discord connection status."""
+    try:
+        from connectors.discord.discord_connector import DiscordConnector
+        connector = DiscordConnector()
+        status = await connector.get_status()
+        return status
+    except Exception as e:
+        logger.exception("Error getting Discord status")
+        return {"connected": False, "error": str(e)}
+
+
+@app.post("/connectors/discord/sync")
+async def discord_sync(max_messages: int = 100, hours: int = 24, ingest: bool = False):
+    """Trigger Discord DM sync from last N hours."""
+    try:
+        from connectors.discord.discord_connector import DiscordConnector
+        
+        connector = DiscordConnector(vault_path=VAULT_PATH)
+        
+        if not connector.is_authenticated():
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Not authenticated. Please save bot token first."}
+            )
+        
+        result = await connector.sync(max_messages=max_messages, hours=hours)
+        
+        # Ingest each message as a separate document
+        if ingest and result['success'] and result['messages']:
+            try:
+                logger.info(f"Starting ingestion of {len(result['messages'])} Discord messages...")
+                pipeline = AgenticIngestionPipeline(VAULT_PATH)
+                
+                ingested_messages = []
+                failed_messages = []
+                
+                for i, msg_data in enumerate(result['messages'], 1):
+                    try:
+                        logger.info(f"Ingesting message {i}/{len(result['messages'])}...")
+                        
+                        # Ingest this message as a separate document
+                        pipeline.ingest(
+                            context=msg_data['text'],
+                            source_metadata=msg_data['metadata']
+                        )
+                        
+                        ingested_messages.append(msg_data['metadata'].get('quote', f'Message {i}'))
+                        logger.info(f"✓ Successfully ingested: {msg_data['metadata'].get('quote', 'No content')}")
+                    except Exception as e:
+                        failed_messages.append({
+                            'content': msg_data['metadata'].get('quote', 'Unknown'),
+                            'error': str(e)
+                        })
+                        logger.error(f"✗ Failed to ingest message {i}: {e}")
+                        continue
+                
+                result['ingested_count'] = len(ingested_messages)
+                result['failed_count'] = len(failed_messages)
+                result['ingested_messages'] = ingested_messages
+                if failed_messages:
+                    result['failed_messages'] = failed_messages
+                    
+                logger.info(f"✅ Ingestion complete: {len(ingested_messages)} succeeded, {len(failed_messages)} failed")
+            except Exception as e:
+                logger.exception("Error in ingestion pipeline")
+                result['ingestion_error'] = str(e)
+                result['ingested_count'] = 0
+        else:
+            result['ingested_count'] = 0
+            result['ingestion_skipped'] = True
+        
+        # Simplify response - only return text content for display (not when ingesting)
+        if not ingest:
+            result['messages'] = [msg['text'] for msg in result['messages']]
+        else:
+            # When ingesting, show which messages were processed
+            result['messages'] = [msg['metadata'].get('quote', 'No content') for msg in result['messages']]
+        
+        return result
+    except Exception as e:
+        logger.exception("Error syncing Discord")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/connectors/discord/dms/recent")
+async def discord_recent_dms(hours: int = None, days: int = None, max_messages: int = 50):
+    """
+    Fetch recent DMs without syncing.
+    
+    Query params:
+        hours: Fetch DMs from last N hours (takes priority over days)
+        days: Fetch DMs from last N days (default: 7)
+        max_messages: Max messages per DM channel (default: 50)
+    """
+    try:
+        from connectors.discord.discord_connector import DiscordConnector
+        
+        connector = DiscordConnector()
+        
+        if not connector.is_authenticated():
+            return JSONResponse(
+                status_code=401,
+                content={"error": "Not authenticated. Please save bot token first."}
+            )
+        
+        # Determine time window - hours takes priority
+        if hours is not None:
+            messages = await connector.fetch_recent_dms(days=0, max_messages=max_messages)
+            # Filter by hours in connector
+            from datetime import datetime, timedelta, timezone
+            time_ago = datetime.now(timezone.utc) - timedelta(hours=hours)
+            # Re-fetch with hours
+            result = await connector.sync(max_messages=max_messages, hours=hours)
+            messages = result.get('messages', [])
+        else:
+            # Use days (default 7)
+            if days is None:
+                days = 7
+            messages = await connector.fetch_recent_dms(days=days, max_messages=max_messages)
+        
+        # Simplify response - only return text content
+        message_texts = [msg['text'] for msg in messages]
+        
+        return {
+            "success": True,
+            "count": len(message_texts),
+            "messages": message_texts,
+            "time_window": f"{hours} hours" if hours else f"{days if days else 7} days"
+        }
+    except Exception as e:
+        logger.exception("Error fetching recent DMs")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 def main():
     """Start the daemon service."""
     logger.info("="*60)
@@ -795,6 +978,13 @@ def main():
     logger.info("  GET  /connectors/gmail/status        - Connection status")
     logger.info("  POST /connectors/gmail/sync          - Sync & ingest emails")
     logger.info("  GET  /connectors/gmail/emails/recent - Fetch recent emails")
+    logger.info("")
+    logger.info("Discord Connector:")
+    logger.info("  POST /connectors/discord/auth/save-token - Save bot token")
+    logger.info("  POST /connectors/discord/auth/revoke     - Disconnect Discord")
+    logger.info("  GET  /connectors/discord/status          - Connection status")
+    logger.info("  POST /connectors/discord/sync            - Sync & ingest DMs")
+    logger.info("  GET  /connectors/discord/dms/recent      - Fetch recent DMs")
     logger.info("")
     logger.info("Service running. Press Ctrl+C to stop.")
     logger.info("="*60)

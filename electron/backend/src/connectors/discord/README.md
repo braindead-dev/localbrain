@@ -1,29 +1,34 @@
 # Discord Connector
 
-Processes Discord messages and conversations for ingestion into LocalBrain. Handles text channels, direct messages, and server-specific content while maintaining conversation context.
+Processes Discord Direct Messages (DMs) for ingestion into LocalBrain. This connector focuses exclusively on private conversations, not server messages.
+
+## ⚠️ Important: DMs Only
+
+This connector **only syncs Direct Messages (DMs)**. Server/guild messages are not supported. This is by design to focus on personal conversations and maintain privacy.
 
 ## Core Functionality
 
-- **Message Sync**: Fetch messages from Discord channels and DMs
-- **Conversation Threading**: Maintain message context and replies
-- **Channel Organization**: Preserve server and channel structure
-- **User Attribution**: Link messages to user profiles and roles
-- **Media Processing**: Handle images, files, and embedded content
-- **Server Management**: Support multiple Discord servers
+- **DM Sync**: Fetch direct messages from all DM channels
+- **Message History**: Retrieve messages with time-based filtering
+- **User Attribution**: Track sender and recipient information
+- **Media Links**: Capture attachment and embed URLs
+- **Conversation Context**: Maintain DM thread context
 
 ## Authentication & Setup
 
 **Bot Token Integration:**
-- Discord bot creation and configuration
-- Server-specific permissions and access
-- Rate limiting and API quota management
-- Secure token storage and rotation
+- Discord bot creation in Developer Portal
+- Simple token-based authentication (no OAuth needed)
+- Message Content Intent required (privileged intent)
+- Secure local token storage
 
-**Server Setup:**
-- Bot invitation to Discord servers
-- Channel access permissions
-- Role-based content filtering
-- Webhook and integration setup
+**Bot Setup:**
+- Bot creation and configuration
+- Authorization to access your account
+- Read-only permissions (cannot send messages)
+- DM-specific access permissions
+
+See [SETUP.md](./SETUP.md) for detailed setup instructions.
 
 ## Data Processing
 
@@ -48,51 +53,58 @@ Processes Discord messages and conversations for ingestion into LocalBrain. Hand
 - Media metadata and descriptions
 - File type validation and size limits
 
-## Channel & Server Management
+## DM Management
 
-**Channel Types:**
-- Text channels (public and private)
-- Voice channel logs (if available)
-- Direct messages and group chats
-- Category organization and hierarchy
-- Channel permissions and restrictions
+**Supported:**
+- ✅ One-on-one direct messages
+- ✅ Message history (after bot authorization)
+- ✅ Text content
+- ✅ Attachment URLs
+- ✅ Embed content
+- ✅ User information
 
-**Server Features:**
-- Server-specific configuration
-- Role-based content access
-- Channel filtering and exclusions
-- Member list and relationship mapping
-- Server events and announcements
+**Not Supported:**
+- ❌ Server/guild messages
+- ❌ Group DMs (not yet implemented)
+- ❌ Voice channel messages
+- ❌ Messages before bot authorization
+- ❌ Server channels of any kind
 
 ## Privacy & Security
 
 **Content Filtering:**
-- Automatic removal of sensitive information
-- NSFW content detection and filtering
-- Personal information redaction
-- Bot message filtering (exclude bot spam)
+- Time-based filtering (sync last N hours/days)
+- Empty message skipping
+- Optional bot message filtering
+- Attachment URL preservation
 
 **Access Controls:**
-- Server selection (which servers to sync)
-- Channel restrictions (exclude certain channels)
-- User permissions (respect Discord roles)
+- DM-only access (no servers)
+- Read-only permissions
 - Date range limitations
-- Message type filtering
+- Message count limits per DM
+- Local token storage only
 
 ## Sync Strategy
 
-**Incremental Updates:**
-- Real-time webhook integration (preferred)
-- Periodic API polling for missed messages
-- Message ID tracking for delta sync
-- Error recovery and retry logic
+**Current Implementation:**
+- Manual sync via API endpoint
+- Time-based filtering (last N hours)
+- Message limit per DM channel
+- Async message fetching
+- Discord.py handles rate limiting
 
 **Performance Features:**
-- Batch message processing
-- Parallel server sync
-- Message caching and deduplication
-- Rate limiting compliance
-- Connection pooling and optimization
+- Async message processing
+- Parallel DM channel fetching
+- Message deduplication via message IDs
+- Automatic rate limit compliance
+- Error handling and retry logic
+
+**Planned:**
+- Auto-sync background task
+- Real-time webhook integration
+- Incremental delta sync
 
 ## Conversation Context
 
@@ -125,10 +137,10 @@ Processes Discord messages and conversations for ingestion into LocalBrain. Hand
 - Enable/disable Discord processing
 
 **Bridge Service:**
-- Respect server access permissions
-- Include Discord results in search responses
+- Include Discord DM results in search responses
 - Audit Discord message access
-- Channel-based content filtering
+- Privacy-focused DM handling
+- Source attribution in search results
 
 ## Advanced Features
 
@@ -148,20 +160,58 @@ Processes Discord messages and conversations for ingestion into LocalBrain. Hand
 
 ## Configuration Options
 
-**Server Settings:**
-- Server selection and priority
-- Channel inclusion/exclusion lists
-- Sync frequency and timing
-- Message history depth
+**Sync Settings:**
+- Time window (hours or days to look back)
+- Max messages per DM channel
+- Auto-ingest toggle
+- Sync frequency
 
 **Content Filters:**
-- Message type filtering (text only, media, etc.)
-- User role restrictions
+- Bot message filtering (optional)
 - Date range limitations
-- Content quality thresholds
+- Message count limits
+- Empty message skipping
 
 **Privacy Settings:**
-- Personal information detection
-- Sensitive content filtering
-- External sharing permissions
-- Audit logging preferences
+- Local-only token storage
+- No cloud sync
+- Read-only bot permissions
+- Secure credential management
+
+## Status
+
+**Implemented:** ✅
+- Bot token authentication
+- DM message fetching
+- Time-based filtering
+- Metadata extraction
+- Text and attachment handling
+- API endpoints
+- Status checking
+
+**Planned:** 🚧
+- Auto-sync background task
+- Group DM support
+- Real-time webhooks
+- Advanced filtering
+- Media download
+
+## Quick Start
+
+```bash
+# Install dependencies
+pip install discord.py>=2.3.2
+
+# Start daemon
+python src/daemon.py
+
+# Save bot token
+curl -X POST http://localhost:8765/connectors/discord/auth/save-token \
+  -H "Content-Type: application/json" \
+  -d '{"token": "YOUR_BOT_TOKEN"}'
+
+# Sync DMs
+curl -X POST "http://localhost:8765/connectors/discord/sync?hours=24&ingest=true"
+```
+
+See [SETUP.md](./SETUP.md) for detailed instructions.
