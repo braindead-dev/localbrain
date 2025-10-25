@@ -112,22 +112,18 @@ Received positive feedback from recruiters at NVIDIA and Google during networkin
   "1": {
     "platform": "Gmail",
     "timestamp": "2024-01-15T10:30:00Z",
-    "date_range": "Jan-Mar 2024",
-    "description": "Gmail analysis showing automated rejection emails from 180+ companies",
     "url": null,
     "quote": null
   },
   "2": {
     "platform": "LinkedIn",
     "timestamp": "2024-03-01T14:20:00Z",
-    "description": "LinkedIn job application history",
     "url": "https://linkedin.com/jobs/applications",
     "quote": null
   },
   "3": {
     "platform": "Manual",
     "timestamp": "2024-02-15T16:00:00Z",
-    "description": "Career fair notes",
     "url": null,
     "quote": "Really impressed with your React experience! We'd love to see an application."
   }
@@ -138,10 +134,9 @@ Received positive feedback from recruiters at NVIDIA and Google during networkin
 - **Inline references**: Use `[1]` syntax for factual claims
 - **Separate JSON file**: Each `file.md` has a `file.json` with citation metadata
 - **Not every sentence**: Only factual claims that need verification
-- **JSON schema**: 
+- **Minimal JSON schema** (4 fields only): 
   - `platform`: Source platform (Gmail, Discord, Manual, etc.)
   - `timestamp`: ISO 8601 timestamp
-  - `description`: What this citation refers to
   - `url`: Link if applicable (can be null)
   - `quote`: Direct quotation if applicable (can be null)
 

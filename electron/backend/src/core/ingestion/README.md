@@ -70,14 +70,12 @@ insights that connect multiple sources [2].
   "1": {
     "platform": "Gmail",
     "timestamp": "2024-03-15T10:30:00Z",
-    "description": "Email thread about project updates",
     "url": null,
     "quote": "The deadline has been moved to April 1st"
   },
   "2": {
     "platform": "Discord",
     "timestamp": "2024-03-20T14:00:00Z",
-    "description": "Team discussion in #engineering channel",
     "url": "https://discord.com/channels/...",
     "quote": null
   }
@@ -87,8 +85,8 @@ insights that connect multiple sources [2].
 **Citation Guidelines:**
 - **Cite factual claims**: Numbers, dates, quotes, specific events
 - **Don't cite everything**: General observations and opinions don't need sources
-- **Format**: `[1]` inline in markdown, full metadata in JSON file
-- **JSON fields**: platform, timestamp, description, url (nullable), quote (nullable)
+- **Format**: `[1]` inline in markdown, metadata in JSON file
+- **JSON fields** (4 only): platform, timestamp, url (nullable), quote (nullable)
 
 **Auto-Initialization:**
 - Files created with purpose summary
@@ -130,7 +128,6 @@ context = "Received offer from Startup X for $120k"
 source_metadata = {
     "platform": "Gmail",
     "timestamp": "2024-03-15T09:00:00Z",
-    "description": "Offer letter from Startup X",
     "url": None,
     "quote": "We're pleased to offer you $120k base salary"
 }
@@ -178,7 +175,7 @@ CITATION RULES:
 - Cite factual claims: numbers, dates, quotes, decisions
 - Don't cite: opinions, observations, general knowledge
 - Format: [n] inline in markdown
-- JSON metadata: platform, timestamp, description, url, quote
+- JSON metadata (4 fields): platform, timestamp, url, quote
 
 WHEN TO CREATE NEW FILES:
 - Topic is distinct from existing files
@@ -211,13 +208,13 @@ Return: {action: "create"|"append", target: "path/filename.md", section: "sectio
 Extract structured information from this context:
 
 1. Key facts and observations (with inline citation markers like [1])
-2. Source metadata (platform, timestamp, description, url, quote)
+2. Source metadata (platform, timestamp, url, quote)
 3. Related topics for linking
 4. Suggested file section (if appending)
 
 Output:
 - Markdown content with [n] citations
-- JSON object with citation metadata
+- JSON object with citation metadata (4 fields only)
 ```
 
 ## Configuration

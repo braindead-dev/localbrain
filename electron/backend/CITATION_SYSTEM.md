@@ -61,28 +61,24 @@ Got an offer from Meta for full-time position with $150k base salary [4].
   "1": {
     "platform": "Gmail",
     "timestamp": "2024-01-15T10:30:00Z",
-    "description": "Gmail analysis showing automated rejection emails from 180+ companies",
     "url": null,
     "quote": null
   },
   "2": {
     "platform": "LinkedIn",
     "timestamp": "2024-03-01T14:20:00Z",
-    "description": "LinkedIn job application history for Jan-Mar 2024",
     "url": "https://linkedin.com/jobs/applications",
     "quote": null
   },
   "3": {
     "platform": "Manual",
     "timestamp": "2024-02-15T16:00:00Z",
-    "description": "Career fair notes from university event",
     "url": null,
     "quote": "Really impressed with your React experience! We'd love to see an application."
   },
   "4": {
     "platform": "Gmail",
     "timestamp": "2024-03-25T09:00:00Z",
-    "description": "Offer letter from Meta",
     "url": null,
     "quote": "We're pleased to offer you a full-time Software Engineer position with a base salary of $150,000."
   }
@@ -93,20 +89,16 @@ Got an offer from Meta for full-time position with $150k base salary [4].
 
 ## JSON Schema
 
-Each citation entry must include:
+Each citation entry must include exactly 4 fields:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `platform` | string | ✅ Yes | Source platform (Gmail, Discord, Manual, LinkedIn, etc.) |
 | `timestamp` | string | ✅ Yes | ISO 8601 timestamp (e.g., "2024-03-15T10:30:00Z") |
-| `description` | string | ✅ Yes | Brief description of what this citation references |
 | `url` | string or null | ✅ Yes | Link to source if available, otherwise null |
 | `quote` | string or null | ✅ Yes | Direct quotation if applicable, otherwise null |
 
-**Additional Optional Fields:**
-- `date_range`: For citations covering a time period (e.g., "Jan-Mar 2024")
-- `author`: For citations with specific authors
-- `context`: Additional context about the source
+**No additional fields** - keep it simple and standard across all platforms.
 
 ---
 
@@ -179,9 +171,8 @@ with open("job-search.json", "r") as f:
 citations[next_num] = {
     "platform": "Gmail",
     "timestamp": "2024-03-25T09:00:00Z",
-    "description": "Offer letter from Meta",
     "url": None,
-    "quote": "Base salary of $150,000"
+    "quote": "We're pleased to offer you a base salary of $150,000"
 }
 
 with open("job-search.json", "w") as f:
@@ -237,8 +228,7 @@ When ingesting content, the LLM will:
 context = {
     "text": "Email from recruiter@meta.com: We're offering $150k base salary",
     "platform": "Gmail",
-    "timestamp": "2024-03-25T09:00:00Z",
-    "sender": "recruiter@meta.com"
+    "timestamp": "2024-03-25T09:00:00Z"
 }
 
 # LLM generates
@@ -247,7 +237,6 @@ citation = {
     "1": {
         "platform": "Gmail",
         "timestamp": "2024-03-25T09:00:00Z",
-        "description": "Offer letter from Meta recruiter",
         "url": None,
         "quote": "We're offering $150k base salary"
     }
@@ -306,9 +295,8 @@ Old format [1].
   "1": {
     "platform": "Manual",
     "timestamp": "2024-10-25T00:00:00Z",
-    "description": "Source info here",
     "url": null,
-    "quote": null
+    "quote": "Source info here"
   }
 }
 ```
@@ -318,11 +306,11 @@ Old format [1].
 ## Best Practices
 
 1. **Keep citation numbers sequential** - Always use the next available number
-2. **Be descriptive in descriptions** - Help future you understand the context
-3. **Include quotes when relevant** - Preserve the exact wording
-4. **Always use ISO 8601 timestamps** - Ensures consistency
-5. **Null is okay** - Don't force URLs or quotes if they don't exist
-6. **One citation per fact** - Don't overload single citations with multiple facts
+2. **Include quotes when relevant** - Preserve the exact wording from the source
+3. **Always use ISO 8601 timestamps** - Ensures consistency
+4. **Null is okay** - Don't force URLs or quotes if they don't exist
+5. **One citation per fact** - Don't overload single citations with multiple facts
+6. **Platform names are standardized** - Use consistent platform names (Gmail, Discord, Manual, LinkedIn, etc.)
 
 ---
 
