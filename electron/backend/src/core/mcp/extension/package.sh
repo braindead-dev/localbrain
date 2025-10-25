@@ -65,7 +65,10 @@ This is the stdio server component for the LocalBrain Claude Desktop extension.
 ## Requirements
 
 - Python 3.10+
-- LocalBrain FastAPI server running on http://127.0.0.1:8765
+- LocalBrain Electron app running (auto-starts both services):
+  - Daemon on http://127.0.0.1:8765
+  - MCP FastAPI server on http://127.0.0.1:8766
+- Vault path configured in ~/.localbrain/config.json
 
 ## Installation
 
@@ -80,7 +83,8 @@ pip install -r requirements.txt
 ## Usage
 
 This server is launched automatically by Claude Desktop. It acts as a bridge between
-Claude's stdio-based MCP protocol and the LocalBrain FastAPI server.
+Claude's stdio-based MCP protocol and the LocalBrain MCP FastAPI server (port 8766),
+which in turn forwards requests to the daemon (port 8765).
 
 Do not run this directly - it's designed to be launched by Claude Desktop.
 EOF
@@ -113,10 +117,12 @@ if [ -f "localbrain.mcpb" ]; then
     echo -e "${BLUE}📍 Location:${NC} $EXTENSION_DIR/localbrain.mcpb"
     echo
     echo -e "${BLUE}Next steps:${NC}"
-    echo "  1. Open Claude Desktop"
-    echo "  2. Drag localbrain.mcpb into the Claude Desktop window"
-    echo "  3. Configure your vault path and API keys"
-    echo "  4. Ensure FastAPI server is running: python -m src.core.mcp.server"
+    echo "  1. Start LocalBrain Electron app (auto-starts both daemon and MCP server)"
+    echo "     cd electron && npm run dev"
+    echo "  2. Open Claude Desktop"
+    echo "  3. Drag localbrain.mcpb into the Claude Desktop window"
+    echo "  4. Accept the API key default (dev-key-local-only)"
+    echo "  5. Enable the extension and start using it!"
     echo
 else
     echo -e "${RED}❌ Error: Failed to create .mcpb bundle${NC}"

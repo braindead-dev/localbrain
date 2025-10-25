@@ -228,18 +228,36 @@ Vault: {self.vault_path}"""
                     result_str = item.get("content", "{}")
                     result = json.loads(result_str)
                     
-                    # Handle grep_vault results
+                    # Handle grep_vault results - read full files for better context
                     if "matches" in result:
                         for match in result.get("matches", []):
                             file = match.get("file")
                             if file and file not in seen_files:
-                                contexts.append({
-                                    "file": file,
-                                    "text": match.get("match_text", match.get("preview", "")),
-                                    "line_number": match.get("line_number"),
-                                    "citations": []
-                                })
-                                seen_files.add(file)
+                                # Read full file content for better context
+                                try:
+                                    from utils.file_ops import read_file
+                                    file_path = self.vault_path / file
+                                    content = read_file(file_path)
+                                    
+                                    # Extract first few paragraphs as context
+                                    paragraphs = self._extract_paragraphs(content)
+                                    text = "\n\n".join(paragraphs[:5]) if paragraphs else content[:1000]
+                                    
+                                    contexts.append({
+                                        "file": file,
+                                        "text": text,
+                                        "citations": []
+                                    })
+                                    seen_files.add(file)
+                                except Exception as e:
+                                    # Fallback to just the match line
+                                    contexts.append({
+                                        "file": file,
+                                        "text": match.get("match_text", match.get("preview", "")),
+                                        "line_number": match.get("line_number"),
+                                        "citations": []
+                                    })
+                                    seen_files.add(file)
                         continue
                     
                     # Handle read_file results
