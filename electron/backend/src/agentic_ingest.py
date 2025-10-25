@@ -15,9 +15,14 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
+from dotenv import load_dotenv
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
+
+# Load environment variables from .env file
+dotenv_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path)
 
 from utils.llm_client import LLMClient
 from utils.file_ops import (

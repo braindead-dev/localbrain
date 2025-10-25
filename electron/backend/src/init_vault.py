@@ -10,6 +10,11 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+dotenv_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path)
 
 
 DEFAULT_FOLDERS = [
@@ -65,7 +70,7 @@ def init_vault(vault_path: str) -> None:
         "settings": {
             "auto_embed": False,
             "default_folders": DEFAULT_FOLDERS,
-            "embedding_model": "sentence-transformers/all-MiniLM-L6-v2"
+            "embedding_model": os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
         }
     }
     
