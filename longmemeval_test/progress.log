@@ -1,0 +1,1376 @@
+
+📂 Loading longmemeval_test/longmemeval_oracle.json
+
+======================================================================
+LONGMEMEVAL BULK INGESTION
+======================================================================
+Total questions: 500
+Total sessions: 948
+Chunk size: 10 questions
+Total chunks: 50
+Batch size: 10 items per batch
+======================================================================
+
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 1/50 | Questions 1-10
+──────────────────────────────────────────────────────────────────────
+  [1] gpt4_2655b836 (temporal-reasoning) - 3 sessions
+  [2] gpt4_2487a7cb (temporal-reasoning) - 2 sessions
+  [3] gpt4_76048e76 (temporal-reasoning) - 2 sessions
+  [4] gpt4_2312f94c (temporal-reasoning) - 2 sessions
+  [5] 0bb5a684 (temporal-reasoning) - 2 sessions
+  [6] 08f4fc43 (temporal-reasoning) - 2 sessions
+  [7] 2c63a862 (temporal-reasoning) - 2 sessions
+  [8] gpt4_385a5000 (temporal-reasoning) - 2 sessions
+  [9] 2a1811e2 (temporal-reasoning) - 2 sessions
+  [10] bbf86515 (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 21
+Sending to bulk endpoint...
+✅ SUCCESS (31.6s)
+   Successful: 21/21
+   Files created: 0
+   Files updated: 8
+
+📊 PROGRESS: 2.0% complete
+   Sessions: 21/948
+   Elapsed: 0.5 mins
+   ETA: 23.3 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 2/50 | Questions 11-20
+──────────────────────────────────────────────────────────────────────
+  [11] gpt4_5dcc0aab (temporal-reasoning) - 5 sessions
+  [12] gpt4_0b2f1d21 (temporal-reasoning) - 2 sessions
+  [13] f0853d11 (temporal-reasoning) - 2 sessions
+  [14] gpt4_6ed717ea (temporal-reasoning) - 2 sessions
+  [15] gpt4_70e84552 (temporal-reasoning) - 2 sessions
+  [16] a3838d2b (temporal-reasoning) - 6 sessions
+  [17] gpt4_93159ced (temporal-reasoning) - 2 sessions
+  [18] gpt4_2d58bcd6 (temporal-reasoning) - 2 sessions
+  [19] gpt4_65aabe59 (temporal-reasoning) - 2 sessions
+  [20] 982b5123 (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 27
+Sending to bulk endpoint...
+✅ SUCCESS (32.2s)
+   Successful: 27/27
+   Files created: 6
+   Files updated: 5
+
+📊 PROGRESS: 4.0% complete
+   Sessions: 48/948
+   Elapsed: 1.1 mins
+   ETA: 20.3 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 3/50 | Questions 21-30
+──────────────────────────────────────────────────────────────────────
+  [21] b9cfe692 (temporal-reasoning) - 3 sessions
+  [22] gpt4_4edbafa2 (temporal-reasoning) - 2 sessions
+  [23] c8090214 (temporal-reasoning) - 2 sessions
+  [24] gpt4_483dd43c (temporal-reasoning) - 2 sessions
+  [25] e4e14d04 (temporal-reasoning) - 2 sessions
+  [26] c9f37c46 (temporal-reasoning) - 2 sessions
+  [27] gpt4_2c50253f (temporal-reasoning) - 2 sessions
+  [28] dcfa8644 (temporal-reasoning) - 2 sessions
+  [29] gpt4_b4a80587 (temporal-reasoning) - 2 sessions
+  [30] gpt4_9a159967 (temporal-reasoning) - 3 sessions
+
+Total items in chunk: 22
+Sending to bulk endpoint...
+✅ SUCCESS (24.8s)
+   Successful: 22/22
+   Files created: 6
+   Files updated: 4
+
+📊 PROGRESS: 6.0% complete
+   Sessions: 70/948
+   Elapsed: 1.5 mins
+   ETA: 18.9 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 4/50 | Questions 31-40
+──────────────────────────────────────────────────────────────────────
+  [31] cc6d1ec1 (temporal-reasoning) - 2 sessions
+  [32] gpt4_8c8961ae (temporal-reasoning) - 2 sessions
+  [33] gpt4_d9af6064 (temporal-reasoning) - 2 sessions
+  [34] gpt4_7de946e7 (temporal-reasoning) - 2 sessions
+  [35] d01c6aa8 (temporal-reasoning) - 2 sessions
+  [36] 993da5e2 (temporal-reasoning) - 2 sessions
+  [37] a3045048 (temporal-reasoning) - 2 sessions
+  [38] gpt4_d31cdae3 (temporal-reasoning) - 2 sessions
+  [39] gpt4_cd90e484 (temporal-reasoning) - 2 sessions
+  [40] gpt4_88806d6e (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (25.6s)
+   Successful: 20/20
+   Files created: 6
+   Files updated: 4
+
+📊 PROGRESS: 8.0% complete
+   Sessions: 90/948
+   Elapsed: 2.0 mins
+   ETA: 18.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 5/50 | Questions 41-50
+──────────────────────────────────────────────────────────────────────
+  [41] gpt4_4cd9eba1 (temporal-reasoning) - 2 sessions
+  [42] gpt4_93f6379c (temporal-reasoning) - 3 sessions
+  [43] b29f3365 (temporal-reasoning) - 2 sessions
+  [44] gpt4_2f56ae70 (temporal-reasoning) - 3 sessions
+  [45] 6613b389 (temporal-reasoning) - 3 sessions
+  [46] gpt4_78cf46a3 (temporal-reasoning) - 2 sessions
+  [47] gpt4_0a05b494 (temporal-reasoning) - 2 sessions
+  [48] gpt4_1a1dc16d (temporal-reasoning) - 2 sessions
+  [49] gpt4_2f584639 (temporal-reasoning) - 2 sessions
+  [50] gpt4_213fd887 (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 23
+Sending to bulk endpoint...
+✅ SUCCESS (32.9s)
+   Successful: 23/23
+   Files created: 5
+   Files updated: 7
+
+📊 PROGRESS: 10.0% complete
+   Sessions: 113/948
+   Elapsed: 2.5 mins
+   ETA: 18.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 6/50 | Questions 51-60
+──────────────────────────────────────────────────────────────────────
+  [51] gpt4_5438fa52 (temporal-reasoning) - 2 sessions
+  [52] gpt4_c27434e8 (temporal-reasoning) - 2 sessions
+  [53] gpt4_fe651585 (temporal-reasoning) - 2 sessions
+  [54] 8c18457d (temporal-reasoning) - 2 sessions
+  [55] gpt4_70e84552_abs (temporal-reasoning) - 2 sessions
+  [56] gpt4_93159ced_abs (temporal-reasoning) - 2 sessions
+  [57] 982b5123_abs (temporal-reasoning) - 2 sessions
+  [58] c8090214_abs (temporal-reasoning) - 2 sessions
+  [59] gpt4_c27434e8_abs (temporal-reasoning) - 2 sessions
+  [60] gpt4_fe651585_abs (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (34.5s)
+   Successful: 20/20
+   Files created: 3
+   Files updated: 7
+
+📊 PROGRESS: 12.0% complete
+   Sessions: 133/948
+   Elapsed: 3.1 mins
+   ETA: 19.1 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 7/50 | Questions 61-70
+──────────────────────────────────────────────────────────────────────
+  [61] 0a995998 (multi-session) - 3 sessions
+  [62] 6d550036 (multi-session) - 4 sessions
+  [63] gpt4_59c863d7 (multi-session) - 4 sessions
+  [64] b5ef892d (multi-session) - 3 sessions
+  [65] e831120c (multi-session) - 2 sessions
+  [66] 3a704032 (multi-session) - 3 sessions
+  [67] gpt4_d84a3211 (multi-session) - 4 sessions
+  [68] aae3761f (multi-session) - 3 sessions
+  [69] gpt4_f2262a51 (multi-session) - 3 sessions
+  [70] dd2973ad (multi-session) - 2 sessions
+
+Total items in chunk: 31
+Sending to bulk endpoint...
+✅ SUCCESS (45.1s)
+   Successful: 31/31
+   Files created: 3
+   Files updated: 8
+
+📊 PROGRESS: 14.0% complete
+   Sessions: 164/948
+   Elapsed: 3.9 mins
+   ETA: 18.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 8/50 | Questions 71-80
+──────────────────────────────────────────────────────────────────────
+  [71] c4a1ceb8 (multi-session) - 4 sessions
+  [72] gpt4_a56e767c (multi-session) - 3 sessions
+  [73] 6cb6f249 (multi-session) - 2 sessions
+  [74] 46a3abf7 (multi-session) - 3 sessions
+  [75] 36b9f61e (multi-session) - 3 sessions
+  [76] 28dc39ac (multi-session) - 5 sessions
+  [77] gpt4_2f8be40d (multi-session) - 3 sessions
+  [78] 2e6d26dc (multi-session) - 4 sessions
+  [79] gpt4_15e38248 (multi-session) - 4 sessions
+  [80] 88432d0a (multi-session) - 4 sessions
+
+Total items in chunk: 35
+Sending to bulk endpoint...
+✅ SUCCESS (45.2s)
+   Successful: 35/35
+   Files created: 8
+   Files updated: 6
+
+📊 PROGRESS: 16.0% complete
+   Sessions: 199/948
+   Elapsed: 4.7 mins
+   ETA: 17.5 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 9/50 | Questions 81-90
+──────────────────────────────────────────────────────────────────────
+  [81] 80ec1f4f (multi-session) - 3 sessions
+  [82] d23cf73b (multi-session) - 4 sessions
+  [83] gpt4_7fce9456 (multi-session) - 5 sessions
+  [84] d682f1a2 (multi-session) - 3 sessions
+  [85] 7024f17c (multi-session) - 3 sessions
+  [86] gpt4_5501fe77 (multi-session) - 3 sessions
+  [87] gpt4_2ba83207 (multi-session) - 4 sessions
+  [88] 2318644b (multi-session) - 2 sessions
+  [89] 2ce6a0f2 (multi-session) - 4 sessions
+  [90] gpt4_d12ceb0e (multi-session) - 3 sessions
+
+Total items in chunk: 34
+Sending to bulk endpoint...
+✅ SUCCESS (43.6s)
+   Successful: 34/34
+   Files created: 1
+   Files updated: 8
+
+📊 PROGRESS: 18.0% complete
+   Sessions: 233/948
+   Elapsed: 5.4 mins
+   ETA: 16.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 10/50 | Questions 91-100
+──────────────────────────────────────────────────────────────────────
+  [91] 00ca467f (multi-session) - 3 sessions
+  [92] b3c15d39 (multi-session) - 2 sessions
+  [93] gpt4_31ff4165 (multi-session) - 5 sessions
+  [94] eeda8a6d (multi-session) - 2 sessions
+  [95] 2788b940 (multi-session) - 4 sessions
+  [96] 60bf93ed (multi-session) - 2 sessions
+  [97] 9d25d4e0 (multi-session) - 3 sessions
+  [98] 129d1232 (multi-session) - 3 sessions
+  [99] 60472f9c (multi-session) - 3 sessions
+  [100] gpt4_194be4b3 (multi-session) - 5 sessions
+
+Total items in chunk: 32
+Sending to bulk endpoint...
+✅ SUCCESS (44.0s)
+   Successful: 32/32
+   Files created: 2
+   Files updated: 7
+
+📊 PROGRESS: 20.0% complete
+   Sessions: 265/948
+   Elapsed: 6.1 mins
+   ETA: 15.8 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 11/50 | Questions 101-110
+──────────────────────────────────────────────────────────────────────
+  [101] a9f6b44c (multi-session) - 3 sessions
+  [102] d851d5ba (multi-session) - 4 sessions
+  [103] 5a7937c8 (multi-session) - 3 sessions
+  [104] gpt4_ab202e7f (multi-session) - 5 sessions
+  [105] gpt4_e05b82a6 (multi-session) - 4 sessions
+  [106] gpt4_731e37d7 (multi-session) - 4 sessions
+  [107] edced276 (multi-session) - 2 sessions
+  [108] 10d9b85a (multi-session) - 2 sessions
+  [109] e3038f8c (multi-session) - 4 sessions
+  [110] 2b8f3739 (multi-session) - 3 sessions
+
+Total items in chunk: 34
+Sending to bulk endpoint...
+✅ SUCCESS (46.5s)
+   Successful: 34/34
+   Files created: 8
+   Files updated: 8
+
+📊 PROGRESS: 22.0% complete
+   Sessions: 299/948
+   Elapsed: 6.9 mins
+   ETA: 15.1 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 12/50 | Questions 111-120
+──────────────────────────────────────────────────────────────────────
+  [111] 1a8a66a6 (multi-session) - 4 sessions
+  [112] c2ac3c61 (multi-session) - 2 sessions
+  [113] bf659f65 (multi-session) - 3 sessions
+  [114] gpt4_372c3eed (multi-session) - 3 sessions
+  [115] gpt4_2f91af09 (multi-session) - 3 sessions
+  [116] 81507db6 (multi-session) - 5 sessions
+  [117] 88432d0a_abs (multi-session) - 4 sessions
+  [118] 80ec1f4f_abs (multi-session) - 3 sessions
+  [119] eeda8a6d_abs (multi-session) - 2 sessions
+  [120] 60bf93ed_abs (multi-session) - 2 sessions
+
+Total items in chunk: 31
+Sending to bulk endpoint...
+✅ SUCCESS (39.0s)
+   Successful: 31/31
+   Files created: 0
+   Files updated: 11
+
+📊 PROGRESS: 24.0% complete
+   Sessions: 330/948
+   Elapsed: 7.6 mins
+   ETA: 14.2 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 13/50 | Questions 121-130
+──────────────────────────────────────────────────────────────────────
+  [121] edced276_abs (multi-session) - 2 sessions
+  [122] gpt4_372c3eed_abs (multi-session) - 3 sessions
+  [123] 6a1eabeb (knowledge-update) - 2 sessions
+  [124] 6aeb4375 (knowledge-update) - 2 sessions
+  [125] 830ce83f (knowledge-update) - 2 sessions
+  [126] 852ce960 (knowledge-update) - 2 sessions
+  [127] 945e3d21 (knowledge-update) - 2 sessions
+  [128] d7c942c3 (knowledge-update) - 2 sessions
+  [129] 71315a70 (knowledge-update) - 2 sessions
+  [130] 89941a93 (knowledge-update) - 2 sessions
+
+Total items in chunk: 21
+Sending to bulk endpoint...
+✅ SUCCESS (30.2s)
+   Successful: 21/21
+   Files created: 4
+   Files updated: 5
+
+📊 PROGRESS: 26.0% complete
+   Sessions: 351/948
+   Elapsed: 8.1 mins
+   ETA: 13.8 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 14/50 | Questions 131-140
+──────────────────────────────────────────────────────────────────────
+  [131] ce6d2d27 (knowledge-update) - 2 sessions
+  [132] 9ea5eabc (knowledge-update) - 2 sessions
+  [133] 07741c44 (knowledge-update) - 2 sessions
+  [134] a1eacc2a (knowledge-update) - 2 sessions
+  [135] 184da446 (knowledge-update) - 2 sessions
+  [136] 031748ae (knowledge-update) - 2 sessions
+  [137] 4d6b87c8 (knowledge-update) - 2 sessions
+  [138] 0f05491a (knowledge-update) - 2 sessions
+  [139] 08e075c7 (knowledge-update) - 2 sessions
+  [140] f9e8c073 (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (30.8s)
+   Successful: 20/20
+   Files created: 3
+   Files updated: 8
+
+📊 PROGRESS: 28.0% complete
+   Sessions: 371/948
+   Elapsed: 8.7 mins
+   ETA: 13.5 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 15/50 | Questions 141-150
+──────────────────────────────────────────────────────────────────────
+  [141] 41698283 (knowledge-update) - 2 sessions
+  [142] 2698e78f (knowledge-update) - 2 sessions
+  [143] b6019101 (knowledge-update) - 2 sessions
+  [144] 45dc21b6 (knowledge-update) - 2 sessions
+  [145] 5a4f22c0 (knowledge-update) - 2 sessions
+  [146] 6071bd76 (knowledge-update) - 2 sessions
+  [147] e493bb7c (knowledge-update) - 2 sessions
+  [148] 618f13b2 (knowledge-update) - 2 sessions
+  [149] 72e3ee87 (knowledge-update) - 2 sessions
+  [150] c4ea545c (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (29.3s)
+   Successful: 20/20
+   Files created: 3
+   Files updated: 8
+
+📊 PROGRESS: 30.0% complete
+   Sessions: 391/948
+   Elapsed: 9.2 mins
+   ETA: 13.0 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 16/50 | Questions 151-160
+──────────────────────────────────────────────────────────────────────
+  [151] 01493427 (knowledge-update) - 2 sessions
+  [152] 6a27ffc2 (knowledge-update) - 2 sessions
+  [153] 2133c1b5 (knowledge-update) - 2 sessions
+  [154] 18bc8abd (knowledge-update) - 2 sessions
+  [155] db467c8c (knowledge-update) - 2 sessions
+  [156] 7a87bd0c (knowledge-update) - 2 sessions
+  [157] e61a7584 (knowledge-update) - 2 sessions
+  [158] 1cea1afa (knowledge-update) - 2 sessions
+  [159] ed4ddc30 (knowledge-update) - 2 sessions
+  [160] 8fb83627 (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (27.5s)
+   Successful: 20/20
+   Files created: 2
+   Files updated: 8
+
+📊 PROGRESS: 32.0% complete
+   Sessions: 411/948
+   Elapsed: 9.6 mins
+   ETA: 12.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 17/50 | Questions 161-170
+──────────────────────────────────────────────────────────────────────
+  [161] b01defab (knowledge-update) - 2 sessions
+  [162] 22d2cb42 (knowledge-update) - 2 sessions
+  [163] 0e4e4c46 (knowledge-update) - 2 sessions
+  [164] 4b24c848 (knowledge-update) - 2 sessions
+  [165] 7e974930 (knowledge-update) - 2 sessions
+  [166] 603deb26 (knowledge-update) - 2 sessions
+  [167] 59524333 (knowledge-update) - 2 sessions
+  [168] 5831f84d (knowledge-update) - 2 sessions
+  [169] eace081b (knowledge-update) - 2 sessions
+  [170] affe2881 (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (22.6s)
+   Successful: 20/20
+   Files created: 1
+   Files updated: 9
+
+📊 PROGRESS: 34.0% complete
+   Sessions: 431/948
+   Elapsed: 10.0 mins
+   ETA: 12.0 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 18/50 | Questions 171-180
+──────────────────────────────────────────────────────────────────────
+  [171] 50635ada (knowledge-update) - 2 sessions
+  [172] e66b632c (knowledge-update) - 2 sessions
+  [173] 0ddfec37 (knowledge-update) - 2 sessions
+  [174] f685340e (knowledge-update) - 2 sessions
+  [175] cc5ded98 (knowledge-update) - 2 sessions
+  [176] dfde3500 (knowledge-update) - 2 sessions
+  [177] 69fee5aa (knowledge-update) - 2 sessions
+  [178] 7401057b (knowledge-update) - 2 sessions
+  [179] cf22b7bf (knowledge-update) - 2 sessions
+  [180] a2f3aa27 (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (26.3s)
+   Successful: 20/20
+   Files created: 2
+   Files updated: 5
+
+📊 PROGRESS: 36.0% complete
+   Sessions: 451/948
+   Elapsed: 10.5 mins
+   ETA: 11.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 19/50 | Questions 181-190
+──────────────────────────────────────────────────────────────────────
+  [181] c7dc5443 (knowledge-update) - 2 sessions
+  [182] 06db6396 (knowledge-update) - 2 sessions
+  [183] 3ba21379 (knowledge-update) - 2 sessions
+  [184] 9bbe84a2 (knowledge-update) - 2 sessions
+  [185] 10e09553 (knowledge-update) - 2 sessions
+  [186] dad224aa (knowledge-update) - 2 sessions
+  [187] ba61f0b9 (knowledge-update) - 2 sessions
+  [188] 42ec0761 (knowledge-update) - 2 sessions
+  [189] 5c40ec5b (knowledge-update) - 2 sessions
+  [190] c6853660 (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (28.4s)
+   Successful: 20/20
+   Files created: 1
+   Files updated: 9
+
+📊 PROGRESS: 38.0% complete
+   Sessions: 471/948
+   Elapsed: 11.0 mins
+   ETA: 11.1 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 20/50 | Questions 191-200
+──────────────────────────────────────────────────────────────────────
+  [191] 26bdc477 (knowledge-update) - 2 sessions
+  [192] 0977f2af (knowledge-update) - 2 sessions
+  [193] 6aeb4375_abs (knowledge-update) - 2 sessions
+  [194] 031748ae_abs (knowledge-update) - 2 sessions
+  [195] 2698e78f_abs (knowledge-update) - 2 sessions
+  [196] 2133c1b5_abs (knowledge-update) - 2 sessions
+  [197] 0ddfec37_abs (knowledge-update) - 2 sessions
+  [198] f685340e_abs (knowledge-update) - 2 sessions
+  [199] 89941a94 (knowledge-update) - 2 sessions
+  [200] 07741c45 (knowledge-update) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (23.8s)
+   Successful: 20/20
+   Files created: 1
+   Files updated: 9
+
+📊 PROGRESS: 40.0% complete
+   Sessions: 491/948
+   Elapsed: 11.4 mins
+   ETA: 10.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 21/50 | Questions 201-210
+──────────────────────────────────────────────────────────────────────
+  [201] 8a2466db (single-session-preference) - 1 sessions
+  [202] 06878be2 (single-session-preference) - 1 sessions
+  [203] 75832dbd (single-session-preference) - 1 sessions
+  [204] 0edc2aef (single-session-preference) - 1 sessions
+  [205] 35a27287 (single-session-preference) - 1 sessions
+  [206] 32260d93 (single-session-preference) - 1 sessions
+  [207] 195a1a1b (single-session-preference) - 1 sessions
+  [208] afdc33df (single-session-preference) - 1 sessions
+  [209] caf03d32 (single-session-preference) - 1 sessions
+  [210] 54026fce (single-session-preference) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (16.2s)
+   Successful: 10/10
+   Files created: 3
+   Files updated: 7
+
+📊 PROGRESS: 42.0% complete
+   Sessions: 501/948
+   Elapsed: 11.7 mins
+   ETA: 10.4 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 22/50 | Questions 211-220
+──────────────────────────────────────────────────────────────────────
+  [211] 06f04340 (single-session-preference) - 1 sessions
+  [212] 6b7dfb22 (single-session-preference) - 1 sessions
+  [213] 1a1907b4 (single-session-preference) - 1 sessions
+  [214] 09d032c9 (single-session-preference) - 1 sessions
+  [215] 38146c39 (single-session-preference) - 1 sessions
+  [216] d24813b1 (single-session-preference) - 1 sessions
+  [217] 57f827a0 (single-session-preference) - 1 sessions
+  [218] 95228167 (single-session-preference) - 1 sessions
+  [219] 505af2f5 (single-session-preference) - 1 sessions
+  [220] 75f70248 (single-session-preference) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (17.7s)
+   Successful: 10/10
+   Files created: 1
+   Files updated: 8
+
+📊 PROGRESS: 44.0% complete
+   Sessions: 511/948
+   Elapsed: 12.0 mins
+   ETA: 10.3 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 23/50 | Questions 221-230
+──────────────────────────────────────────────────────────────────────
+  [221] d6233ab6 (single-session-preference) - 1 sessions
+  [222] 1da05512 (single-session-preference) - 1 sessions
+  [223] fca70973 (single-session-preference) - 1 sessions
+  [224] b6025781 (single-session-preference) - 1 sessions
+  [225] a89d7624 (single-session-preference) - 1 sessions
+  [226] b0479f84 (single-session-preference) - 1 sessions
+  [227] 1d4e3b97 (single-session-preference) - 1 sessions
+  [228] 07b6f563 (single-session-preference) - 1 sessions
+  [229] 1c0ddc50 (single-session-preference) - 1 sessions
+  [230] 0a34ad58 (single-session-preference) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (17.8s)
+   Successful: 10/10
+   Files created: 2
+   Files updated: 7
+
+📊 PROGRESS: 46.0% complete
+   Sessions: 521/948
+   Elapsed: 12.3 mins
+   ETA: 10.1 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 24/50 | Questions 231-240
+──────────────────────────────────────────────────────────────────────
+  [231] 7161e7e2 (single-session-assistant) - 1 sessions
+  [232] c4f10528 (single-session-assistant) - 1 sessions
+  [233] 89527b6b (single-session-assistant) - 1 sessions
+  [234] e9327a54 (single-session-assistant) - 1 sessions
+  [235] 4c36ccef (single-session-assistant) - 1 sessions
+  [236] 6ae235be (single-session-assistant) - 1 sessions
+  [237] 7e00a6cb (single-session-assistant) - 1 sessions
+  [238] 1903aded (single-session-assistant) - 1 sessions
+  [239] ceb54acb (single-session-assistant) - 1 sessions
+  [240] f523d9fe (single-session-assistant) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (16.1s)
+   Successful: 10/10
+   Files created: 4
+   Files updated: 4
+
+📊 PROGRESS: 48.0% complete
+   Sessions: 531/948
+   Elapsed: 12.6 mins
+   ETA: 9.9 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 25/50 | Questions 241-250
+──────────────────────────────────────────────────────────────────────
+  [241] 0e5e2d1a (single-session-assistant) - 1 sessions
+  [242] fea54f57 (single-session-assistant) - 1 sessions
+  [243] cc539528 (single-session-assistant) - 1 sessions
+  [244] dc439ea3 (single-session-assistant) - 1 sessions
+  [245] 18dcd5a5 (single-session-assistant) - 1 sessions
+  [246] 488d3006 (single-session-assistant) - 1 sessions
+  [247] 58470ed2 (single-session-assistant) - 1 sessions
+  [248] 8cf51dda (single-session-assistant) - 1 sessions
+  [249] 1d4da289 (single-session-assistant) - 1 sessions
+  [250] 8464fc84 (single-session-assistant) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (21.1s)
+   Successful: 10/10
+   Files created: 4
+   Files updated: 5
+
+📊 PROGRESS: 50.0% complete
+   Sessions: 541/948
+   Elapsed: 13.0 mins
+   ETA: 9.7 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 26/50 | Questions 251-260
+──────────────────────────────────────────────────────────────────────
+  [251] 8aef76bc (single-session-assistant) - 1 sessions
+  [252] 71a3fd6b (single-session-assistant) - 1 sessions
+  [253] 2bf43736 (single-session-assistant) - 1 sessions
+  [254] 70b3e69b (single-session-assistant) - 1 sessions
+  [255] 8752c811 (single-session-assistant) - 1 sessions
+  [256] 3249768e (single-session-assistant) - 1 sessions
+  [257] 1b9b7252 (single-session-assistant) - 1 sessions
+  [258] 1568498a (single-session-assistant) - 1 sessions
+  [259] 6222b6eb (single-session-assistant) - 1 sessions
+  [260] e8a79c70 (single-session-assistant) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (22.3s)
+   Successful: 10/10
+   Files created: 6
+   Files updated: 4
+
+📊 PROGRESS: 52.0% complete
+   Sessions: 551/948
+   Elapsed: 13.3 mins
+   ETA: 9.6 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 27/50 | Questions 261-270
+──────────────────────────────────────────────────────────────────────
+  [261] d596882b (single-session-assistant) - 1 sessions
+  [262] e3fc4d6e (single-session-assistant) - 1 sessions
+  [263] 51b23612 (single-session-assistant) - 1 sessions
+  [264] 3e321797 (single-session-assistant) - 1 sessions
+  [265] e982271f (single-session-assistant) - 1 sessions
+  [266] 352ab8bd (single-session-assistant) - 1 sessions
+  [267] fca762bc (single-session-assistant) - 1 sessions
+  [268] 7a8d0b71 (single-session-assistant) - 1 sessions
+  [269] a40e080f (single-session-assistant) - 1 sessions
+  [270] 8b9d4367 (single-session-assistant) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (16.7s)
+   Successful: 10/10
+   Files created: 8
+   Files updated: 1
+
+📊 PROGRESS: 54.0% complete
+   Sessions: 561/948
+   Elapsed: 13.6 mins
+   ETA: 9.4 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 28/50 | Questions 271-280
+──────────────────────────────────────────────────────────────────────
+  [271] 5809eb10 (single-session-assistant) - 1 sessions
+  [272] 41275add (single-session-assistant) - 1 sessions
+  [273] 4388e9dd (single-session-assistant) - 1 sessions
+  [274] 4baee567 (single-session-assistant) - 1 sessions
+  [275] 561fabcd (single-session-assistant) - 1 sessions
+  [276] b759caee (single-session-assistant) - 1 sessions
+  [277] ac031881 (single-session-assistant) - 1 sessions
+  [278] 28bcfaac (single-session-assistant) - 1 sessions
+  [279] 16c90bf4 (single-session-assistant) - 1 sessions
+  [280] c8f1aeed (single-session-assistant) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (23.4s)
+   Successful: 10/10
+   Files created: 5
+   Files updated: 5
+
+📊 PROGRESS: 56.0% complete
+   Sessions: 571/948
+   Elapsed: 14.0 mins
+   ETA: 9.3 mins
+   Success rate: 100.0%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 29/50 | Questions 281-290
+──────────────────────────────────────────────────────────────────────
+  [281] eaca4986 (single-session-assistant) - 1 sessions
+  [282] c7cf7dfd (single-session-assistant) - 1 sessions
+  [283] e48988bc (single-session-assistant) - 1 sessions
+  [284] 1de5cff2 (single-session-assistant) - 1 sessions
+  [285] 65240037 (single-session-assistant) - 1 sessions
+  [286] 778164c6 (single-session-assistant) - 1 sessions
+  [287] e47becba (single-session-user) - 1 sessions
+  [288] 118b2229 (single-session-user) - 1 sessions
+  [289] 51a45a95 (single-session-user) - 1 sessions
+  [290] 58bf7951 (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (21.0s)
+   Successful: 0/10
+   Files created: 0
+   Files updated: 0
+
+📊 PROGRESS: 58.0% complete
+   Sessions: 581/948
+   Elapsed: 14.4 mins
+   ETA: 9.1 mins
+   Success rate: 98.3%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 30/50 | Questions 291-300
+──────────────────────────────────────────────────────────────────────
+  [291] 1e043500 (single-session-user) - 1 sessions
+  [292] c5e8278d (single-session-user) - 1 sessions
+  [293] 6ade9755 (single-session-user) - 1 sessions
+  [294] 6f9b354f (single-session-user) - 1 sessions
+  [295] 58ef2f1c (single-session-user) - 1 sessions
+  [296] f8c5f88b (single-session-user) - 1 sessions
+  [297] 5d3d2817 (single-session-user) - 1 sessions
+  [298] 7527f7e2 (single-session-user) - 1 sessions
+  [299] c960da58 (single-session-user) - 1 sessions
+  [300] 3b6f954b (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (13.0s)
+   Successful: 10/10
+   Files created: 6
+   Files updated: 2
+
+📊 PROGRESS: 60.0% complete
+   Sessions: 591/948
+   Elapsed: 14.6 mins
+   ETA: 8.8 mins
+   Success rate: 98.3%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 31/50 | Questions 301-310
+──────────────────────────────────────────────────────────────────────
+  [301] 726462e0 (single-session-user) - 1 sessions
+  [302] 94f70d80 (single-session-user) - 1 sessions
+  [303] 66f24dbb (single-session-user) - 1 sessions
+  [304] ad7109d1 (single-session-user) - 1 sessions
+  [305] af8d2e46 (single-session-user) - 1 sessions
+  [306] dccbc061 (single-session-user) - 1 sessions
+  [307] c8c3f81d (single-session-user) - 1 sessions
+  [308] 8ebdbe50 (single-session-user) - 1 sessions
+  [309] 6b168ec8 (single-session-user) - 1 sessions
+  [310] 75499fd8 (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (15.4s)
+   Successful: 10/10
+   Files created: 2
+   Files updated: 8
+
+📊 PROGRESS: 62.0% complete
+   Sessions: 601/948
+   Elapsed: 14.9 mins
+   ETA: 8.6 mins
+   Success rate: 98.3%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 32/50 | Questions 311-320
+──────────────────────────────────────────────────────────────────────
+  [311] 21436231 (single-session-user) - 1 sessions
+  [312] 95bcc1c8 (single-session-user) - 1 sessions
+  [313] 0862e8bf (single-session-user) - 1 sessions
+  [314] 853b0a1d (single-session-user) - 1 sessions
+  [315] a06e4cfe (single-session-user) - 1 sessions
+  [316] 37d43f65 (single-session-user) - 1 sessions
+  [317] b86304ba (single-session-user) - 1 sessions
+  [318] d52b4f67 (single-session-user) - 1 sessions
+  [319] 25e5aa4f (single-session-user) - 1 sessions
+  [320] caf9ead2 (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (14.1s)
+   Successful: 10/10
+   Files created: 2
+   Files updated: 8
+
+📊 PROGRESS: 64.0% complete
+   Sessions: 611/948
+   Elapsed: 15.2 mins
+   ETA: 8.4 mins
+   Success rate: 98.4%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 33/50 | Questions 321-330
+──────────────────────────────────────────────────────────────────────
+  [321] 8550ddae (single-session-user) - 1 sessions
+  [322] 60d45044 (single-session-user) - 1 sessions
+  [323] 3f1e9474 (single-session-user) - 1 sessions
+  [324] 86b68151 (single-session-user) - 1 sessions
+  [325] 577d4d32 (single-session-user) - 1 sessions
+  [326] ec81a493 (single-session-user) - 1 sessions
+  [327] 15745da0 (single-session-user) - 1 sessions
+  [328] e01b8e2f (single-session-user) - 1 sessions
+  [329] bc8a6e93 (single-session-user) - 1 sessions
+  [330] ccb36322 (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (11.9s)
+   Successful: 10/10
+   Files created: 1
+   Files updated: 8
+
+📊 PROGRESS: 66.0% complete
+   Sessions: 621/948
+   Elapsed: 15.4 mins
+   ETA: 8.1 mins
+   Success rate: 98.4%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 34/50 | Questions 331-340
+──────────────────────────────────────────────────────────────────────
+  [331] 001be529 (single-session-user) - 1 sessions
+  [332] b320f3f8 (single-session-user) - 1 sessions
+  [333] 19b5f2b3 (single-session-user) - 1 sessions
+  [334] 4fd1909e (single-session-user) - 1 sessions
+  [335] 545bd2b5 (single-session-user) - 1 sessions
+  [336] 8a137a7f (single-session-user) - 1 sessions
+  [337] 76d63226 (single-session-user) - 1 sessions
+  [338] 86f00804 (single-session-user) - 1 sessions
+  [339] 8e9d538c (single-session-user) - 1 sessions
+  [340] 311778f1 (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (15.2s)
+   Successful: 10/10
+   Files created: 8
+   Files updated: 2
+
+📊 PROGRESS: 68.0% complete
+   Sessions: 631/948
+   Elapsed: 15.7 mins
+   ETA: 7.9 mins
+   Success rate: 98.4%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 35/50 | Questions 341-350
+──────────────────────────────────────────────────────────────────────
+  [341] c19f7a0b (single-session-user) - 1 sessions
+  [342] 4100d0a0 (single-session-user) - 1 sessions
+  [343] 29f2956b (single-session-user) - 1 sessions
+  [344] 1faac195 (single-session-user) - 1 sessions
+  [345] faba32e5 (single-session-user) - 1 sessions
+  [346] f4f1d8a4 (single-session-user) - 1 sessions
+  [347] c14c00dd (single-session-user) - 1 sessions
+  [348] 36580ce8 (single-session-user) - 1 sessions
+  [349] 3d86fd0a (single-session-user) - 1 sessions
+  [350] a82c026e (single-session-user) - 1 sessions
+
+Total items in chunk: 10
+Sending to bulk endpoint...
+✅ SUCCESS (20.7s)
+   Successful: 10/10
+   Files created: 4
+   Files updated: 6
+
+📊 PROGRESS: 70.0% complete
+   Sessions: 641/948
+   Elapsed: 16.0 mins
+   ETA: 7.7 mins
+   Success rate: 98.4%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 36/50 | Questions 351-360
+──────────────────────────────────────────────────────────────────────
+  [351] 0862e8bf_abs (single-session-user) - 1 sessions
+  [352] 15745da0_abs (single-session-user) - 1 sessions
+  [353] bc8a6e93_abs (single-session-user) - 1 sessions
+  [354] 19b5f2b3_abs (single-session-user) - 1 sessions
+  [355] 29f2956b_abs (single-session-user) - 1 sessions
+  [356] f4f1d8a4_abs (single-session-user) - 1 sessions
+  [357] gpt4_59149c77 (temporal-reasoning) - 2 sessions
+  [358] gpt4_f49edff3 (temporal-reasoning) - 3 sessions
+  [359] 71017276 (temporal-reasoning) - 1 sessions
+  [360] b46e15ed (temporal-reasoning) - 4 sessions
+
+Total items in chunk: 16
+Sending to bulk endpoint...
+✅ SUCCESS (26.9s)
+   Successful: 16/16
+   Files created: 4
+   Files updated: 6
+
+📊 PROGRESS: 72.0% complete
+   Sessions: 657/948
+   Elapsed: 16.5 mins
+   ETA: 7.3 mins
+   Success rate: 98.5%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 37/50 | Questions 361-370
+──────────────────────────────────────────────────────────────────────
+  [361] gpt4_fa19884c (temporal-reasoning) - 2 sessions
+  [362] 0bc8ad92 (temporal-reasoning) - 3 sessions
+  [363] af082822 (temporal-reasoning) - 1 sessions
+  [364] gpt4_4929293a (temporal-reasoning) - 2 sessions
+  [365] gpt4_b5700ca9 (temporal-reasoning) - 1 sessions
+  [366] 9a707b81 (temporal-reasoning) - 2 sessions
+  [367] gpt4_1d4ab0c9 (temporal-reasoning) - 2 sessions
+  [368] gpt4_e072b769 (temporal-reasoning) - 1 sessions
+  [369] 0db4c65d (temporal-reasoning) - 2 sessions
+  [370] gpt4_1d80365e (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 18
+Sending to bulk endpoint...
+✅ SUCCESS (25.2s)
+   Successful: 18/18
+   Files created: 3
+   Files updated: 7
+
+📊 PROGRESS: 74.0% complete
+   Sessions: 675/948
+   Elapsed: 16.9 mins
+   ETA: 6.8 mins
+   Success rate: 98.5%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 38/50 | Questions 371-380
+──────────────────────────────────────────────────────────────────────
+  [371] gpt4_7f6b06db (temporal-reasoning) - 3 sessions
+  [372] gpt4_6dc9b45b (temporal-reasoning) - 1 sessions
+  [373] gpt4_8279ba02 (temporal-reasoning) - 1 sessions
+  [374] gpt4_18c2b244 (temporal-reasoning) - 3 sessions
+  [375] gpt4_a1b77f9c (temporal-reasoning) - 6 sessions
+  [376] gpt4_1916e0ea (temporal-reasoning) - 2 sessions
+  [377] gpt4_7a0daae1 (temporal-reasoning) - 2 sessions
+  [378] gpt4_468eb063 (temporal-reasoning) - 1 sessions
+  [379] gpt4_7abb270c (temporal-reasoning) - 6 sessions
+  [380] gpt4_1e4a8aeb (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 27
+Sending to bulk endpoint...
+✅ SUCCESS (35.4s)
+   Successful: 27/27
+   Files created: 4
+   Files updated: 6
+
+📊 PROGRESS: 76.0% complete
+   Sessions: 702/948
+   Elapsed: 17.5 mins
+   ETA: 6.1 mins
+   Success rate: 98.6%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 39/50 | Questions 381-390
+──────────────────────────────────────────────────────────────────────
+  [381] gpt4_4fc4f797 (temporal-reasoning) - 2 sessions
+  [382] 4dfccbf7 (temporal-reasoning) - 2 sessions
+  [383] gpt4_61e13b3c (temporal-reasoning) - 2 sessions
+  [384] gpt4_45189cb4 (temporal-reasoning) - 3 sessions
+  [385] 2ebe6c90 (temporal-reasoning) - 2 sessions
+  [386] gpt4_e061b84f (temporal-reasoning) - 3 sessions
+  [387] 370a8ff4 (temporal-reasoning) - 2 sessions
+  [388] gpt4_d6585ce8 (temporal-reasoning) - 5 sessions
+  [389] gpt4_4ef30696 (temporal-reasoning) - 2 sessions
+  [390] gpt4_ec93e27f (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 25
+Sending to bulk endpoint...
+✅ SUCCESS (38.4s)
+   Successful: 25/25
+   Files created: 7
+   Files updated: 5
+
+📊 PROGRESS: 78.0% complete
+   Sessions: 727/948
+   Elapsed: 18.2 mins
+   ETA: 5.5 mins
+   Success rate: 98.6%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 40/50 | Questions 391-400
+──────────────────────────────────────────────────────────────────────
+  [391] 6e984301 (temporal-reasoning) - 2 sessions
+  [392] 8077ef71 (temporal-reasoning) - 1 sessions
+  [393] gpt4_f420262c (temporal-reasoning) - 5 sessions
+  [394] gpt4_8e165409 (temporal-reasoning) - 2 sessions
+  [395] gpt4_74aed68e (temporal-reasoning) - 2 sessions
+  [396] bcbe585f (temporal-reasoning) - 1 sessions
+  [397] gpt4_21adecb5 (temporal-reasoning) - 2 sessions
+  [398] 5e1b23de (temporal-reasoning) - 1 sessions
+  [399] gpt4_98f46fc6 (temporal-reasoning) - 2 sessions
+  [400] gpt4_af6db32f (temporal-reasoning) - 1 sessions
+
+Total items in chunk: 19
+Sending to bulk endpoint...
+✅ SUCCESS (27.5s)
+   Successful: 19/19
+   Files created: 7
+   Files updated: 3
+
+📊 PROGRESS: 80.0% complete
+   Sessions: 746/948
+   Elapsed: 18.7 mins
+   ETA: 5.1 mins
+   Success rate: 98.7%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 41/50 | Questions 401-410
+──────────────────────────────────────────────────────────────────────
+  [401] eac54adc (temporal-reasoning) - 2 sessions
+  [402] gpt4_7ddcf75f (temporal-reasoning) - 1 sessions
+  [403] gpt4_a2d1d1f6 (temporal-reasoning) - 1 sessions
+  [404] gpt4_85da3956 (temporal-reasoning) - 1 sessions
+  [405] gpt4_b0863698 (temporal-reasoning) - 1 sessions
+  [406] gpt4_68e94287 (temporal-reasoning) - 2 sessions
+  [407] gpt4_e414231e (temporal-reasoning) - 2 sessions
+  [408] gpt4_7ca326fa (temporal-reasoning) - 3 sessions
+  [409] gpt4_7bc6cf22 (temporal-reasoning) - 1 sessions
+  [410] 2ebe6c92 (temporal-reasoning) - 2 sessions
+
+Total items in chunk: 16
+Sending to bulk endpoint...
+✅ SUCCESS (27.1s)
+   Successful: 16/16
+   Files created: 3
+   Files updated: 7
+
+📊 PROGRESS: 82.0% complete
+   Sessions: 762/948
+   Elapsed: 19.1 mins
+   ETA: 4.7 mins
+   Success rate: 98.7%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 42/50 | Questions 411-420
+──────────────────────────────────────────────────────────────────────
+  [411] gpt4_e061b84g (temporal-reasoning) - 3 sessions
+  [412] 71017277 (temporal-reasoning) - 1 sessions
+  [413] b46e15ee (temporal-reasoning) - 4 sessions
+  [414] gpt4_d6585ce9 (temporal-reasoning) - 5 sessions
+  [415] gpt4_1e4a8aec (temporal-reasoning) - 2 sessions
+  [416] gpt4_f420262d (temporal-reasoning) - 5 sessions
+  [417] gpt4_59149c78 (temporal-reasoning) - 2 sessions
+  [418] gpt4_e414231f (temporal-reasoning) - 2 sessions
+  [419] gpt4_4929293b (temporal-reasoning) - 2 sessions
+  [420] gpt4_468eb064 (temporal-reasoning) - 1 sessions
+
+Total items in chunk: 27
+Sending to bulk endpoint...
+✅ SUCCESS (33.3s)
+   Successful: 27/27
+   Files created: 4
+   Files updated: 9
+
+📊 PROGRESS: 84.0% complete
+   Sessions: 789/948
+   Elapsed: 19.7 mins
+   ETA: 4.0 mins
+   Success rate: 98.7%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 43/50 | Questions 421-430
+──────────────────────────────────────────────────────────────────────
+  [421] gpt4_fa19884d (temporal-reasoning) - 2 sessions
+  [422] 9a707b82 (temporal-reasoning) - 2 sessions
+  [423] eac54add (temporal-reasoning) - 2 sessions
+  [424] 4dfccbf8 (temporal-reasoning) - 2 sessions
+  [425] 0bc8ad93 (temporal-reasoning) - 3 sessions
+  [426] 6e984302 (temporal-reasoning) - 2 sessions
+  [427] gpt4_8279ba03 (temporal-reasoning) - 1 sessions
+  [428] gpt4_b5700ca0 (temporal-reasoning) - 1 sessions
+  [429] gpt4_68e94288 (temporal-reasoning) - 2 sessions
+  [430] d3ab962e (multi-session) - 2 sessions
+
+Total items in chunk: 19
+Sending to bulk endpoint...
+✅ SUCCESS (39.8s)
+   Successful: 19/19
+   Files created: 2
+   Files updated: 8
+
+📊 PROGRESS: 86.0% complete
+   Sessions: 808/948
+   Elapsed: 20.4 mins
+   ETA: 3.5 mins
+   Success rate: 98.8%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 44/50 | Questions 431-440
+──────────────────────────────────────────────────────────────────────
+  [431] 2311e44b (multi-session) - 2 sessions
+  [432] cc06de0d (multi-session) - 2 sessions
+  [433] a11281a2 (multi-session) - 2 sessions
+  [434] 4f54b7c9 (multi-session) - 2 sessions
+  [435] 85fa3a3f (multi-session) - 2 sessions
+  [436] 9aaed6a3 (multi-session) - 2 sessions
+  [437] 1f2b8d4f (multi-session) - 2 sessions
+  [438] e6041065 (multi-session) - 2 sessions
+  [439] 51c32626 (multi-session) - 2 sessions
+  [440] d905b33f (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (29.1s)
+   Successful: 20/20
+   Files created: 3
+   Files updated: 7
+
+📊 PROGRESS: 88.0% complete
+   Sessions: 828/948
+   Elapsed: 20.9 mins
+   ETA: 3.0 mins
+   Success rate: 98.8%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 45/50 | Questions 441-450
+──────────────────────────────────────────────────────────────────────
+  [441] 7405e8b1 (multi-session) - 2 sessions
+  [442] f35224e0 (multi-session) - 2 sessions
+  [443] 6456829e (multi-session) - 2 sessions
+  [444] a4996e51 (multi-session) - 2 sessions
+  [445] 3c1045c8 (multi-session) - 2 sessions
+  [446] 60036106 (multi-session) - 2 sessions
+  [447] 681a1674 (multi-session) - 2 sessions
+  [448] e25c3b8d (multi-session) - 2 sessions
+  [449] 4adc0475 (multi-session) - 2 sessions
+  [450] 4bc144e2 (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (23.6s)
+   Successful: 20/20
+   Files created: 4
+   Files updated: 8
+
+📊 PROGRESS: 90.0% complete
+   Sessions: 848/948
+   Elapsed: 21.3 mins
+   ETA: 2.5 mins
+   Success rate: 98.8%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 46/50 | Questions 451-460
+──────────────────────────────────────────────────────────────────────
+  [451] ef66a6e5 (multi-session) - 2 sessions
+  [452] 5025383b (multi-session) - 2 sessions
+  [453] a1cc6108 (multi-session) - 2 sessions
+  [454] 9ee3ecd6 (multi-session) - 2 sessions
+  [455] 3fdac837 (multi-session) - 2 sessions
+  [456] 91b15a6e (multi-session) - 2 sessions
+  [457] 27016adc (multi-session) - 2 sessions
+  [458] 720133ac (multi-session) - 2 sessions
+  [459] 77eafa52 (multi-session) - 2 sessions
+  [460] 8979f9ec (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (26.8s)
+   Successful: 20/20
+   Files created: 4
+   Files updated: 8
+
+📊 PROGRESS: 92.0% complete
+   Sessions: 868/948
+   Elapsed: 21.8 mins
+   ETA: 2.0 mins
+   Success rate: 98.8%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 47/50 | Questions 461-470
+──────────────────────────────────────────────────────────────────────
+  [461] 0100672e (multi-session) - 2 sessions
+  [462] a96c20ee (multi-session) - 2 sessions
+  [463] 92a0aa75 (multi-session) - 2 sessions
+  [464] 3fe836c9 (multi-session) - 2 sessions
+  [465] 1c549ce4 (multi-session) - 2 sessions
+  [466] 6c49646a (multi-session) - 2 sessions
+  [467] 1192316e (multi-session) - 2 sessions
+  [468] 0ea62687 (multi-session) - 2 sessions
+  [469] 67e0d0f2 (multi-session) - 2 sessions
+  [470] bb7c3b45 (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (26.0s)
+   Successful: 20/20
+   Files created: 3
+   Files updated: 7
+
+📊 PROGRESS: 94.0% complete
+   Sessions: 888/948
+   Elapsed: 22.2 mins
+   ETA: 1.5 mins
+   Success rate: 98.9%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 48/50 | Questions 471-480
+──────────────────────────────────────────────────────────────────────
+  [471] ba358f49 (multi-session) - 2 sessions
+  [472] 61f8c8f8 (multi-session) - 2 sessions
+  [473] 60159905 (multi-session) - 2 sessions
+  [474] ef9cf60a (multi-session) - 2 sessions
+  [475] 73d42213 (multi-session) - 2 sessions
+  [476] bc149d6b (multi-session) - 2 sessions
+  [477] 099778bb (multi-session) - 2 sessions
+  [478] 09ba9854 (multi-session) - 2 sessions
+  [479] d6062bb9 (multi-session) - 2 sessions
+  [480] 157a136e (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (27.5s)
+   Successful: 20/20
+   Files created: 7
+   Files updated: 5
+
+📊 PROGRESS: 96.0% complete
+   Sessions: 908/948
+   Elapsed: 22.7 mins
+   ETA: 1.0 mins
+   Success rate: 98.9%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 49/50 | Questions 481-490
+──────────────────────────────────────────────────────────────────────
+  [481] c18a7dc8 (multi-session) - 2 sessions
+  [482] a3332713 (multi-session) - 2 sessions
+  [483] 55241a1f (multi-session) - 2 sessions
+  [484] a08a253f (multi-session) - 2 sessions
+  [485] f0e564bc (multi-session) - 2 sessions
+  [486] 078150f1 (multi-session) - 2 sessions
+  [487] 8cf4d046 (multi-session) - 2 sessions
+  [488] a346bb18 (multi-session) - 2 sessions
+  [489] 37f165cf (multi-session) - 2 sessions
+  [490] 8e91e7d9 (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (26.2s)
+   Successful: 20/20
+   Files created: 3
+   Files updated: 3
+
+📊 PROGRESS: 98.0% complete
+   Sessions: 928/948
+   Elapsed: 23.1 mins
+   ETA: 0.5 mins
+   Success rate: 98.9%
+
+──────────────────────────────────────────────────────────────────────
+CHUNK 50/50 | Questions 491-500
+──────────────────────────────────────────────────────────────────────
+  [491] 87f22b4a (multi-session) - 2 sessions
+  [492] e56a43b9 (multi-session) - 2 sessions
+  [493] efc3f7c2 (multi-session) - 2 sessions
+  [494] 21d02d0d (multi-session) - 2 sessions
+  [495] 2311e44b_abs (multi-session) - 2 sessions
+  [496] 6456829e_abs (multi-session) - 2 sessions
+  [497] e5ba910e_abs (multi-session) - 2 sessions
+  [498] a96c20ee_abs (multi-session) - 2 sessions
+  [499] ba358f49_abs (multi-session) - 2 sessions
+  [500] 09ba9854_abs (multi-session) - 2 sessions
+
+Total items in chunk: 20
+Sending to bulk endpoint...
+✅ SUCCESS (24.9s)
+   Successful: 20/20
+   Files created: 2
+   Files updated: 7
+
+📊 PROGRESS: 100.0% complete
+   Sessions: 948/948
+   Elapsed: 23.6 mins
+   ETA: 0.0 mins
+   Success rate: 98.9%
+
+======================================================================
+INGESTION COMPLETE
+======================================================================
+Total sessions: 948
+Successful: 938
+Failed: 10
+Success rate: 98.9%
+Total time: 23.6 minutes
+======================================================================
+
+📊 Results saved to longmemeval_test/ingestion_results.json
+

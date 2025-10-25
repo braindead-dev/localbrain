@@ -1,0 +1,140 @@
+[1/20] gpt4_2655b836
+Q: What was the first issue I had with my new car after its first service?
+⚠️  No contexts
+
+[2/20] gpt4_2487a7cb
+Q: Which event did I attend first, the 'Effective Time Management' workshop or the 'Data Analysis using Python' webinar?
+⚠️  No contexts
+
+[3/20] gpt4_76048e76
+Q: Which vehicle did I take care of first in February, the bike or the car?
+✅ 9 contexts
+A: Insufficient information
+
+The context only mentions bike gear repairs in mid-February 2023. There is...
+
+[4/20] gpt4_2312f94c
+Q: Which device did I got first, the Samsung Galaxy S22 or the Dell XPS 13?
+✅ 1 contexts
+A: Insufficient information. The context only provides a purchase date for the Samsung Galaxy S22 (Febr...
+
+[5/20] 0bb5a684
+Q: How many days before the team meeting I was preparing for did I attend the workshop on 'Effective Communication in the Workplace'?
+✅ 2 contexts
+A: Insufficient information
+
+The context provides the date of the workshop (January 10, 2023) but does ...
+
+[6/20] 08f4fc43
+Q: How many days had passed between the Sunday mass at St. Mary's Church and the Ash Wednesday service at the cathedral?
+✅ 3 contexts
+A: Insufficient information
+
+The context provides the date of the Ash Wednesday service at the cathedra...
+
+[7/20] 2c63a862
+Q: How many days did it take for me to find a house I loved after starting to work with Rachel?
+✅ 2 contexts
+A: Insufficient information
+
+The context mentions Rachel as a real estate agent in a home search file, ...
+
+[8/20] gpt4_385a5000
+Q: Which seeds were started first, the tomatoes or the marigolds?
+✅ 1 contexts
+A: Insufficient information
+
+The context lists tomatoes as a crop being grown, but contains no informat...
+
+[9/20] 2a1811e2
+Q: How many days had passed between the Hindu festival of Holi and the Sunday mass at St. Mary's Church?
+✅ 2 contexts
+A: Insufficient information
+
+The context provides a date for the Holi Celebration (Feb 26th, 2023) but ...
+
+[10/20] bbf86515
+Q: How many days before the 'Rack Fest' did I participate in the 'Turbocharged Tuesdays' event?
+✅ 1 contexts
+A: Insufficient information
+
+The context only provides the date for Rack Fest (June 18, 2023) but does ...
+
+[11/20] gpt4_5dcc0aab
+Q: Which pair of shoes did I clean last month?
+✅ 2 contexts
+A: Insufficient information
+
+The context does not contain any information about when shoes were cleaned...
+
+[12/20] gpt4_0b2f1d21
+Q: Which event happened first, the purchase of the coffee maker or the malfunction of the stand mixer?
+✅ 2 contexts
+A: Insufficient information
+
+The context provides a date for the stand mixer malfunction (May 2023), bu...
+
+[13/20] f0853d11
+Q: How many days had passed between the 'Walk for Hunger' event and the 'Coastal Cleanup' event?
+✅ 2 contexts
+A: Insufficient information
+
+The context provides a date for the Walk for Hunger event (February 21, 20...
+
+[14/20] gpt4_6ed717ea
+Q: Which item did I purchase first, the dog bed for Max or the training pads for Luna?
+✅ 3 contexts
+A: Insufficient information
+
+The context provided does not contain any dates or purchase information ab...
+
+[15/20] gpt4_70e84552
+Q: Which task did I complete first, fixing the fence or trimming the goats' hooves?
+⚠️  No contexts
+
+[16/20] a3838d2b
+Q: How many charity events did I participate in before the 'Run for the Cure' event?
+✅ 1 contexts
+A: Insufficient information
+
+The context provided only mentions "Run for the Cure" as a charity event t...
+
+[17/20] gpt4_93159ced
+Q: How long have I been working before I started my current job at NovaTech?
+✅ 1 contexts
+A: Insufficient information
+
+The provided context only mentions "NovaTech - API Performance Optimizatio...
+
+[18/20] gpt4_2d58bcd6
+Q: Which book did I finish reading first, 'The Hate U Give' or 'The Nightingale'?
+✅ 1 contexts
+A: Insufficient information
+
+The context only mentions that "The Hate U Give" by Angie Thomas was finis...
+
+[19/20] gpt4_65aabe59
+Q: Which device did I set up first, the smart thermostat or the mesh network system?
+✅ 3 contexts
+A: Insufficient information
+
+The context shows the smart thermostat was set up on February 10, but no d...
+
+[20/20] 982b5123
+Q: How many months ago did I book the Airbnb in San Francisco?
+✅ 1 contexts
+A: Insufficient information
+
+The context provided only shows a file path and heading ("San Francisco Tr...
+
+
+✅ Saved 20 predictions to predictions_quick.jsonl
+
+Running evaluation...
+
+Errors: Traceback (most recent call last):
+  File "/Users/henry/Documents/GitHub/LongMemEval/src/evaluation/evaluate_qa.py", line 4, in <module>
+    from tqdm import tqdm
+ModuleNotFoundError: No module named 'tqdm'
+
+
