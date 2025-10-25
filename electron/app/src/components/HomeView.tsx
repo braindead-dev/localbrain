@@ -6,7 +6,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
-import { FolderOpen, Brain, Folder, X, Search, StickyNote, Lightbulb, CheckCircle2, AlertCircle, Activity, Database, HardDrive, ChevronLeft, ChevronRight, Zap, Shield, Boxes, Sparkles, Check, XCircle } from "lucide-react";
+import { FolderOpen, Brain, Folder, X, Search, StickyNote, Lightbulb, CheckCircle2, AlertCircle, Activity, Database, HardDrive, ChevronLeft, ChevronRight, Zap, Shield, Boxes, Sparkles, Check, XCircle, Loader2 } from "lucide-react";
+import { api } from "../lib/api";
 
 interface HomeViewProps {
   onSetupVisibilityChange: (visible: boolean) => void;
@@ -28,8 +29,13 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hasSeenCarousel, setHasSeenCarousel] = useState(true);
   const [showCarousel, setShowCarousel] = useState(false);
+  const [daemonConnected, setDaemonConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Check daemon health periodically
+    const interval = setInterval(checkDaemonHealth, 5000);
+    checkDaemonHealth();
+    
     // Check if vault location is already set
     const savedPath = localStorage.getItem("localBrainVaultPath");
     const carouselSeen = localStorage.getItem("localBrainCarouselSeen");
@@ -37,6 +43,8 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
 
     setVaultPath(savedPath);
     setHasSeenCarousel(carouselSeen === "true");
+    
+    return () => clearInterval(interval);
 
     // If welcome widget was completed before, mark all steps as completed
     if (welcomeCompleted === "true") {
@@ -57,6 +65,15 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
       }
     }
   }, [onSetupVisibilityChange]);
+
+  const checkDaemonHealth = async () => {
+    try {
+      await api.health();
+      setDaemonConnected(true);
+    } catch (error) {
+      setDaemonConnected(false);
+    }
+  };
 
   const handleSelectVault = () => {
     setShowPathDialog(true);
@@ -154,7 +171,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
     <div className="h-full flex flex-col bg-background relative m-4 rounded-2xl overflow-hidden border border-border shadow-2xl">
       {/* Header */}
       <div className={`border-b border-border px-6 py-5 bg-card shadow-sm ${showSetup ? 'pointer-events-none' : ''}`}>
-        <div className="relative flex justify-center items-center">
+        <div className="relative flex justify-between items-center">
           <div className="flex items-center gap-3">
             <motion.div
               className="p-2 bg-primary/10 rounded-lg shadow-sm"
@@ -183,6 +200,21 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
                 Welcome to LocalBrain
               </motion.h1>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {daemonConnected === null ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : daemonConnected ? (
+              <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Daemon Connected</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-xs text-destructive">
+                <XCircle className="h-4 w-4" />
+                <span>Daemon Offline</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

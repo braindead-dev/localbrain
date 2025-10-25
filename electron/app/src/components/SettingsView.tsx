@@ -8,8 +8,9 @@ import { Card } from "./ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { useState, useEffect } from "react";
-import { Keyboard, Mic, Camera, MapPin, FileText, Monitor, Settings as SettingsIcon, FolderOpen, Folder, Download, Upload, Trash2 } from "lucide-react";
+import { Keyboard, Mic, Camera, MapPin, FileText, Monitor, Settings as SettingsIcon, FolderOpen, Folder, Download, Upload, Trash2, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "../lib/api";
 
 interface SettingsViewProps {
   darkMode: boolean;
@@ -33,12 +34,41 @@ export function SettingsView({ darkMode, setDarkMode, showLineNumbers, setShowLi
   const [pathInput, setPathInput] = useState("");
   const [isSelecting, setIsSelecting] = useState(false);
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false);
+  const [daemonConnected, setDaemonConnected] = useState<boolean | null>(null);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   useEffect(() => {
-    // Load vault path from localStorage
-    const savedPath = localStorage.getItem("localBrainVaultPath");
-    setVaultPath(savedPath);
+    // Load vault path from backend config
+    loadBackendConfig();
+    // Check daemon health periodically
+    const interval = setInterval(checkDaemonHealth, 5000);
+    checkDaemonHealth();
+    return () => clearInterval(interval);
   }, []);
+
+  const checkDaemonHealth = async () => {
+    try {
+      await api.health();
+      setDaemonConnected(true);
+    } catch (error) {
+      setDaemonConnected(false);
+    }
+  };
+
+  const loadBackendConfig = async () => {
+    try {
+      setIsLoadingConfig(true);
+      const config = await api.getConfig();
+      setVaultPath(config.vault_path);
+    } catch (error) {
+      console.error('Error loading config:', error);
+      // Fallback to localStorage
+      const savedPath = localStorage.getItem("localBrainVaultPath");
+      setVaultPath(savedPath);
+    } finally {
+      setIsLoadingConfig(false);
+    }
+  };
 
   const togglePermission = (key: keyof typeof permissions) => {
     setPermissions(prev => ({ ...prev, [key]: !prev[key] }));
@@ -66,13 +96,31 @@ export function SettingsView({ darkMode, setDarkMode, showLineNumbers, setShowLi
     }
   };
 
-  const handleConfirmPath = () => {
+  const handleConfirmPath = async () => {
     if (pathInput && pathInput.trim()) {
       const trimmedPath = pathInput.trim();
-      localStorage.setItem("localBrainVaultPath", trimmedPath);
-      setVaultPath(trimmedPath);
-      setShowPathDialog(false);
-      setPathInput("");
+      
+      try {
+        // Update backend config
+        const result = await api.updateConfig({ vault_path: trimmedPath });
+        setVaultPath(trimmedPath);
+        setShowPathDialog(false);
+        setPathInput("");
+        
+        if (result.restart_required) {
+          toast.warning('Vault path updated. Please restart the daemon for changes to take effect.');
+        } else {
+          toast.success('Vault path updated successfully!');
+        }
+      } catch (error: any) {
+        console.error('Error updating vault path:', error);
+        toast.error(error.message || 'Failed to update vault path');
+        // Fallback to localStorage
+        localStorage.setItem("localBrainVaultPath", trimmedPath);
+        setVaultPath(trimmedPath);
+        setShowPathDialog(false);
+        setPathInput("");
+      }
     }
   };
 
@@ -155,13 +203,30 @@ export function SettingsView({ darkMode, setDarkMode, showLineNumbers, setShowLi
   return (
     <div className="h-full flex flex-col overflow-hidden m-4 rounded-2xl bg-card shadow-2xl border border-border">
       <div className="border-b border-border p-4 bg-card shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
-            <SettingsIcon className="h-5 w-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
+              <SettingsIcon className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2>Preferences</h2>
+              <p className="text-sm text-muted-foreground">Configure your context engine preferences</p>
+            </div>
           </div>
-          <div>
-            <h2>Preferences</h2>
-            <p className="text-sm text-muted-foreground">Configure your context engine preferences</p>
+          <div className="flex items-center gap-2">
+            {daemonConnected === null ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : daemonConnected ? (
+              <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Daemon Connected</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-xs text-destructive">
+                <XCircle className="h-4 w-4" />
+                <span>Daemon Offline</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -174,20 +239,32 @@ export function SettingsView({ darkMode, setDarkMode, showLineNumbers, setShowLi
           <div className="space-y-3">
             <div className="p-3 rounded-md bg-background/50 shadow-sm">
               <Label className="text-sm mb-2 block">Current vault location:</Label>
-              <code className="block px-4 py-3 bg-muted rounded-md text-sm break-all">
-                {vaultPath || "Not configured"}
-              </code>
+              {isLoadingConfig ? (
+                <div className="flex items-center justify-center py-3">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                </div>
+              ) : (
+                <code className="block px-4 py-3 bg-muted rounded-md text-sm break-all">
+                  {vaultPath || "Not configured"}
+                </code>
+              )}
             </div>
             <div className="flex justify-center">
               <Button
                 onClick={handleChangeVault}
                 variant="outline"
                 className="shadow-sm hover:shadow-md transition-shadow"
+                disabled={!daemonConnected}
               >
                 <FolderOpen className="h-4 w-4 mr-2" />
                 Change Vault Location
               </Button>
             </div>
+            {!daemonConnected && (
+              <p className="text-xs text-center text-muted-foreground">
+                Daemon must be running to change vault location
+              </p>
+            )}
           </div>
         </div>
 

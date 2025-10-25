@@ -31,6 +31,15 @@ Tracking applications, interviews, and offers for new grad SWE roles (2025-2026)
 - **Result:** No offer - feedback was "good technical skills but need more system design depth" [9]
 - **Learnings:** Need to practice distributed systems design more
 
+
+### NVIDIA - Software Engineer, Deep Learning
+- **Offer Received:** October 25, 2025 [10]
+- **Status:** Offer accepted
+- **Role:** Full-time Software Engineer - Deep Learning
+- **Start Date:** July 14, 2025 [2]
+- **Location:** Santa Clara headquarters [2]
+- **Compensation:** $155,000 base + $25,000 sign-on + $180,000 RSUs (4-year vest) [2]
+
 ## Related
 
 - [[Resume]]
