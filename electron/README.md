@@ -147,6 +147,13 @@ If you make changes to the Next.js app:
 1. Rebuild Next.js: `npm run build:next`
 2. Restart Electron dev: `npm run dev:electron`
 
+## Window Behavior
+
+- **Development**: Window starts maximized and shows "LocalBrain" in dock
+- **Production**: Window starts maximized, content fills entire window space
+- **Window Controls**: Full macOS window controls (minimize, maximize, close) are available
+- **Responsive**: Content adapts to window resizing
+
 ## Next.js Configuration
 
 The Next.js app is configured for static export in `app/next.config.ts`:
