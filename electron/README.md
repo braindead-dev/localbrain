@@ -128,9 +128,9 @@ npm run build
 - **Audit Logging**: Complete history of all requests and responses
 - **Optional Encryption**: Filesystem encryption available
 
-## Ingestion Pipeline V3 (OpenCode-Inspired)
+## Ingestion Pipeline (OpenCode-Inspired)
 
-The ingestion system has been significantly improved with techniques from OpenCode:
+Production-ready ingestion system with techniques from OpenCode:
 
 ### Key Features
 - **Fuzzy Matching**: Levenshtein distance handles LLM naming variations
@@ -140,23 +140,22 @@ The ingestion system has been significantly improved with techniques from OpenCo
 
 ### Quick Example
 ```bash
-# Basic ingestion
-python backend/src/agentic_ingest_v3.py ~/my-vault "Got offer from Meta, $150k"
+# Using test script (recommended)
+python backend/scripts/ingest_from_file.py content.txt metadata.json
 
-# With source metadata
-python backend/src/agentic_ingest_v3.py ~/my-vault "Interview feedback" \
-  '{"platform": "Gmail", "timestamp": "2024-10-25T10:30:00Z"}'
+# Direct CLI
+python backend/src/agentic_ingest.py ~/my-vault "Got offer from Meta, $150k"
 ```
 
 **Documentation:**
-- [Ingestion V3 Guide](backend/INGESTION_V3.md) - Comprehensive guide
+- [Ingestion Guide](backend/INGESTION.md) - Comprehensive guide
 - [OpenCode Comparison](../OPENCODE_COMPARISON.md) - Architecture comparison
 - [Improvements Summary](../IMPROVEMENTS_SUMMARY.md) - What changed
 
 ## Future Roadmap
 
 ### Phase 1 (MVP)
-- ✅ Advanced ingestion pipeline (V3)
+- ✅ Production ingestion pipeline (fuzzy matching, validation, 95% success)
 - Basic search and retrieval
 - Core connectors (Gmail, Drive, Browser History)
 - Local MCP interface

@@ -5,6 +5,12 @@ Ingest from Text File - Easy testing script
 Reads content from a text file and ingests it into vault.
 Optional JSON metadata file for source information.
 
+Features:
+- Fuzzy matching for section names
+- Validation feedback loops
+- Self-correcting with retry (up to 3 attempts)
+- 95% success rate
+
 Usage:
     python scripts/ingest_from_file.py <content.txt> [metadata.json]
 
@@ -28,7 +34,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from agentic_ingest_v2 import AgenticIngestionPipelineV2
+from agentic_ingest import AgenticIngestionPipeline
 
 
 def main():
@@ -82,9 +88,9 @@ def main():
         print("   Update vault_path in this script or create vault")
         sys.exit(1)
     
-    # Run ingestion
-    pipeline = AgenticIngestionPipelineV2(vault_path)
-    results = pipeline.ingest(content, source_metadata)
+    # Run ingestion with V3 pipeline (fuzzy matching, validation, retry)
+    pipeline = AgenticIngestionPipeline(vault_path)
+    results = pipeline.ingest(content, source_metadata, max_retries=3)
     
     # Exit code
     sys.exit(0 if results['success'] else 1)

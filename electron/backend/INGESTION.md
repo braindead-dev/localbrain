@@ -1,4 +1,4 @@
-# Ingestion Pipeline V3 - OpenCode-Inspired Improvements
+# Ingestion Pipeline - OpenCode-Inspired
 
 ## Overview
 
@@ -125,13 +125,17 @@ TASK: Fix the above errors."""
 ### Basic Ingestion
 
 ```bash
-python src/agentic_ingest_v3.py ~/my-vault "Got offer from Meta, $150k base"
+# Direct CLI usage
+python src/agentic_ingest.py ~/my-vault "Got offer from Meta, $150k base"
+
+# Or use the test script
+python scripts/ingest_from_file.py content.txt metadata.json
 ```
 
 ### With Source Metadata
 
 ```bash
-python src/agentic_ingest_v3.py ~/my-vault "Interview feedback positive" \
+python src/agentic_ingest.py ~/my-vault "Interview feedback positive" \
   '{"platform": "Gmail", "timestamp": "2024-10-25T10:30:00Z", "url": null, "quote": "Great technical skills"}'
 ```
 
@@ -139,9 +143,9 @@ python src/agentic_ingest_v3.py ~/my-vault "Interview feedback positive" \
 
 ```python
 from pathlib import Path
-from agentic_ingest_v3 import AgenticIngestionPipelineV3
+from agentic_ingest import AgenticIngestionPipeline
 
-pipeline = AgenticIngestionPipelineV3(Path("~/my-vault"))
+pipeline = AgenticIngestionPipeline(Path("~/my-vault"))
 
 result = pipeline.ingest(
     context="Email from recruiter@meta.com: Offer $150k, start Jan 2025",
@@ -160,29 +164,16 @@ else:
     print(f"Errors: {result['errors']}")
 ```
 
-## Performance Comparison
-
-### V2 (Before OpenCode Improvements)
+## Performance Results
 
 **Test Case:** "Applied to 5 companies: Google, Meta, Netflix, Stripe, Airbnb"
-
-**Result:**
-- LLM creates section "Applications" 
-- File has section "Job Applications"
-- **Exact match fails** → appends to end of file (wrong location)
-- No validation → broken structure persists
-- **Success Rate: 65%**
-
-### V3 (With OpenCode Improvements)
-
-**Same Test Case:**
 
 **Result:**
 - LLM creates section "Applications"
 - Fuzzy matcher: "Applications" → "Job Applications" (0.73 similarity)
 - **Match succeeds** → appends to correct section
 - Validation passes → structure intact
-- **Success Rate: 95%**
+- **Success Rate: 95%** (up from 65% before improvements)
 
 ## Error Recovery Examples
 
