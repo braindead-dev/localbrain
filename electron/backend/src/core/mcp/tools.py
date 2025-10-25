@@ -1,12 +1,11 @@
 """
-MCP Tools Implementation
+MCP Tools Implementation - Proxy Layer
 
-Provides the core MCP tools: search, search_agentic, open, summarize, and list.
-Integrates with retrieval engine and file system for data access.
+Forwards MCP tool requests to the LocalBrain daemon.py backend.
+Acts as a thin wrapper that translates MCP protocol to daemon API calls.
 """
 
-import os
-import json
+import httpx
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
@@ -22,30 +21,28 @@ from .models import (
 
 class MCPTools:
     """
-    Implementation of all MCP tools.
+    MCP Tools proxy layer.
 
-    Provides semantic search, file access, summarization, and directory listing.
+    Forwards all tool requests to the LocalBrain daemon backend.
     """
 
     def __init__(
         self,
-        vault_path: str,
-        retrieval_engine=None,
-        llm_client=None
+        daemon_url: str = "http://127.0.0.1:8765",
+        timeout: float = 30.0
     ):
         """
-        Initialize MCP tools.
+        Initialize MCP tools proxy.
 
         Args:
-            vault_path: Path to LocalBrain vault directory
-            retrieval_engine: Instance of RetrievalEngine for search
-            llm_client: LLM client for summarization (optional)
+            daemon_url: URL of the LocalBrain daemon backend
+            timeout: HTTP request timeout in seconds
         """
-        self.vault_path = Path(vault_path).expanduser().resolve()
-        self.retrieval_engine = retrieval_engine
-        self.llm_client = llm_client
+        self.daemon_url = daemon_url.rstrip('/')
+        self.timeout = timeout
+        self.client = httpx.AsyncClient(timeout=timeout)
 
-        logger.info(f"MCPTools initialized with vault: {self.vault_path}")
+        logger.info(f"MCPTools proxy initialized, forwarding to daemon: {self.daemon_url}")
 
     # ========================================================================
     # TOOL: search
@@ -53,7 +50,7 @@ class MCPTools:
 
     async def search(self, request: SearchRequest) -> SearchResponse:
         """
-        Natural language search across knowledge base.
+        Natural language search - proxies to daemon /protocol/search.
 
         Args:
             request: SearchRequest with query and parameters
@@ -61,49 +58,51 @@ class MCPTools:
         Returns:
             SearchResponse with results
         """
-        if not self.retrieval_engine:
-            raise RuntimeError("Retrieval engine not initialized")
-
-        logger.info(f"MCP search: '{request.query}' (top_k={request.top_k})")
+        logger.info(f"MCP proxy search: '{request.query}'")
 
         # Handle multiple queries
-        queries = request.query if isinstance(request.query, list) else [request.query]
+        query = request.query if isinstance(request.query, str) else " ".join(request.query)
 
-        # Execute searches and merge results
-        all_results = []
-        for query in queries:
-            result = self.retrieval_engine.search(
+        # Forward to daemon
+        try:
+            response = await self.client.post(
+                f"{self.daemon_url}/protocol/search",
+                json={"q": query}
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            if not data.get('success'):
+                raise RuntimeError(data.get('error', 'Search failed'))
+
+            # Convert daemon response to MCP SearchResponse format
+            contexts = data.get('contexts', [])
+            results = []
+            for ctx in contexts[:request.top_k]:
+                results.append(SearchResult(
+                    chunk_id=ctx.get('chunk_id', ''),
+                    text=ctx.get('text', ''),
+                    snippet=ctx.get('snippet', ctx.get('text', '')[:200]),
+                    file_path=ctx.get('file_path', ''),
+                    similarity_score=ctx.get('similarity_score', 0.0),
+                    final_score=ctx.get('final_score', ctx.get('similarity_score', 0.0)),
+                    platform=ctx.get('platform'),
+                    timestamp=ctx.get('timestamp'),
+                    chunk_position=ctx.get('chunk_position', 0),
+                    source=ctx.get('source', {})
+                ))
+
+            return SearchResponse(
                 query=query,
-                top_k=request.top_k,
-                filters=request.filters,
-                min_similarity=request.min_similarity
+                processed_query=data.get('query', query),
+                results=results,
+                total=len(results),
+                took_ms=0  # Calculated by caller
             )
 
-            # Convert to SearchResult models
-            for r in result['results']:
-                all_results.append(SearchResult(**r))
-
-        # Deduplicate and re-rank if multiple queries
-        if len(queries) > 1:
-            # Simple deduplication by chunk_id
-            seen = set()
-            unique_results = []
-            for r in all_results:
-                if r.chunk_id not in seen:
-                    unique_results.append(r)
-                    seen.add(r.chunk_id)
-            all_results = sorted(unique_results, key=lambda x: x.final_score, reverse=True)
-
-        # Limit to top_k
-        all_results = all_results[:request.top_k]
-
-        return SearchResponse(
-            query=str(request.query),
-            processed_query=queries[0] if queries else "",
-            results=all_results,
-            total=len(all_results),
-            took_ms=0  # Calculated by caller
-        )
+        except httpx.HTTPError as e:
+            logger.error(f"Daemon request failed: {e}")
+            raise RuntimeError(f"Failed to connect to daemon: {e}")
 
     # ========================================================================
     # TOOL: search_agentic
@@ -111,7 +110,7 @@ class MCPTools:
 
     async def search_agentic(self, request: SearchAgenticRequest) -> SearchResponse:
         """
-        Structured search with specific filters and parameters.
+        Structured search - proxies to daemon /protocol/search with structured params.
 
         Args:
             request: SearchAgenticRequest with filters
@@ -119,51 +118,60 @@ class MCPTools:
         Returns:
             SearchResponse with filtered results
         """
-        if not self.retrieval_engine:
-            raise RuntimeError("Retrieval engine not initialized")
-
-        logger.info(f"MCP search_agentic: keywords={request.keywords}, platform={request.platform}")
+        logger.info(f"MCP proxy search_agentic: keywords={request.keywords}, platform={request.platform}")
 
         # Build query from keywords
-        query = " ".join(request.keywords) if request.keywords else "*"
+        query = " ".join(request.keywords) if request.keywords else ""
 
-        # Build filters
-        filters = {}
-
+        # Add platform and other filters to query for daemon
+        query_parts = [query] if query else []
         if request.platform:
-            filters['platform'] = request.platform
-
+            query_parts.append(f"platform:{request.platform}")
         if request.file_path:
-            filters['file_path'] = request.file_path
+            query_parts.append(f"file:{request.file_path}")
 
-        # Handle date filters
-        if request.days:
-            date_from = (datetime.now() - timedelta(days=request.days)).isoformat()
-            filters['date_from'] = date_from
-        elif request.date_from:
-            filters['date_from'] = request.date_from
+        full_query = " ".join(query_parts)
 
-        if request.date_to:
-            filters['date_to'] = request.date_to
+        # Forward to daemon
+        try:
+            response = await self.client.post(
+                f"{self.daemon_url}/protocol/search",
+                json={"q": full_query}
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        # Execute search
-        result = self.retrieval_engine.search(
-            query=query,
-            top_k=request.top_k,
-            filters=filters,
-            min_similarity=0.0  # Agentic search includes lower similarity matches
-        )
+            if not data.get('success'):
+                raise RuntimeError(data.get('error', 'Search failed'))
 
-        # Convert to SearchResult models
-        results = [SearchResult(**r) for r in result['results']]
+            # Convert daemon response to MCP SearchResponse format
+            contexts = data.get('contexts', [])
+            results = []
+            for ctx in contexts[:request.top_k]:
+                results.append(SearchResult(
+                    chunk_id=ctx.get('chunk_id', ''),
+                    text=ctx.get('text', ''),
+                    snippet=ctx.get('snippet', ctx.get('text', '')[:200]),
+                    file_path=ctx.get('file_path', ''),
+                    similarity_score=ctx.get('similarity_score', 0.0),
+                    final_score=ctx.get('final_score', ctx.get('similarity_score', 0.0)),
+                    platform=ctx.get('platform'),
+                    timestamp=ctx.get('timestamp'),
+                    chunk_position=ctx.get('chunk_position', 0),
+                    source=ctx.get('source', {})
+                ))
 
-        return SearchResponse(
-            query=query,
-            processed_query=result['processed_query'],
-            results=results,
-            total=len(results),
-            took_ms=result['took_ms']
-        )
+            return SearchResponse(
+                query=full_query,
+                processed_query=data.get('query', full_query),
+                results=results,
+                total=len(results),
+                took_ms=0  # Calculated by caller
+            )
+
+        except httpx.HTTPError as e:
+            logger.error(f"Daemon request failed: {e}")
+            raise RuntimeError(f"Failed to connect to daemon: {e}")
 
     # ========================================================================
     # TOOL: open
@@ -171,7 +179,7 @@ class MCPTools:
 
     async def open(self, request: OpenRequest) -> OpenResponse:
         """
-        Retrieve full contents of a specific file.
+        Retrieve full contents of a specific file - proxies to daemon /file/{filepath}.
 
         Args:
             request: OpenRequest with file path
@@ -179,44 +187,44 @@ class MCPTools:
         Returns:
             OpenResponse with file content and metadata
         """
-        # Resolve file path within vault
-        file_path = self.vault_path / request.file_path
+        logger.info(f"MCP proxy open: {request.file_path}")
 
-        # Security check: ensure path is within vault
-        if not self._is_safe_path(file_path):
-            raise PermissionError(f"Access denied: {request.file_path}")
-
-        # Check file exists
-        if not file_path.exists():
-            raise FileNotFoundError(f"File not found: {request.file_path}")
-
-        # Read file content
+        # Forward to daemon
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-        except UnicodeDecodeError:
-            raise ValueError(f"Cannot read binary file: {request.file_path}")
+            response = await self.client.get(
+                f"{self.daemon_url}/file/{request.file_path}"
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        # Get metadata if requested
-        metadata = None
-        if request.include_metadata:
-            stat = file_path.stat()
-            metadata = FileMetadata(
-                name=file_path.name,
-                path=str(request.file_path),
-                size=stat.st_size,
-                created=datetime.fromtimestamp(stat.st_ctime),
-                modified=datetime.fromtimestamp(stat.st_mtime),
-                file_type=file_path.suffix[1:] if file_path.suffix else "unknown"
+            # Build metadata if requested
+            metadata = None
+            if request.include_metadata:
+                metadata = FileMetadata(
+                    name=Path(data['path']).name,
+                    path=data['path'],
+                    size=data.get('size', 0),
+                    created=datetime.fromtimestamp(data.get('last_modified', 0)),
+                    modified=datetime.fromtimestamp(data.get('last_modified', 0)),
+                    file_type=Path(data['path']).suffix[1:] if Path(data['path']).suffix else "unknown"
+                )
+
+            return OpenResponse(
+                file_path=data['path'],
+                content=data['content'],
+                metadata=metadata
             )
 
-        logger.info(f"MCP open: {request.file_path} ({len(content)} bytes)")
-
-        return OpenResponse(
-            file_path=str(request.file_path),
-            content=content,
-            metadata=metadata
-        )
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                raise FileNotFoundError(f"File not found: {request.file_path}")
+            elif e.response.status_code == 403:
+                raise PermissionError(f"Access denied: {request.file_path}")
+            else:
+                raise RuntimeError(f"Failed to fetch file: {e}")
+        except httpx.HTTPError as e:
+            logger.error(f"Daemon request failed: {e}")
+            raise RuntimeError(f"Failed to connect to daemon: {e}")
 
     # ========================================================================
     # TOOL: summarize
@@ -226,34 +234,37 @@ class MCPTools:
         """
         Generate summary of file or content.
 
+        Note: Daemon doesn't have a summarize endpoint yet, so this provides
+        a simple extractive summary directly.
+
         Args:
             request: SummarizeRequest with file path or content
 
         Returns:
             SummarizeResponse with summary
         """
+        logger.info(f"MCP proxy summarize: {request.file_path or 'content'}")
+
         # Get content
         if request.file_path:
-            # Read file
-            file_path = self.vault_path / request.file_path
-            if not self._is_safe_path(file_path):
-                raise PermissionError(f"Access denied: {request.file_path}")
-
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            source = request.file_path
+            # Fetch file from daemon
+            try:
+                response = await self.client.get(
+                    f"{self.daemon_url}/file/{request.file_path}"
+                )
+                response.raise_for_status()
+                data = response.json()
+                content = data['content']
+                source = request.file_path
+            except httpx.HTTPError as e:
+                logger.error(f"Failed to fetch file for summarization: {e}")
+                raise RuntimeError(f"Failed to fetch file: {e}")
         else:
             content = request.content
             source = "provided_content"
 
-        # Generate summary
-        if self.llm_client:
-            # Use LLM for summarization
-            summary = await self._llm_summarize(content, request.max_length, request.style)
-        else:
-            # Fallback: simple extractive summary
-            summary = self._simple_summarize(content, request.max_length, request.style)
-
+        # Generate simple extractive summary
+        summary = self._simple_summarize(content, request.max_length, request.style)
         word_count = len(summary.split())
 
         logger.info(f"MCP summarize: {source} -> {word_count} words")
@@ -264,12 +275,6 @@ class MCPTools:
             source=source,
             style=request.style
         )
-
-    async def _llm_summarize(self, content: str, max_length: int, style: str) -> str:
-        """Generate summary using LLM."""
-        # TODO: Implement LLM-based summarization
-        # For now, fall back to simple summarization
-        return self._simple_summarize(content, max_length, style)
 
     def _simple_summarize(self, content: str, max_length: int, style: str) -> str:
         """Simple extractive summarization."""
@@ -307,7 +312,7 @@ class MCPTools:
 
     async def list(self, request: ListRequest) -> ListResponse:
         """
-        List directory contents.
+        List directory contents - proxies to daemon /list endpoint.
 
         Args:
             request: ListRequest with path and options
@@ -315,107 +320,58 @@ class MCPTools:
         Returns:
             ListResponse with directory listing
         """
-        # Resolve directory path
-        dir_path = self.vault_path / (request.path or "")
+        logger.info(f"MCP proxy list: {request.path or '/'}")
 
-        # Security check
-        if not self._is_safe_path(dir_path):
-            raise PermissionError(f"Access denied: {request.path}")
-
-        # Check directory exists
-        if not dir_path.exists():
-            raise FileNotFoundError(f"Directory not found: {request.path}")
-
-        if not dir_path.is_dir():
-            raise ValueError(f"Not a directory: {request.path}")
-
-        # List items
-        items = []
-        total_size = 0
-
-        if request.recursive:
-            # Recursive listing
-            for item in dir_path.rglob('*'):
-                if self._should_include(item, request.file_types):
-                    list_item = self._create_list_item(item, request.include_metadata)
-                    items.append(list_item)
-                    if list_item.size:
-                        total_size += list_item.size
-        else:
-            # Non-recursive listing
-            for item in dir_path.iterdir():
-                if self._should_include(item, request.file_types):
-                    list_item = self._create_list_item(item, request.include_metadata)
-                    items.append(list_item)
-                    if list_item.size:
-                        total_size += list_item.size
-
-        # Sort items: directories first, then alphabetically
-        items.sort(key=lambda x: (not x.is_directory, x.name.lower()))
-
-        logger.info(f"MCP list: {request.path or '/'} -> {len(items)} items")
-
-        return ListResponse(
-            path=str(request.path or "/"),
-            items=items,
-            total_items=len(items),
-            total_size=total_size if request.include_metadata else None
-        )
-
-    def _create_list_item(self, path: Path, include_metadata: bool) -> ListItem:
-        """Create ListItem from path."""
-        relative_path = path.relative_to(self.vault_path)
-
-        if include_metadata and path.is_file():
-            stat = path.stat()
-            return ListItem(
-                name=path.name,
-                path=str(relative_path),
-                is_directory=False,
-                size=stat.st_size,
-                modified=datetime.fromtimestamp(stat.st_mtime),
-                file_type=path.suffix[1:] if path.suffix else "unknown"
-            )
-        else:
-            return ListItem(
-                name=path.name,
-                path=str(relative_path),
-                is_directory=path.is_dir(),
-                size=None,
-                modified=None,
-                file_type=None
-            )
-
-    def _should_include(self, path: Path, file_types: Optional[List[str]]) -> bool:
-        """Check if path should be included in listing."""
-        # Skip hidden files
-        if path.name.startswith('.'):
-            return False
-
-        # Skip __pycache__
-        if '__pycache__' in path.parts:
-            return False
-
-        # Filter by file type
-        if file_types and path.is_file():
-            ext = path.suffix[1:] if path.suffix else ""
-            if ext not in file_types:
-                return False
-
-        return True
-
-    def _is_safe_path(self, path: Path) -> bool:
-        """
-        Check if path is safe (within vault, no traversal).
-
-        Args:
-            path: Path to check
-
-        Returns:
-            True if path is safe
-        """
+        # Forward to daemon
         try:
-            resolved = path.resolve()
-            return resolved.is_relative_to(self.vault_path)
-        except (ValueError, RuntimeError):
-            return False
+            path = request.path or ""
+            url = f"{self.daemon_url}/list/{path}" if path else f"{self.daemon_url}/list"
+
+            response = await self.client.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            # Convert daemon response to MCP ListResponse format
+            items = []
+            total_size = 0
+            for item in data.get('items', []):
+                list_item = ListItem(
+                    name=item['name'],
+                    path=item.get('name'),  # daemon returns relative name
+                    is_directory=item['type'] == 'directory',
+                    size=item.get('size'),
+                    modified=datetime.fromtimestamp(item['last_modified']) if request.include_metadata else None,
+                    file_type=Path(item['name']).suffix[1:] if item['type'] == 'file' and Path(item['name']).suffix else None
+                )
+                items.append(list_item)
+                if list_item.size:
+                    total_size += list_item.size
+
+            # Filter by file types if requested
+            if request.file_types:
+                items = [
+                    item for item in items
+                    if item.is_directory or (item.file_type and item.file_type in request.file_types)
+                ]
+
+            return ListResponse(
+                path=data.get('path', '/'),
+                items=items,
+                total_items=len(items),
+                total_size=total_size if request.include_metadata else None
+            )
+
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                raise FileNotFoundError(f"Directory not found: {request.path}")
+            elif e.response.status_code == 403:
+                raise PermissionError(f"Access denied: {request.path}")
+            else:
+                raise RuntimeError(f"Failed to list directory: {e}")
+        except httpx.HTTPError as e:
+            logger.error(f"Daemon request failed: {e}")
+            raise RuntimeError(f"Failed to connect to daemon: {e}")
+
+    async def close(self):
+        """Close HTTP client connection."""
+        await self.client.aclose()

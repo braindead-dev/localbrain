@@ -1,41 +1,66 @@
 # Local MCP Server
 
-Provides a local API interface for external tools and integrations. Implements the Model Context Protocol to enable external applications to access LocalBrain functionality.
+Provides a Model Context Protocol (MCP) interface for external tools and integrations. Acts as a thin proxy layer that forwards MCP requests to the LocalBrain daemon backend.
 
 ## Implementation Status
 
-✅ **COMPLETE** - Full MCP server implementation with FastAPI, authentication, audit logging, and all tools.
+✅ **COMPLETE** - Full MCP server implementation with proxy architecture, authentication, and audit logging.
+
+## Architecture
+
+The MCP server is a **thin proxy layer** that:
+1. Receives MCP protocol requests (HTTP or stdio)
+2. Forwards them to the LocalBrain daemon backend (`daemon.py`)
+3. Returns responses in MCP format
+
+```
+External Tools → MCP Server (auth/audit) → LocalBrain Daemon (core logic)
+```
+
+**Why this architecture?**
+- Single source of truth: All tool implementations live in `daemon.py`
+- No duplication: MCP server doesn't re-implement search, ingestion, etc.
+- Simpler maintenance: Changes to core logic only need to happen in one place
 
 ## Quick Start
+
+### Prerequisites
+
+**You must start the daemon first:**
+
+```bash
+cd electron/backend
+python src/daemon.py
+```
+
+The daemon runs on `http://127.0.0.1:8765` by default.
 
 ### For REST API Access
 
 ```bash
-# 1. Set up environment
-cp examples/.env.example .env
-# Edit .env with your VAULT_PATH and CHROMA_API_KEY
+# 1. Install dependencies
+pip install fastapi uvicorn pydantic loguru httpx
 
-# 2. Install dependencies
-pip install fastapi uvicorn pydantic loguru chromadb sentence-transformers mcp
-
-# 3. Run server
+# 2. Run MCP server
 python -m src.core.mcp.server
 ```
 
-Server will start on `http://127.0.0.1:8765`
+MCP server will start on `http://127.0.0.1:8766` and proxy requests to daemon on port 8765.
 
 ### For Claude Desktop Integration
 
-1. **Start FastAPI server** (as above)
-2. **Configure Claude Desktop**:
+1. **Start the daemon** (see Prerequisites above)
+2. **Start MCP server** (as above)
+3. **Configure Claude Desktop**:
    - Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
    - Add LocalBrain server config (see `examples/claude_desktop_config.json`)
-3. **Restart Claude Desktop** - Look for 🔨 hammer icon
+4. **Restart Claude Desktop** - Look for 🔨 hammer icon
 
 See [USAGE.md - Claude Desktop Integration](./USAGE.md#claude-desktop-integration) for detailed setup.
 
 ## Features
 
+- ✅ **Proxy Architecture** - Thin layer that forwards to daemon backend
 - ✅ **REST API Server** - HTTP endpoints for programmatic access
 - ✅ **Claude Desktop Integration** - Stdio wrapper for MCP protocol
 - ✅ **5 MCP Tools** - search, search_agentic, open, summarize, list
@@ -47,44 +72,45 @@ See [USAGE.md](./USAGE.md) for complete documentation.
 
 ## Core Responsibilities
 
-- **API Endpoint Management**: HTTP/WebSocket servers for external access
-- **Tool Implementation**: MCP-compliant tools (search, summarize, open, list)
-- **Request Processing**: Parse and validate incoming requests
-- **Response Formatting**: Structure responses according to MCP specification
+- **Protocol Translation**: Convert MCP requests to daemon API calls
 - **Authentication**: Validate external tool permissions with API keys
 - **Rate Limiting**: Prevent abuse and ensure performance
 - **Audit Logging**: Complete request/response tracking
+- **Response Formatting**: Structure daemon responses according to MCP specification
 
-## MCP Tools
+## MCP Tools → Daemon Mapping
+
+All tool implementations live in `daemon.py`. The MCP server simply proxies requests:
 
 **search**
+- **MCP Endpoint**: `/mcp/search`
+- **Daemon Endpoint**: `/protocol/search`
 - **Purpose**: Natural language search across personal knowledge base
-- **Input**: Query string or array of queries
-- **Output**: Relevant chunks, quotes, and file references
 - **Use Case**: AI assistants, external search interfaces
 
 **search_agentic**
+- **MCP Endpoint**: `/mcp/search_agentic`
+- **Daemon Endpoint**: `/protocol/search` (with structured params)
 - **Purpose**: Structured search with specific parameters
-- **Input**: Command-based syntax with filters (keywords, dates, etc.)
-- **Output**: Exact matches and filtered results
 - **Use Case**: Automated tools, batch processing
 
 **open**
+- **MCP Endpoint**: `/mcp/open`
+- **Daemon Endpoint**: `/file/{filepath}`
 - **Purpose**: Retrieve full contents of specific files
-- **Input**: File path within `.localbrain/` directory
-- **Output**: Complete file content with metadata
 - **Use Case**: External editors, backup systems
 
 **summarize**
+- **MCP Endpoint**: `/mcp/summarize`
+- **Implementation**: Fetches file from daemon + simple extractive summary
 - **Purpose**: Generate summaries of files or search results
-- **Input**: File path or content to summarize
-- **Output**: Concise summary with key points
 - **Use Case**: Quick overview, content preview
+- **Note**: Daemon doesn't have a summarize endpoint yet
 
 **list**
+- **MCP Endpoint**: `/mcp/list`
+- **Daemon Endpoint**: `/list/{path}`
 - **Purpose**: Browse directory structure and available files
-- **Input**: Directory path (optional, defaults to root)
-- **Output**: File tree with metadata (size, dates, types)
 - **Use Case**: File management, navigation
 
 ## Protocol Integration
@@ -183,15 +209,17 @@ electron/backend/src/core/mcp/
 - Middleware for CORS, authentication, rate limiting
 - Global exception handling
 - Startup/shutdown lifecycle management
+- Proxies all tool requests to daemon backend
 
 **Tools (`tools.py`):**
-- Implementation of all MCP tools:
-  - `search`: Natural language semantic search
-  - `search_agentic`: Structured search with filters
-  - `open`: File content retrieval
-  - `summarize`: Content summarization
-  - `list`: Directory listing
-- Integration with retrieval engine and vault filesystem
+- **Proxy layer only** - no direct tool implementation
+- Forwards requests to daemon backend via HTTP:
+  - `search` → `/protocol/search`
+  - `search_agentic` → `/protocol/search` with filters
+  - `open` → `/file/{filepath}`
+  - `summarize` → fetches file + simple summary
+  - `list` → `/list/{path}`
+- Translates MCP request/response formats to/from daemon API
 
 **Authentication (`auth.py`):**
 - API key-based authentication
@@ -212,6 +240,7 @@ electron/backend/src/core/mcp/
 - Environment variable support
 - JSON config file support
 - Validation and defaults
+- Daemon URL configuration
 
 **Protocol Handler (`protocol_handler.py`):**
 - Parse `localbrain://` URLs
@@ -224,15 +253,18 @@ electron/backend/src/core/mcp/
 - Standard MCP protocol implementation
 - Tool discovery and capability advertising
 - Error handling and status reporting
-- Extensible tool framework for future additions
+- Proxy architecture for simplified tool additions
 
 **Testing:**
 ```bash
-# Run server in development mode
+# 1. Start daemon first
+python src/daemon.py
+
+# 2. In another terminal, run MCP server
 python -m src.core.mcp.server
 
-# Test with curl
-curl -X POST http://localhost:8765/mcp/search \
+# 3. Test with curl
+curl -X POST http://localhost:8766/mcp/search \
   -H "X-API-Key: dev-key-local-only" \
   -H "Content-Type: application/json" \
   -d '{"query": "test", "top_k": 5}'
@@ -240,11 +272,21 @@ curl -X POST http://localhost:8765/mcp/search \
 
 **Adding New Tools:**
 
-1. Define request/response models in `models.py`
-2. Implement tool method in `tools.py`
-3. Add endpoint in `server.py`
-4. Update authentication permissions in `auth.py`
-5. Add protocol handler support in `protocol_handler.py`
+The MCP server is a thin proxy, so most changes happen in `daemon.py`:
+
+1. **Add endpoint to `daemon.py`** - Implement the actual tool logic there
+2. **Add proxy method to `tools.py`** - Forward MCP request to daemon endpoint
+3. **Add request/response models to `models.py`** (if needed)
+4. **Add endpoint to `server.py`** - Wire up the FastAPI route
+5. **Update authentication in `auth.py`** - Add permission config
+6. **Update README.md** - Document the new tool
+
+**Example: Adding a new "tags" tool**
+
+1. In `daemon.py`, add `/tags/{filepath}` endpoint
+2. In `tools.py`, add `async def tags(request)` that calls daemon
+3. In `server.py`, add `/mcp/tags` FastAPI endpoint
+4. Document in README
 
 **Security Considerations:**
 - Always use HTTPS in production
@@ -253,3 +295,4 @@ curl -X POST http://localhost:8765/mcp/search \
 - Review audit logs for suspicious activity
 - Limit scope restrictions to minimum required access
 - Keep dependencies updated
+- Ensure daemon is not exposed publicly (localhost only)
