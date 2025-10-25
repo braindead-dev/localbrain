@@ -28,7 +28,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from agentic_ingest import AgenticIngestionPipeline
+from agentic_ingest_v2 import AgenticIngestionPipelineV2
 
 
 def main():
@@ -83,7 +83,7 @@ def main():
         sys.exit(1)
     
     # Run ingestion
-    pipeline = AgenticIngestionPipeline(vault_path)
+    pipeline = AgenticIngestionPipelineV2(vault_path)
     results = pipeline.ingest(content, source_metadata)
     
     # Exit code
