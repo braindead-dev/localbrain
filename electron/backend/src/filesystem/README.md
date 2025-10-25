@@ -35,32 +35,45 @@ Users can select any directory on their filesystem to act as their LocalBrain va
 
 ## Directory Structure
 
-**`.localbrain/` Root Directory (within selected vault):**
+**Vault Directory Structure:**
 ```
-.localbrain/
-├── app.json              # Application configuration and settings
-├── notes/                # User-created markdown files
-│   ├── projects/         # Project-related notes
-│   ├── research/         # Research and learning notes
-│   ├── personal/         # Personal notes and journal
-│   └── archive/          # Archived or completed items
-├── attachments/          # File attachments from connectors
-│   ├── images/           # Images from emails, Discord, etc.
-│   ├── documents/        # PDFs, DOCs, and other documents
-│   └── media/            # Audio, video, and other media files
-├── config/               # Connector and system configuration
-│   ├── connectors/       # Connector-specific settings
-│   ├── bridge/           # Bridge access permissions
-│   └── system/           # System-wide settings
-├── data/                 # Internal database and cache files
-│   ├── embeddings/       # Vector embeddings database
-│   ├── chunks/            # Document chunks storage
-│   └── metadata/          # File and source metadata
-└── logs/                 # Application logs and audit trails
-    ├── ingestion/        # Ingestion process logs
-    ├── search/            # Search query logs
-    └── system/           # System events and errors
+~/my-vault/               # User's selected vault directory
+├── .localbrain/          # Internal system directory (hidden)
+│   ├── app.json         # Application configuration
+│   ├── data/            # Database files
+│   │   ├── embeddings.db
+│   │   ├── chunks.db
+│   │   └── metadata.db
+│   └── logs/            # System logs
+│       ├── ingestion.log
+│       ├── search.log
+│       └── system.log
+├── personal/             # Personal information and context
+│   ├── about.md         # Name, contact, key info
+│   └── ...
+├── career/               # Professional and career content
+│   ├── about.md         # Career overview
+│   ├── job-search.md
+│   └── ...
+├── projects/             # Personal projects and side work
+│   ├── about.md
+│   └── ...
+├── research/             # Learning and research notes
+│   ├── about.md
+│   └── ...
+├── social/               # Social interactions, relationships
+├── finance/              # Financial decisions and tracking
+├── health/               # Health, fitness, wellness
+├── learning/             # Courses, skills, education
+└── archive/              # Completed or outdated content
 ```
+
+**Folder Organization:**
+- **User content at root**: All markdown files live in category folders at vault root
+- **.localbrain/ for system**: Internal data, config, and logs stay hidden
+- **Default categories**: Auto-created on vault initialization
+- **Custom folders**: Users can create additional categories as needed
+- **about.md files**: Optional overview file in each category folder
 
 ## File Management
 
