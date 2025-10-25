@@ -24,6 +24,28 @@ Output:
 
 ---
 
+## Protocol System 🚀
+
+**NEW:** LocalBrain now runs as a background service with system-wide `localbrain://` URL support!
+
+```bash
+# Start background service (shows in menu bar)
+python src/tray.py
+
+# Use from anywhere in macOS
+open "localbrain://ingest?text=Hello%20World&platform=Test"
+```
+
+**Features:**
+- ✅ Runs even when Electron app is closed
+- ✅ macOS menu tray with status indicator
+- ✅ System-wide URL protocol
+- ✅ Auto-start capability
+
+See `PROTOCOL_SYSTEM.md` for full documentation.
+
+---
+
 ## Quick Start
 
 ### Setup

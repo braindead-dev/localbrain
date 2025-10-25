@@ -88,15 +88,44 @@ LocalBrain uses a `.localbrain/` directory containing:
 5. **Local-First**: Full privacy with local processing and storage
 6. **Semantic Understanding**: Context-aware search and retrieval
 
-## Development Setup
+## Quick Start
 
 ### Prerequisites
 - **Node.js 16+** - Frontend and Electron
-- **Python 3.10+** - Backend services
-- **npm or yarn** - Package management
-- **For macOS builds**: Xcode command line tools (`xcode-select --install`)
+- **Python 3.10+** - Backend services  
+- **Conda** - Python environment management
 
-### Getting Started
+### Setup & Run
+
+```bash
+# 1. Setup Python backend
+cd backend
+conda create -n localbrain python=3.10 -y
+conda activate localbrain
+pip install -r requirements.txt
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
+
+# 2. Run Electron app (auto-starts daemon)
+cd ../
+npm install
+npm run dev
+```
+
+**That's it!** The app will:
+- ✅ Start Python daemon automatically
+- ✅ Show tray icon in menu bar
+- ✅ Register `localbrain://` protocol
+- ✅ Keep daemon running when window closes
+
+Test it: `open "localbrain://ingest?text=Hello&platform=Test"`
+
+See `ELECTRON_INTEGRATION.md` for full details.
+
+---
+
+## Development Setup (Detailed)
+
+### Getting Started (Advanced)
 ```bash
 # Install dependencies
 npm install
