@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from utils.llm_client import LLMClient
 from utils.file_ops import read_file, get_next_citation_number
+from utils.fuzzy_matcher import find_best_section_match
 
 
 SYSTEM_PROMPT = """You are a precise file editing assistant for LocalBrain knowledge management.
@@ -225,7 +226,14 @@ Return JSON with operations list."""
         return content
     
     def _append_to_section(self, content: str, section_name: str, new_content: str) -> str:
-        """Append content to a specific section."""
+        """Append content to a specific section using fuzzy matching."""
+        # Try fuzzy match to find actual section
+        matched_section = find_best_section_match(content, section_name, threshold=0.6)
+        
+        if matched_section:
+            section_name = matched_section
+            print(f"   Fuzzy matched '{section_name}' to '{matched_section}'")
+        
         lines = content.split('\n')
         
         # Find the section
@@ -240,7 +248,7 @@ Return JSON with operations list."""
                 break
         
         if section_line == -1:
-            # Section not found, append at end
+            # Section not found even with fuzzy match, append at end
             return content + f"\n\n{new_content}"
         
         # Insert before next section

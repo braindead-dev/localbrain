@@ -224,3 +224,58 @@ Output:
 - **Processing Rules**: Customizable content filtering and extraction
 - **Storage Options**: Database selection and configuration
 - **Agent Settings**: LLM model, temperature, max tokens for file modification
+
+## V3 Enhancements (OpenCode-Inspired)
+
+The ingestion pipeline has been significantly improved by adopting techniques from OpenCode:
+
+### 1. Fuzzy Matching (`utils/fuzzy_matcher.py`)
+- **Levenshtein distance** algorithm for string similarity
+- Section name fuzzy matching (threshold: 0.6)
+- Handles LLM naming variations: "Applications" → "Job Applications"
+- File name similarity matching for better file selection
+
+### 2. Validation Feedback Loop
+- **MarkdownValidator** checks file structure after edits
+- Validates: titles, sections, citations, JSON metadata
+- Errors fed back to LLM for correction
+- Retry mechanism (max 3 attempts)
+
+### 3. Anthropic-Optimized Prompts
+- Concise tone enforcement: "No explanations, just JSON"
+- Examples showing desired behavior
+- Negative instructions: "❌ Don't create files when existing fits"
+- Behavioral constraints matching OpenCode's anthropic.txt
+
+### 4. Retry Loop Architecture
+```python
+for attempt in range(max_retries):
+    result = ingest_attempt(context)
+    errors = validate_files(result)
+    
+    if not errors:
+        return success
+    
+    # Feed errors back to LLM
+    context = create_retry_context(context, errors)
+```
+
+### Usage
+
+**V3 Pipeline (Recommended):**
+```bash
+python agentic_ingest_v3.py ~/my-vault "Email from recruiter: Offer $150k"
+```
+
+**With source metadata:**
+```bash
+python agentic_ingest_v3.py ~/my-vault "Interview feedback" \
+  '{"platform": "Gmail", "timestamp": "2024-10-25T10:30:00Z"}'
+```
+
+### Performance Improvements
+
+- **Fewer LLM errors** due to fuzzy matching
+- **Self-correcting** through validation loops
+- **Higher accuracy** with Anthropic-style prompts
+- **Faster iteration** with targeted error feedback
