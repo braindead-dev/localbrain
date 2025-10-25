@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "localbrain": {
+      "command": "python",
+      "args": [
+        "/absolute/path/to/localbrain/electron/backend/src/core/mcp/stdio_server.py"
+      ],
+      "env": {
+        "VAULT_PATH": "/absolute/path/to/your/vault",
+        "MCP_API_KEY": "dev-key-local-only",
+        "MCP_BASE_URL": "http://127.0.0.1:8765",
+        "CHROMA_API_KEY": "your_chroma_api_key",
+        "CHROMA_TENANT": "default-tenant",
+        "CHROMA_DATABASE": "default-database"
+      }
+    }
+  }
+}
