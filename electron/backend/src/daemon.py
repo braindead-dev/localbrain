@@ -33,6 +33,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from agentic_ingest import AgenticIngestionPipeline
 from agentic_search import Search
+from bulk_ingest import BulkIngestionPipeline
 from utils.file_ops import read_file
 from config import load_config, update_config, get_vault_path
 
@@ -197,6 +198,69 @@ async def handle_ingest(request: Request):
     
     except Exception as e:
         logger.exception("Error handling ingest request")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.post("/protocol/bulk-ingest")
+async def handle_bulk_ingest(request: Request):
+    """
+    Bulk ingestion endpoint for large datasets.
+    
+    Much faster than individual ingestion - batches items and processes them together.
+    Ideal for:
+    - Initializing vault with large dataset
+    - Importing chat history
+    - Evaluation/testing
+    
+    Body:
+        {
+            "items": [
+                {"text": "...", "metadata": {...}},
+                {"text": "...", "metadata": {...}}
+            ],
+            "batch_size": 10  // optional
+        }
+    """
+    try:
+        body = await request.json()
+        
+        items = body.get('items', [])
+        batch_size = body.get('batch_size', 10)
+        
+        if not items:
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Missing required parameter: items'}
+            )
+        
+        logger.info(f"📦 Bulk ingest: {len(items)} items (batch_size={batch_size})")
+        
+        # Run bulk ingestion
+        pipeline = BulkIngestionPipeline(VAULT_PATH)
+        result = pipeline.bulk_ingest(items, batch_size=batch_size)
+        
+        if result.get('success'):
+            stats = result['stats']
+            logger.info(f"✅ Bulk ingest complete: {stats['successful']}/{stats['total_items']} successful")
+            return JSONResponse(content={
+                'success': True,
+                **result['stats']
+            })
+        else:
+            logger.error(f"❌ Bulk ingest failed")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    'success': False,
+                    'error': result.get('error', 'Bulk ingestion failed')
+                }
+            )
+    
+    except Exception as e:
+        logger.exception("Error handling bulk ingest request")
         return JSONResponse(
             status_code=500,
             content={'error': str(e)}
