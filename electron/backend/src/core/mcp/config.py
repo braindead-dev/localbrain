@@ -52,8 +52,8 @@ class AuditConfig(BaseModel):
 
 
 class DatabaseConfig(BaseModel):
-    """Configuration for database connections."""
-    chroma_api_key: str = Field(..., description="ChromaDB API key")
+    """Configuration for database connections (legacy - not used in proxy mode)."""
+    chroma_api_key: Optional[str] = Field(None, description="ChromaDB API key (not required in proxy mode)")
     chroma_tenant: str = Field("default-tenant", description="ChromaDB tenant")
     chroma_database: str = Field("default-database", description="ChromaDB database")
     collection_name: str = Field("localbrain_chunks", description="ChromaDB collection name")
@@ -105,14 +105,14 @@ class ConfigLoader:
         Load configuration from environment variables.
 
         Environment variables:
-        - VAULT_PATH: Path to vault
-        - MCP_HOST: Server host
-        - MCP_PORT: Server port
-        - CHROMA_API_KEY: ChromaDB API key
-        - CHROMA_TENANT: ChromaDB tenant
-        - CHROMA_DATABASE: ChromaDB database
-        - MCP_AUTH_CONFIG: Path to auth config file
-        - MCP_LOG_DIR: Audit log directory
+        - VAULT_PATH: Path to vault (required)
+        - MCP_HOST: Server host (optional)
+        - MCP_PORT: Server port (optional)
+        - CHROMA_API_KEY: ChromaDB API key (optional - not used in proxy mode)
+        - CHROMA_TENANT: ChromaDB tenant (optional)
+        - CHROMA_DATABASE: ChromaDB database (optional)
+        - MCP_AUTH_CONFIG: Path to auth config file (optional)
+        - MCP_LOG_DIR: Audit log directory (optional)
         """
         # --- NEW: Path Resolution Logic ---
         # Project root is 6 .parent calls from config.py file
@@ -134,9 +134,8 @@ class ConfigLoader:
             vault_path = vault_path.resolve()
         # --- END NEW LOGIC ---
 
+        # ChromaDB API key is optional in proxy mode (daemon handles the actual DB connection)
         chroma_api_key = os.getenv("CHROMA_API_KEY")
-        if not chroma_api_key:
-            raise ValueError("CHROMA_API_KEY environment variable required")
 
         # Build config
         config = MCPConfig(
@@ -247,7 +246,8 @@ def get_default_config() -> MCPConfig:
     """
     Get default configuration for development.
 
-    Requires VAULT_PATH and CHROMA_API_KEY environment variables.
+    Requires only VAULT_PATH environment variable.
+    CHROMA_API_KEY is optional (not used in proxy mode).
 
     Returns:
         Default MCPConfig

@@ -85,32 +85,27 @@ class MCPServer:
         else:
             logger.warning("Audit logging is disabled")
 
-        # Initialize retrieval engine
-        from ..retrieval.retrieval import RetrievalEngine
+        # Initialize MCP tools (proxy to daemon)
+        daemon_url = f"http://{self.config.server.host}:{self.config.server.port}"
+        # Use the configured daemon port if available, otherwise default to 8765
+        daemon_port = getattr(self.config, 'daemon_port', 8765)
+        daemon_url = f"http://127.0.0.1:{daemon_port}"
 
-        # If this fails, the server should crash with the real error.
-        retrieval_engine = RetrievalEngine(
-            vault_path=self.config.vault_path,
-            chroma_api_key=self.config.database.chroma_api_key,
-            chroma_tenant=self.config.database.chroma_tenant,
-            chroma_database=self.config.database.chroma_database,
-            embedding_model=self.config.database.embedding_model,
-            collection_name=self.config.database.collection_name
-        )
-        logger.info("Retrieval engine initialized")
-
-        # Initialize MCP tools
         self.tools = MCPTools(
-            vault_path=self.config.vault_path,
-            retrieval_engine=retrieval_engine,
-            llm_client=None  # TODO: Initialize LLM client if needed
+            daemon_url=daemon_url,
+            timeout=self.config.server.timeout_seconds
         )
+        logger.info(f"MCP tools proxy initialized, forwarding to daemon: {daemon_url}")
 
         logger.info(f"MCP server ready on {self.config.server.host}:{self.config.server.port}")
 
     async def shutdown(self):
         """Cleanup on server shutdown."""
         logger.info("Shutting down MCP server...")
+
+        # Close HTTP client
+        if self.tools:
+            await self.tools.close()
 
         # Cleanup audit logs
         if self.audit_logger:

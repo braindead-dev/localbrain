@@ -55,7 +55,7 @@
       "title": "ChromaDB API Key",
       "description": "Your ChromaDB Cloud API key for vector embeddings",
       "sensitive": true,
-      "required": true
+      "required": false
     },
     "chroma_tenant": {
       "type": "string",
