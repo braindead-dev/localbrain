@@ -2,14 +2,37 @@
 
 Provides a local API interface for external tools and integrations. Implements the Model Context Protocol to enable external applications to access LocalBrain functionality.
 
+## Implementation Status
+
+✅ **COMPLETE** - Full MCP server implementation with FastAPI, authentication, audit logging, and all tools.
+
+## Quick Start
+
+```bash
+# 1. Set up environment
+cp examples/.env.example .env
+# Edit .env with your VAULT_PATH and CHROMA_API_KEY
+
+# 2. Install dependencies
+pip install fastapi uvicorn pydantic loguru chromadb sentence-transformers
+
+# 3. Run server
+python -m src.core.mcp.server
+```
+
+Server will start on `http://127.0.0.1:8765`
+
+See [USAGE.md](./USAGE.md) for complete documentation.
+
 ## Core Responsibilities
 
 - **API Endpoint Management**: HTTP/WebSocket servers for external access
 - **Tool Implementation**: MCP-compliant tools (search, summarize, open, list)
 - **Request Processing**: Parse and validate incoming requests
 - **Response Formatting**: Structure responses according to MCP specification
-- **Authentication**: Validate external tool permissions
+- **Authentication**: Validate external tool permissions with API keys
 - **Rate Limiting**: Prevent abuse and ensure performance
+- **Audit Logging**: Complete request/response tracking
 
 ## MCP Tools
 
@@ -110,6 +133,70 @@ localbrain://list?path=projects
 - **External Tools**: Provide API access for third-party applications
 - **Connectors**: Use MCP tools for data validation and processing
 
+## Architecture
+
+### File Structure
+
+```
+electron/backend/src/core/mcp/
+├── __init__.py              # Package initialization
+├── server.py                # FastAPI server implementation
+├── tools.py                 # MCP tool implementations
+├── models.py                # Pydantic models for requests/responses
+├── auth.py                  # Authentication and authorization
+├── audit.py                 # Audit logging system
+├── config.py                # Configuration management
+├── protocol_handler.py      # localbrain:// URL handler
+├── README.md                # This file
+├── USAGE.md                 # Complete usage documentation
+└── examples/
+    ├── .env.example         # Example environment configuration
+    └── clients.json         # Example client authentication config
+```
+
+### Key Components
+
+**Server (`server.py`):**
+- FastAPI application with async support
+- HTTP/WebSocket endpoints for all tools
+- Middleware for CORS, authentication, rate limiting
+- Global exception handling
+- Startup/shutdown lifecycle management
+
+**Tools (`tools.py`):**
+- Implementation of all MCP tools:
+  - `search`: Natural language semantic search
+  - `search_agentic`: Structured search with filters
+  - `open`: File content retrieval
+  - `summarize`: Content summarization
+  - `list`: Directory listing
+- Integration with retrieval engine and vault filesystem
+
+**Authentication (`auth.py`):**
+- API key-based authentication
+- Per-tool permission system
+- Scope restrictions (directories, file types, result limits)
+- Rate limiting per client
+- Client management (add, remove, update)
+
+**Audit Logging (`audit.py`):**
+- Complete request/response logging
+- Performance metrics tracking
+- Privacy-compliant (sanitized queries)
+- Daily log rotation with configurable retention
+- Queryable log history (by client, tool, date)
+
+**Configuration (`config.py`):**
+- Pydantic-based configuration models
+- Environment variable support
+- JSON config file support
+- Validation and defaults
+
+**Protocol Handler (`protocol_handler.py`):**
+- Parse `localbrain://` URLs
+- Convert to MCP requests
+- Build protocol URLs programmatically
+
 ## Development
 
 **MCP Specification Compliance:**
@@ -117,3 +204,31 @@ localbrain://list?path=projects
 - Tool discovery and capability advertising
 - Error handling and status reporting
 - Extensible tool framework for future additions
+
+**Testing:**
+```bash
+# Run server in development mode
+python -m src.core.mcp.server
+
+# Test with curl
+curl -X POST http://localhost:8765/mcp/search \
+  -H "X-API-Key: dev-key-local-only" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "test", "top_k": 5}'
+```
+
+**Adding New Tools:**
+
+1. Define request/response models in `models.py`
+2. Implement tool method in `tools.py`
+3. Add endpoint in `server.py`
+4. Update authentication permissions in `auth.py`
+5. Add protocol handler support in `protocol_handler.py`
+
+**Security Considerations:**
+- Always use HTTPS in production
+- Rotate API keys regularly
+- Set appropriate rate limits
+- Review audit logs for suspicious activity
+- Limit scope restrictions to minimum required access
+- Keep dependencies updated

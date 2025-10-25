@@ -34,7 +34,7 @@ class RetrievalEngine:
         chroma_tenant: str = "default-tenant",
         chroma_database: str = "default-database",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        collection_name: str = "localbrain_chunks"
+        collection_name: str = "markdown_notes"
     ):
         """
         Initialize retrieval engine.
