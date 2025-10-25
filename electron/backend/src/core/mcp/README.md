@@ -24,7 +24,24 @@ External Tools → MCP Server (auth/audit) → LocalBrain Daemon (core logic)
 
 ## Quick Start
 
-### Prerequisites
+### Option 1: Start Both Servers with One Command (Recommended)
+
+```bash
+# From project root
+python electron/backend/src/core/mcp/extension/start_servers.py
+
+# Or navigate to extension directory
+cd electron/backend/src/core/mcp/extension
+python start_servers.py
+```
+
+This will:
+- Start the daemon on `http://127.0.0.1:8765`
+- Start the MCP server on `http://127.0.0.1:8766`
+- Monitor both processes
+- Stop both cleanly when you press Ctrl+C
+
+### Option 2: Start Servers Manually
 
 **You must start the daemon first:**
 
@@ -35,26 +52,56 @@ python src/daemon.py
 
 The daemon runs on `http://127.0.0.1:8765` by default.
 
-### For REST API Access
+**Then start the MCP server (in another terminal):**
 
 ```bash
-# 1. Install dependencies
-pip install fastapi uvicorn pydantic loguru httpx
-
-# 2. Run MCP server
+cd electron/backend
 python -m src.core.mcp.server
 ```
 
-MCP server will start on `http://127.0.0.1:8766` and proxy requests to daemon on port 8765.
+By default:
+- **Daemon** runs on `http://127.0.0.1:8765`
+- **MCP Server** runs on `http://127.0.0.1:8766` and proxies to daemon
+
+You can customize ports with environment variables:
+```bash
+DAEMON_PORT=8765 MCP_PORT=8766 python -m src.core.mcp.server
+```
 
 ### For Claude Desktop Integration
 
-1. **Start the daemon** (see Prerequisites above)
-2. **Start MCP server** (as above)
-3. **Configure Claude Desktop**:
+**Claude Desktop will automatically start all servers when launched!**
+
+1. **Configure Claude Desktop**:
    - Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
-   - Add LocalBrain server config (see `examples/claude_desktop_config.json`)
-4. **Restart Claude Desktop** - Look for 🔨 hammer icon
+   - Add this configuration (update paths to match your system):
+
+```json
+{
+  "mcpServers": {
+    "localbrain": {
+      "command": "python",
+      "args": [
+        "/absolute/path/to/localbrain/electron/backend/src/core/mcp/extension/start_servers.py",
+        "--stdio"
+      ],
+      "env": {
+        "VAULT_PATH": "/absolute/path/to/your/vault"
+      }
+    }
+  }
+}
+```
+
+2. **Restart Claude Desktop** - Look for 🔨 hammer icon
+
+When Claude Desktop launches, it will automatically:
+- Start the daemon backend (port 8765)
+- Start the MCP HTTP server (port 8766)
+- Connect via stdio bridge
+- Clean up all servers when Claude Desktop closes
+
+**Note:** Replace `/absolute/path/to/localbrain/` with your actual project path, and set `VAULT_PATH` to your vault directory.
 
 See [USAGE.md - Claude Desktop Integration](./USAGE.md#claude-desktop-integration) for detailed setup.
 
@@ -257,13 +304,15 @@ electron/backend/src/core/mcp/
 
 **Testing:**
 ```bash
-# 1. Start daemon first
+# 1. Start daemon first (port 8765)
+cd electron/backend
 python src/daemon.py
 
-# 2. In another terminal, run MCP server
+# 2. In another terminal, run MCP server (port 8766)
+cd electron/backend
 python -m src.core.mcp.server
 
-# 3. Test with curl
+# 3. Test with curl (use MCP server port 8766)
 curl -X POST http://localhost:8766/mcp/search \
   -H "X-API-Key: dev-key-local-only" \
   -H "Content-Type: application/json" \

@@ -14,7 +14,8 @@ from loguru import logger
 class ServerConfig(BaseModel):
     """Configuration for MCP HTTP/WebSocket server."""
     host: str = Field("127.0.0.1", description="Server host address")
-    port: int = Field(8765, ge=1024, le=65535, description="Server port")
+    port: int = Field(8766, ge=1024, le=65535, description="MCP server port (default: 8766)")
+    daemon_port: int = Field(8765, ge=1024, le=65535, description="Daemon backend port (default: 8765)")
     cors_origins: list[str] = Field(
         ["http://localhost:3000"],
         description="Allowed CORS origins"
@@ -106,8 +107,9 @@ class ConfigLoader:
 
         Environment variables:
         - VAULT_PATH: Path to vault (required)
-        - MCP_HOST: Server host (optional)
-        - MCP_PORT: Server port (optional)
+        - MCP_HOST: Server host (optional, default: 127.0.0.1)
+        - MCP_PORT: MCP server port (optional, default: 8766)
+        - DAEMON_PORT: Daemon backend port (optional, default: 8765)
         - CHROMA_API_KEY: ChromaDB API key (optional - not used in proxy mode)
         - CHROMA_TENANT: ChromaDB tenant (optional)
         - CHROMA_DATABASE: ChromaDB database (optional)
@@ -142,7 +144,8 @@ class ConfigLoader:
             vault_path=str(vault_path), # Use the resolved absolute path
             server=ServerConfig(
                 host=os.getenv("MCP_HOST", "127.0.0.1"),
-                port=int(os.getenv("MCP_PORT", "8765")),
+                port=int(os.getenv("MCP_PORT", "8766")),
+                daemon_port=int(os.getenv("DAEMON_PORT", "8765")),
                 cors_origins=os.getenv("MCP_CORS_ORIGINS", "http://localhost:3000").split(","),
                 timeout_seconds=int(os.getenv("MCP_TIMEOUT", "30")),
             ),

@@ -130,6 +130,8 @@ npm install
 
 ### Development Workflow
 
+**Frontend (Electron + Next.js):**
+
 ```bash
 # From electron/ directory - Start both Next.js and Electron in dev mode
 npm run dev
@@ -139,6 +141,34 @@ npm run dev:next
 
 # Run only Electron (assumes Next.js is running separately)
 npm run dev:electron
+```
+
+**Backend (Daemon + MCP Server):**
+
+```bash
+# From project root - Start both servers with one command
+python electron/backend/src/core/mcp/extension/start_servers.py
+
+# Or from extension directory
+cd electron/backend/src/core/mcp/extension
+python start_servers.py
+
+# This will:
+# - Start daemon on http://127.0.0.1:8765
+# - Start MCP server on http://127.0.0.1:8766
+# - Stop both cleanly with Ctrl+C
+```
+
+Alternatively, start servers manually in separate terminals:
+
+```bash
+# Terminal 1: Start daemon
+cd electron/backend
+python src/daemon.py
+
+# Terminal 2: Start MCP server
+cd electron/backend
+python -m src.core.mcp.server
 ```
 
 ### Building

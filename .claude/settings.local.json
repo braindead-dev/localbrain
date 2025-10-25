@@ -6,7 +6,8 @@
       "Bash(tree:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []

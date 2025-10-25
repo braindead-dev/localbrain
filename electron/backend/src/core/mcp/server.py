@@ -86,10 +86,7 @@ class MCPServer:
             logger.warning("Audit logging is disabled")
 
         # Initialize MCP tools (proxy to daemon)
-        daemon_url = f"http://{self.config.server.host}:{self.config.server.port}"
-        # Use the configured daemon port if available, otherwise default to 8765
-        daemon_port = getattr(self.config, 'daemon_port', 8765)
-        daemon_url = f"http://127.0.0.1:{daemon_port}"
+        daemon_url = f"http://127.0.0.1:{self.config.server.daemon_port}"
 
         self.tools = MCPTools(
             daemon_url=daemon_url,
