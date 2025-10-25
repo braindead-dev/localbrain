@@ -26,17 +26,22 @@ open "localbrain://ingest?text=Got offer from Meta&platform=Email"
 - 95% success rate with retry logic
 
 ### 2. Natural Language Search (`localbrain://search`)
-Ask questions → Get answers with citations
+Ask questions → Get context chunks with citations
 ```bash
 open "localbrain://search?q=What was my NVIDIA offer?"
 ```
 
+**Returns:**
+- Relevant text from your .md files (not LLM synthesis)
+- Citations from .json files with full metadata
+- Structured for AI apps to consume
+
 **How it works:**
 - No embeddings, no vector search
 - Uses ripgrep + LLM with tools (OpenCode-inspired)
-- LLM decides what to search and read
+- LLM finds relevant files
+- Returns actual content + citations
 - ~3-4 seconds per query
-- Includes citations
 
 ### 3. Background Service
 - Runs as daemon with menu bar icon
@@ -62,7 +67,8 @@ Your Markdown Vault
 
 **API Endpoints:**
 - `POST /protocol/ingest` - Ingestion
-- `POST /protocol/search` - Search
+- `POST /protocol/search` - Search (returns context chunks)
+- `GET /file/{filepath}` - Fetch full file content
 - `GET /health` - Status check
 
 ## Quick Start
@@ -138,8 +144,23 @@ open "localbrain://search?q=What was my NVIDIA offer?"
 1. LLM generates grep patterns
 2. Ripgrep searches vault (~50-100ms)
 3. LLM reads relevant files
-4. LLM synthesizes answer with citations
+4. Extracts context chunks + citations
 5. Returns in ~3-4 seconds
+
+**Returns:**
+```json
+{
+  "contexts": [
+    {
+      "text": "Actual .md content with [1] citations",
+      "file": "personal/nvidia_offer.md",
+      "citations": [
+        {"id": 1, "platform": "Email", "quote": "...", ...}
+      ]
+    }
+  ]
+}
+```
 
 ---
 
@@ -156,7 +177,8 @@ open "localbrain://search?q=What was my NVIDIA offer?"
 - Just ripgrep + LLM with tools
 - LLM gets `grep_vault` and `read_file` tools
 - LLM decides what to search and read
-- Sorts by file modification time (recent = relevant)
+- **Returns actual .md content** (not LLM synthesis)
+- **Context layer for AI apps**, not a chatbot
 
 ### Why No Embeddings?
 - Vault is small (~1000 files = 50MB)

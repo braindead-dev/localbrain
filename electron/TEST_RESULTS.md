@@ -2,16 +2,19 @@
 
 **Status:** WORKING PERFECTLY
 
+**Mode:** Context Layer (returns .md content + citations, not LLM synthesis)
+
 ---
 
 ## Test Summary
 
-| Test | Status | Iterations | Time | Quality |
-|------|--------|-----------|------|---------|
-| NVIDIA offer query | ✅ | 4 | ~4s | Excellent - extracted all details |
-| AI research query | ✅ | 3 | ~3s | Excellent - synthesized from notes |
-| API endpoint | ✅ | - | - | Working |
-| Model | ✅ | - | - | claude-haiku-4-5-20251001 |
+| Test | Status | Time | Quality |
+|------|--------|------|---------|
+| NVIDIA offer query | ✅ | ~4s | Perfect - extracted context with citations |
+| AI research query | ✅ | ~3s | Perfect - returned .md content |
+| File endpoint | ✅ | ~100ms | Works - fetches full files |
+| API endpoint | ✅ | - | Working |
+| Model | ✅ | - | claude-haiku-4-5-20251001 |
 
 ---
 
@@ -23,31 +26,23 @@
 ```json
 {
   "success": true,
-  "iterations": 4,
-  "query": "What was the NVIDIA offer?"
+  "query": "What was the NVIDIA offer?",
+  "contexts": [
+    {
+      "text": "NVIDIA extends a full-time Software Engineer - Deep Learning position offer to Alex with a start date of July 14, 2025, at their Santa Clara headquarters. The compensation package includes a base salary of $155,000 annually, a $25,000 sign-on bonus, and $180,000 in Restricted Stock Units vesting over four years.",
+      "file": "personal/nvidia_software_engineer_offer.md",
+      "citations": []
+    }
+  ],
+  "total_results": 1
 }
 ```
 
-**Answer:**
-> Based on your vault, the NVIDIA offer was for a **Software Engineer - Deep Learning** position with the following details [personal/nvidia_software_engineer_offer.md]:
-> 
-> **Position Details:**
-> - Role: Full-time Software Engineer - Deep Learning
-> - Location: Santa Clara headquarters
-> - Start Date: July 14, 2025
-> 
-> **Compensation Package:**
-> - Base Salary: $155,000 annually
-> - Sign-on Bonus: $25,000
-> - Restricted Stock Units (RSUs): $180,000 vesting over 4 years
-> 
-> **Deadline:** The offer letter needed to be signed and returned by October 31, 2025.
-
 **Quality:** ✅ Perfect
+- Returns actual .md content (not LLM synthesis)
 - Found correct file
-- Extracted all key details
-- Proper formatting
-- Included citation
+- Citations array ready for consumer apps
+- Clean structured format
 
 ---
 

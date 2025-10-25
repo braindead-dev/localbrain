@@ -22,10 +22,11 @@ open "localbrain://ingest?text=Got offer from NVIDIA&platform=Email"
 open "localbrain://search?q=What was my NVIDIA offer?"
 ```
 
+- Returns context chunks + citations (not LLM synthesis)
 - No embeddings, just ripgrep + LLM
 - ~3-4 seconds per query
-- Includes citations
 - OpenCode-inspired
+- **Context layer for AI apps**
 
 ---
 
