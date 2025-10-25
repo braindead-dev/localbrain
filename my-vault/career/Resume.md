@@ -35,6 +35,13 @@ Key experiences and skills for job applications.
 
 See [[Projects]] for detailed project descriptions.
 
+
+## Offers
+
+### Machine Learning Engineer - Databricks
+
+Received full-time offer for ML Engineer role with a base salary of $170,000 plus equity [2].
+
 ## Related
 
 - [[Job Search]]

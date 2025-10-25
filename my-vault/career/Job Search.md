@@ -10,6 +10,8 @@ Received interview request from Meta on October 20, 2024 for their production en
 
 Applied to NVIDIA for AI/ML internship on October 18, 2024 [3]. Particularly interested in their work on LLMs and GPU optimization.
 
+Received final interview date from Amazon for Senior SWE role on November 18th [5].
+
 ## Interview Prep
 
 Currently working through:
@@ -23,8 +25,16 @@ Currently working through:
 1. Google - Infrastructure teams
 2. Meta - Production Engineering
 3. NVIDIA - AI/ML research
+4. Databricks - ML Engineering
 4. Anthropic - AI safety
 5. OpenAI - Applied research
+
+
+## Projects
+
+## Projects
+
+Started working on the vector search implementation for LocalBrain. Set up ChromaDB and implemented basic embedding generation using sentence-transformers.
 
 ## Related
 

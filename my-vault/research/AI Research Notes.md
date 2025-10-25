@@ -31,6 +31,23 @@ Tracking interesting papers and concepts in AI/ML.
 
 Working on efficient fine-tuning methods for domain adaptation [3]. Focus on reducing computational requirements while maintaining model quality.
 
+
+## Work in Progress
+
+## Work in Progress
+
+**Vector Search Implementation for LocalBrain**
+- Started implementation work on vector search functionality
+- Set up ChromaDB for vector storage and retrieval
+- Implemented basic embedding generation using sentence-transformers library
+
+
+## Interview Updates
+
+## Interview Updates
+
+Received final interview date from Amazon for Senior SWE role on November 18th [4].
+
 ## Related
 
 - [[LocalBrain]]

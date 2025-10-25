@@ -22,6 +22,11 @@ Passionate about AI/ML and building tools that solve real problems. Strong inter
 - Privacy-focused technologies
 - Open source contributions
 
+
+## Career
+
+Received offer from Databricks for ML Engineer role, with a base salary of $170,000 plus equity [3].
+
 ## Related
 
 - [[Career Goals]]

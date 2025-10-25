@@ -10,5 +10,11 @@
     "timestamp": "2024-09-01T00:00:00Z",
     "url": "https://registrar.ucr.edu",
     "quote": null
+  },
+  "3": {
+    "platform": "Manual",
+    "timestamp": "2025-10-25T06:08:05.584718Z",
+    "url": null,
+    "quote": null
   }
 }

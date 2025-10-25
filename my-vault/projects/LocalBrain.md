@@ -39,6 +39,16 @@ Started development on October 1, 2024 [1]. Currently in Phase 1 - building core
 - 📋 MCP server implementation
 - 📋 Connector framework
 
+
+- ✅ Vector search implementation with ChromaDB
+- ✅ Embedding generation using sentence-transformers
+
+## Content
+
+## Opportunities
+
+Received final interview date from Amazon for Senior SWE role on November 18th [2].
+
 ## Related
 
 - [[AI Projects]]
