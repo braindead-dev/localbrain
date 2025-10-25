@@ -83,16 +83,18 @@ LocalBrain uses a `.localbrain/` directory containing:
 
 1. **Intelligent Insights**: Surface macro-level patterns (e.g., "applied to 200+ internships, no responses")
 2. **Preprocessing Advantage**: Analyze all available data, not just query responses
-3. **Open Source Connectors**: Community can build integrations for any data source
-4. **Local-First**: Full privacy with local processing and storage
-5. **Semantic Understanding**: Context-aware search and retrieval
+3. **Community Plugin Ecosystem**: Like Obsidian, anyone can build and share custom connectors for any data source
+4. **Vault-Based Architecture**: Choose any folder as your vault, sync via Dropbox/iCloud, switch between multiple vaults
+5. **Local-First**: Full privacy with local processing and storage
+6. **Semantic Understanding**: Context-aware search and retrieval
 
 ## Development Setup
 
 ### Prerequisites
-- Node.js 16+
-- npm or yarn
-- For macOS builds: Xcode command line tools (`xcode-select --install`)
+- **Node.js 16+** - Frontend and Electron
+- **Python 3.10+** - Backend services
+- **npm or yarn** - Package management
+- **For macOS builds**: Xcode command line tools (`xcode-select --install`)
 
 ### Getting Started
 ```bash

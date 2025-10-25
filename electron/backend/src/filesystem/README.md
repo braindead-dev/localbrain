@@ -11,9 +11,31 @@ Local file management and operations for LocalBrain. Manages the `.localbrain/` 
 - **Backup & Recovery**: File backup and version management
 - **Security**: File access permissions and encryption (optional)
 
+## Vault Selection
+
+**Obsidian-Style Vault System:**
+Users can select any directory on their filesystem to act as their LocalBrain vault. This directory becomes the `.localbrain/` root and can be:
+- Synced across devices via cloud storage (Dropbox, iCloud, etc.)
+- Backed up and version controlled (Git)
+- Switched between multiple vaults for different contexts
+- Shared with specific collaborators (future feature)
+
+**Vault Setup:**
+1. User selects a directory through file picker
+2. LocalBrain initializes the vault structure if needed
+3. Vault path stored in app preferences
+4. All data processing scoped to selected vault
+5. Switch vaults anytime from settings
+
+**Multiple Vault Support:**
+- Work vault: Professional projects and notes
+- Personal vault: Personal knowledge and journal
+- Research vault: Academic research and papers
+- Quick switch between vaults without restart
+
 ## Directory Structure
 
-**`.localbrain/` Root Directory:**
+**`.localbrain/` Root Directory (within selected vault):**
 ```
 .localbrain/
 ├── app.json              # Application configuration and settings

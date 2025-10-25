@@ -61,9 +61,9 @@ localbrain://ingest?text="Meeting notes here"
 localbrain://summarize?filepath=projects/startup.md
 ```
 
-## Backend Services
+## Backend Services (Python)
 
-Background services that handle data processing, search, and external integrations.
+Background services implemented in Python that handle data processing, search, and external integrations. Python provides the ideal ecosystem for NLP, embeddings, and ML-powered features.
 
 ### Protocol System
 Custom deep link commands processed by backend:
@@ -109,7 +109,20 @@ Standardized interface for external data sources:
 
 ## Filesystem Structure
 
-**`.localbrain/` Directory:**
+### Vault Selection (Obsidian-Style)
+
+Users can select **any directory** on their filesystem to act as their LocalBrain vault:
+- Choose vault location on first launch
+- Switch between multiple vaults (work, personal, research)
+- Vaults can be synced via Dropbox, iCloud, Git, etc.
+- All data scoped to selected vault directory
+
+**Multiple Vault Support:**
+- Work vault: `/Users/name/Dropbox/localbrain-work/`
+- Personal vault: `/Users/name/Documents/localbrain-personal/`
+- Quick switch without restart
+
+**`.localbrain/` Directory (within selected vault):**
 ```
 .localbrain/
 ├── app.json              # Application configuration
@@ -232,10 +245,12 @@ npm run build
 
 1. **Intelligent Insights**: Surface macro-level patterns that traditional search can't find
 2. **Preprocessing Power**: Analyze all available data rather than just responding to queries
-3. **Open Source Ecosystem**: Anyone can build connectors for any data source
-4. **Privacy-First**: All processing happens locally with no cloud dependency
-5. **Semantic Understanding**: Context-aware search that understands relationships
-6. **Desktop Integration**: Native macOS experience with system integration
+3. **Community Plugin Ecosystem**: Like Obsidian, standardized connector interface enables anyone to build and share plugins for any data source
+4. **Vault-Based System**: Obsidian-style vault selection - choose any folder, switch between multiple vaults, sync via cloud
+5. **Privacy-First**: All processing happens locally with no cloud dependency
+6. **Semantic Understanding**: Context-aware search that understands relationships
+7. **Desktop Integration**: Native macOS experience with system integration
+8. **Python Backend**: Leverage rich ML/NLP ecosystem for intelligent features
 
 ## Development Guidelines
 

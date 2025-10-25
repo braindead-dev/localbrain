@@ -1,10 +1,30 @@
 # Backend Services
 
-Background services that handle data processing, search, and external integrations for LocalBrain. Runs as a background process managed by the Electron main process.
+Background services that handle data processing, search, and external integrations for LocalBrain. Runs as a Python background process managed by the Electron main process.
 
 ## Overview
 
+The backend is primarily implemented in **Python**, leveraging its rich ecosystem for:
+- Natural language processing and embeddings
+- Vector databases and semantic search
+- Machine learning libraries for insight extraction
+- API integrations and data connectors
+
 The backend processes commands via the `localbrain://` protocol and provides a Local MCP interface for external tools. It manages data ingestion, retrieval, and external connector integration.
+
+## Technology Stack
+
+**Core:**
+- **Python 3.10+**: Main runtime for backend services
+- **FastAPI/Flask**: HTTP server for MCP API and protocol handling
+- **Vector Database**: Embeddings storage (ChromaDB, FAISS, or similar)
+- **SQLite/PostgreSQL**: Metadata and configuration storage
+
+**Libraries:**
+- Embedding models (sentence-transformers, OpenAI, etc.)
+- Document processing (pypdf, python-docx, etc.)
+- Connector APIs (google-api-python-client, discord.py, etc.)
+- Background task processing (Celery or similar)
 
 ## Protocol System
 
@@ -135,16 +155,42 @@ Standardized interface for external data sources. Each connector implements:
 
 ## Development
 
-The backend runs as a Node.js service managed by the Electron main process. Services communicate via:
+The backend runs as a **Python service** managed by the Electron main process. Services communicate via:
 
-- **IPC**: Inter-process communication with Electron main
-- **HTTP/WebSocket**: Internal service communication
-- **File System**: Persistent data storage and configuration
+- **HTTP API**: FastAPI/Flask server for protocol handling
+- **WebSocket**: Real-time updates and streaming
+- **File System**: Persistent data storage in vault directory
+- **IPC**: Communication with Electron main process
 - **Protocol Handler**: Custom URL scheme processing
 
 **Service Architecture:**
-- **Ingestion Service**: Document processing and storage
-- **Retrieval Service**: Search and query handling
-- **MCP Service**: External API interface
-- **Bridge Service**: Access control and audit logging
-- **Connector Services**: External data integration
+- **Ingestion Service**: Document processing and storage (Python)
+- **Retrieval Service**: Search and query handling (Python)
+- **MCP Service**: External API interface (Python FastAPI)
+- **Bridge Service**: Access control and audit logging (Python)
+- **Connector Services**: External data integration (Python with API clients)
+
+**Development Setup:**
+```bash
+# From backend/ directory
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run backend services
+python src/main.py
+
+# Run tests
+pytest tests/
+```
+
+**Key Python Packages:**
+- `fastapi` or `flask` - HTTP server
+- `sentence-transformers` - Embeddings
+- `chromadb` or `faiss-cpu` - Vector database
+- `sqlalchemy` - Database ORM
+- `google-api-python-client` - Google integrations
+- `discord.py` - Discord connector
+- `celery` - Background task processing

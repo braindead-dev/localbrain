@@ -22,11 +22,14 @@ The Next.js frontend provides the user interface for LocalBrain, wrapped in an E
 - **Progress Tracking**: Real-time upload and processing status
 - **Batch Processing**: Handle large document collections efficiently
 
-### Filesystem View
-- **Human-Readable Interface**: Browse `.localbrain/` directory structure
+### Filesystem View (Vault Management)
+- **Vault Selection**: Choose any directory as your LocalBrain vault (like Obsidian)
+- **Multiple Vaults**: Switch between work, personal, research vaults
+- **File Browser**: Human-readable directory structure navigation
 - **File Management**: Create, edit, and organize markdown files
 - **Preview System**: Quick content preview without opening files
 - **Search Integration**: Find files directly from filesystem view
+- **Cloud Sync**: Vaults can live in Dropbox, iCloud, etc. for cross-device sync
 
 ### Bridge Management
 - **External Access Control**: Configure which files external tools can access
@@ -119,19 +122,47 @@ npm run dev          # Runs Next.js dev server + Electron
 - **Local Storage**: Persist settings and recent searches
 - **Real-time Updates**: Live updates from backend services
 
+## UI Organization
+
+**Page Structure:**
+- `/` - Initial vault selection or dashboard
+- `/search` - Search interface with filters and results
+- `/vault` - File browser and vault management
+- `/bridge` - Bridge settings and external access control
+- `/settings` - App configuration and preferences
+- `/audit` - Activity logs and analytics dashboard
+
+**Component Hierarchy:**
+- Shared UI components (buttons, inputs, modals)
+- Feature-specific components (search bar, file tree, result cards)
+- Layout components (sidebar, header, content area)
+- Context providers for global state
+
 ## Integration Points
 
-### Backend Communication
-- **Protocol URLs**: Generate `localbrain://` URLs for actions
-- **Response Handling**: Process backend responses and update UI
-- **Error States**: Handle backend unavailability gracefully
-- **Loading States**: Show progress during backend processing
+### Python Backend Communication
+The frontend communicates with the Python backend services through the Electron main process:
+
+**Communication Flow:**
+1. UI action → Generate `localbrain://` URL
+2. Electron main process intercepts protocol URL
+3. Routes to Python backend service (ingestion, retrieval, etc.)
+4. Python processes request and returns JSON response
+5. Response flows back through Electron to UI
+6. UI updates with results
+
+**Protocol Interface:**
+- All backend actions use protocol URLs for consistency
+- Supports both sync and async operations
+- Error handling and retry logic built-in
+- Progress updates for long-running operations
 
 ### Electron Integration
 - **Window Management**: Desktop-optimized UI behavior
 - **Menu Integration**: Native application menus and shortcuts
-- **File System Access**: Direct file operations when needed
+- **File System Access**: Vault selection and file operations
 - **System Events**: Respond to system-level events
+- **IPC Bridge**: Direct communication channel with main process
 
 ## User Experience
 
