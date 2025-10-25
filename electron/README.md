@@ -1,176 +1,146 @@
-# LocalBrain Desktop App
+# LocalBrain
 
-A desktop application that wraps the LocalBrain Next.js frontend in Electron.
+A personal knowledge workspace that intelligently organizes and retrieves information from your local files and external data sources through a desktop application.
 
-## Project Structure
+## Product Vision
+
+LocalBrain provides intelligent search, ingestion, and retrieval of personal knowledge across local files and external data sources. It combines the power of semantic search with a structured filesystem approach to create a personal knowledge base that understands context and relationships in your data.
+
+**Key Features:**
+- **Intelligent Search**: Natural language queries return relevant files, lines, or generated responses
+- **Automated Ingestion**: Processes documents and extracts insights automatically
+- **External Connectors**: Integrates with Gmail, Discord, Slack, Drive, and more
+- **Local MCP Interface**: API access for external tools and integrations
+- **Personal Insights**: Surface patterns and observations that traditional search can't find
+
+## Architecture Overview
 
 ```
-electron/
-├── app/                    # Next.js frontend
-│   ├── src/               # Next.js source code
-│   ├── public/            # Static assets
-│   ├── package.json       # Next.js dependencies
-│   └── next.config.ts     # Next.js configuration
-├── backend/               # Backend code (ignored for now)
-├── electron-stuff/        # Electron-specific files
-│   ├── main.js            # Electron main process
-│   ├── assets/            # App icons and images
-│   ├── node_modules/      # Electron dependencies
-│   └── dist/              # Build output
-└── package.json           # Main project configuration
+┌─────────────────────────────────────────────────────────────┐
+│                    Electron Desktop App                     │
+├─────────────────────────────────────────────────────────────┤
+│  Next.js Frontend  │    Electron Main Process    │  Backend  │
+│  - Search UI       │    - Window Management     │  Services │
+│  - Filesystem View │    - Protocol Handler      │  - Ingestion│
+│  - Bridge Settings │    - Service Supervision   │  - Retrieval│
+│  - Audit Dashboard │    - IPC Communication     │  - MCP API  │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                    ┌─────────────┼─────────────┐
+                    │             │             │
+              .localbrain/   External Tools  Connectors
+              Filesystem     (via MCP API)   - Gmail
+                                             - Discord
+                                             - Slack
+                                             - Drive
+                                             - Browser History
+                                             - Calendar
 ```
 
-## Development
+## Team Breakdown
+
+**Taymur**: Main app architecture, UI features, external app use cases
+**Henry + Pranav**: Retrieval system, Node bridge service, Local MCP access, initial architecture setup
+**Sid**: Ingestion system, filesystem management
+**Everyone**: Architecture decisions, cross-team collaboration
+
+## Core Components
+
+### Frontend (Next.js)
+- **Intelligent Search**: Send queries to retrieval agent, display relevant results
+- **Quick Note**: Send note contents + metadata to ingestion agent
+- **Bulk Ingest**: Upload and process large amounts of text data
+- **Filesystem View**: Human-readable folder and file browser
+- **Bridge Management**: Configure external access permissions and settings
+- **Audit Dashboard**: Display retrieval and ingestion history
+
+### Backend Services
+- **Ingestion Engine**: Process documents, extract insights, manage embeddings
+- **Retrieval Engine**: Semantic search, query processing, result ranking
+- **Local MCP Server**: API endpoints for external tools (search, summarize, open, list)
+- **Bridge Service**: External access management and audit logging
+- **Connector System**: Standardized interface for external data sources
+
+### Protocol System
+Custom `localbrain://` deep links for external integration:
+```
+localbrain://search?q=internship+email
+localbrain://open?filepath=finance/banking.md
+localbrain://search_agentic?keywords=internship,nvidia&days=7
+localbrain://ingest?text="Email content here"
+```
+
+## Filesystem Structure
+
+LocalBrain uses a `.localbrain/` directory containing:
+- **Markdown Files**: Structured notes with insights and observations
+- **Standardized Format**: Each file starts with purpose summary
+- **Source Citations**: Claims linked to supporting evidence with metadata
+- **Auto-chunking**: Files automatically split and embedded for search
+- **App Configuration**: `app.json` settings file for user preferences
+
+## Unique Value Propositions
+
+1. **Intelligent Insights**: Surface macro-level patterns (e.g., "applied to 200+ internships, no responses")
+2. **Preprocessing Advantage**: Analyze all available data, not just query responses
+3. **Open Source Connectors**: Community can build integrations for any data source
+4. **Local-First**: Full privacy with local processing and storage
+5. **Semantic Understanding**: Context-aware search and retrieval
+
+## Development Setup
 
 ### Prerequisites
-
 - Node.js 16+
 - npm or yarn
 - For macOS builds: Xcode command line tools (`xcode-select --install`)
 
-### Setup
-
-1. Install dependencies:
+### Getting Started
 ```bash
+# Install dependencies
 npm install
-```
 
-2. This will also install Next.js dependencies in the `app/` directory.
-
-### Development Mode
-
-Run both Next.js dev server and Electron simultaneously:
-
-```bash
+# Development mode (runs Next.js + Electron concurrently)
 npm run dev
-```
 
-This will:
-- Start Next.js dev server on http://localhost:3000
-- Launch Electron app that loads the dev server
-- **Window starts maximized** for better desktop experience
-- **Dock shows "LocalBrain"** instead of "Electron"
-- Enable hot reloading for both frontend and Electron
-
-### Building for Production
-
-1. Build the Next.js app for static export:
-```bash
-npm run build:next
-```
-
-2. Build and package the Electron app:
-```bash
+# Production build
 npm run build
 ```
 
-This creates distributable packages in the `dist/` directory:
-- `LocalBrain-1.0.0.dmg` - macOS installer
-- `LocalBrain-1.0.0.zip` - macOS portable app
+### Development Mode
+- Next.js dev server: http://localhost:3000
+- Electron app loads from dev server
+- Hot reloading enabled
+- Window starts maximized
 
-## Customization
+### Production Mode
+- Next.js builds to static files in `app/out/`
+- Electron loads from file system
+- Window starts maximized
+- Optimized for distribution
 
-### App Icons
+## Security & Privacy
 
-Replace the following files in the `electron-stuff/assets/` directory with your own icons:
+- **Local Processing**: All data stays on your machine
+- **Sensitive Data Filtering**: Automatic removal of passwords, SSNs, etc.
+- **Access Controls**: User-configurable permissions for external access
+- **Audit Logging**: Complete history of all requests and responses
+- **Optional Encryption**: Filesystem encryption available
 
-- `icon.png` - Base icon (PNG format)
-- `icon.icns` - macOS icon (ICNS format) - Required for production builds
+## Future Roadmap
 
-For development, the PNG icon is used. For production builds, you'll need an ICNS file.
+### Phase 1 (MVP)
+- Basic search and ingestion
+- Core connectors (Gmail, Drive, Browser History)
+- Local MCP interface
 
-To create an ICNS file from PNG:
-```bash
-# Using iconutil (macOS built-in)
-mkdir icon.iconset
-# Create multiple sizes: 16x16, 32x32, 64x64, 128x128, 256x256, 512x512, 1024x1024
-iconutil -c icns icon.iconset
-mv icon.icns electron-stuff/assets/
-```
+### Phase 2 (Enhanced)
+- Natural language responses
+- Advanced connectors (Discord, Slack, iMessage)
+- External bridge functionality
 
-### App Configuration
+### Phase 3 (Advanced)
+- Online MCP proxy
+- Plugin system for custom connectors
+- Advanced analytics and insights
 
-Edit the root `package.json` to customize:
-
-- `name` - App name
-- `build.appId` - Unique app identifier (format: com.company.app)
-- `build.productName` - Display name in menus/finder
-- `build.mac.category` - App Store category
-
-### Code Signing (for Distribution)
-
-For distributing outside the Mac App Store, you'll need to codesign:
-
-1. Get a Developer ID Application certificate from Apple
-2. Update the build configuration in `package.json`:
-```json
-{
-  "build": {
-    "mac": {
-      "identity": "Developer ID Application: Your Name (TEAMID)"
-    }
-  }
-}
-```
-
-3. For App Store distribution, use:
-```json
-{
-  "build": {
-    "mac": {
-      "identity": "3rd Party Mac Developer Application: Your Name (TEAMID)"
-    }
-  }
-}
-```
-
-## Mac Developer Account
-
-**Do you need a Mac Developer account?**
-
-- **For development/testing**: No, you can run unsigned apps
-- **For distributing to others**: Yes, you need to codesign the app
-- **For Mac App Store**: Yes, you need a paid developer account ($99/year)
-
-Without codesigning, users will get security warnings when running the app.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Build fails with permission errors**: Run `sudo npm run build` or fix permissions
-2. **Icon not showing**: Ensure `electron-stuff/assets/icon.icns` exists for production builds
-3. **App won't start**: Check that Next.js export completed successfully in `app/out/`
-4. **White screen**: Check browser console for Next.js errors
-
-### Rebuilding
-
-If you make changes to the Next.js app:
-
-1. Rebuild Next.js: `npm run build:next`
-2. Restart Electron dev: `npm run dev:electron`
-
-## Window Behavior
-
-- **Development**: Window starts maximized and shows "LocalBrain" in dock
-- **Production**: Window starts maximized, content fills entire window space
-- **Window Controls**: Full macOS window controls (minimize, maximize, close) are available
-- **Responsive**: Content adapts to window resizing
-
-## Next.js Configuration
-
-The Next.js app is configured for static export in `app/next.config.ts`:
-
-- `output: 'export'` - Enables static HTML export
-- `trailingSlash: true` - Ensures compatibility with file:// protocol
-- `images: { unoptimized: true }` - Disables Next.js image optimization for static export
-
-## Backend Integration
-
-To integrate with the backend later:
-
-1. The Electron main process can make HTTP requests to your backend
-2. Or run the backend as a separate process and communicate via WebSocket/HTTP
-3. Update the Next.js app to proxy API requests through Electron if needed
-
-See `electron-stuff/main.js` for examples of how to add backend communication.
+For detailed technical architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
