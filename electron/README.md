@@ -12,9 +12,12 @@ electron/
 │   ├── package.json       # Next.js dependencies
 │   └── next.config.ts     # Next.js configuration
 ├── backend/               # Backend code (ignored for now)
-├── main.js                # Electron main process
-├── package.json           # Electron app configuration
-└── assets/                # App icons and images
+├── electron-stuff/        # Electron-specific files
+│   ├── main.js            # Electron main process
+│   ├── assets/            # App icons and images
+│   ├── node_modules/      # Electron dependencies
+│   └── dist/              # Build output
+└── package.json           # Main project configuration
 ```
 
 ## Development
@@ -69,7 +72,7 @@ This creates distributable packages in the `dist/` directory:
 
 ### App Icons
 
-Replace the following files in the `assets/` directory with your own icons:
+Replace the following files in the `electron-stuff/assets/` directory with your own icons:
 
 - `icon.png` - Base icon (PNG format)
 - `icon.icns` - macOS icon (ICNS format) - Required for production builds
@@ -82,12 +85,12 @@ To create an ICNS file from PNG:
 mkdir icon.iconset
 # Create multiple sizes: 16x16, 32x32, 64x64, 128x128, 256x256, 512x512, 1024x1024
 iconutil -c icns icon.iconset
-mv icon.icns assets/
+mv icon.icns electron-stuff/assets/
 ```
 
 ### App Configuration
 
-Edit `package.json` to customize:
+Edit the root `package.json` to customize:
 
 - `name` - App name
 - `build.appId` - Unique app identifier (format: com.company.app)
@@ -136,7 +139,7 @@ Without codesigning, users will get security warnings when running the app.
 ### Common Issues
 
 1. **Build fails with permission errors**: Run `sudo npm run build` or fix permissions
-2. **Icon not showing**: Ensure `assets/icon.icns` exists for production builds
+2. **Icon not showing**: Ensure `electron-stuff/assets/icon.icns` exists for production builds
 3. **App won't start**: Check that Next.js export completed successfully in `app/out/`
 4. **White screen**: Check browser console for Next.js errors
 
@@ -170,4 +173,4 @@ To integrate with the backend later:
 2. Or run the backend as a separate process and communicate via WebSocket/HTTP
 3. Update the Next.js app to proxy API requests through Electron if needed
 
-See `main.js` for examples of how to add backend communication.
+See `electron-stuff/main.js` for examples of how to add backend communication.

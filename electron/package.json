@@ -2,7 +2,7 @@
   "name": "localbrain",
   "version": "1.0.0",
   "description": "LocalBrain Desktop App",
-  "main": "main.js",
+  "main": "electron-stuff/main.js",
   "homepage": "./",
   "scripts": {
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
@@ -21,10 +21,10 @@
       "output": "dist"
     },
     "files": [
-      "main.js",
+      "electron-stuff/main.js",
       "package.json",
       "app/out/**/*",
-      "node_modules/**/*"
+      "electron-stuff/node_modules/**/*"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -44,15 +44,15 @@
           ]
         }
       ],
-      "icon": "assets/icon.icns",
+      "icon": "electron-stuff/assets/icon.icns",
       "extendInfo": {
         "NSRequiresAquaSystemAppearance": false
       }
     },
     "dmg": {
       "title": "LocalBrain ${version}",
-      "icon": "assets/icon.icns",
-      "background": "assets/dmg-background.png",
+      "icon": "electron-stuff/assets/icon.icns",
+      "background": "electron-stuff/assets/dmg-background.png",
       "contents": [
         {
           "x": 130,

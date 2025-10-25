@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -32,7 +32,7 @@ function createWindow() {
   // Load the Next.js exported files
   const startUrl = isDev
     ? 'http://localhost:3000'
-    : `file://${path.join(__dirname, 'app/out/index.html')}`;
+    : `file://${path.join(__dirname, '../app/out/index.html')}`;
 
   mainWindow.loadURL(startUrl);
 
@@ -120,6 +120,23 @@ function createWindow() {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 }
+
+// IPC handlers
+ipcMain.handle('select-directory', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'Choose Your Vault Directory',
+    message: 'Select the directory that contains your markdown files and folders',
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    const selectedPath = result.filePaths[0];
+    mainWindow.webContents.send('directory-selected', selectedPath);
+    return selectedPath;
+  }
+
+  return null;
+});
 
 app.whenReady().then(createWindow);
 
