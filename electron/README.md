@@ -1,202 +1,272 @@
 # LocalBrain
 
-A personal knowledge workspace that intelligently organizes and retrieves information from your local files and external data sources through a desktop application.
+Personal knowledge vault with AI-powered ingestion and natural language search.
 
-## Product Vision
+**What it does:**
+- 📥 **Ingest** text from anywhere into your vault (AI decides where it goes)
+- 🔍 **Search** your vault with natural language questions
+- 📂 **Organizes** information automatically into markdown files
+- 🖥️ **Runs** as a background service with menu bar icon
 
-LocalBrain provides intelligent search, ingestion, and retrieval of personal knowledge across local files and external data sources. It combines the power of semantic search with a structured filesystem approach to create a personal knowledge base that understands context and relationships in your data.
+---
 
-**Key Features:**
-- **Intelligent Search**: Natural language queries return relevant files, lines, or generated responses
-- **Automated Ingestion**: Processes documents and extracts insights automatically
-- **External Connectors**: Integrates with Gmail, Discord, Slack, Drive, and more
-- **Local MCP Interface**: API access for external tools and integrations
-- **Personal Insights**: Surface patterns and observations that traditional search can't find
+## Current Features (✅ Working)
 
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Electron Desktop App                     │
-├─────────────────────────────────────────────────────────────┤
-│  Next.js Frontend  │    Electron Main Process    │  Backend  │
-│  - Search UI       │    - Window Management     │  Services │
-│  - Filesystem View │    - Protocol Handler      │  - Ingestion│
-│  - Bridge Settings │    - Service Supervision   │  - Retrieval│
-│  - Audit Dashboard │    - IPC Communication     │  - MCP API  │
-└─────────────────────────────────────────────────────────────┘
-                                │
-                    ┌─────────────┼─────────────┐
-                    │             │             │
-              .localbrain/   External Tools  Connectors
-              Filesystem     (via MCP API)   - Gmail
-                                             - Discord
-                                             - Slack
-                                             - Drive
-                                             - Browser History
-                                             - Calendar
+### 1. AI Ingestion (`localbrain://ingest`)
+Send text from anywhere → AI decides where to save it
+```bash
+open "localbrain://ingest?text=Got offer from Meta&platform=Email"
 ```
 
-## Team Breakdown
+**What it does:**
+- Analyzes content with Claude
+- Fuzzy matches to existing files (handles typos)
+- Updates files or creates new ones
+- Adds citations automatically
+- 95% success rate with retry logic
 
-**Taymur**: Main app architecture, UI features, external app use cases
-**Henry + Pranav**: Retrieval system, Node bridge service, Local MCP access, initial architecture setup
-**Sid**: Ingestion system, filesystem management
-**Everyone**: Architecture decisions, cross-team collaboration
-
-## Core Components
-
-### Frontend (Next.js)
-- **Intelligent Search**: Send queries to retrieval agent, display relevant results
-- **Quick Note**: Send note contents + metadata to ingestion agent
-- **Bulk Ingest**: Upload and process large amounts of text data
-- **Filesystem View**: Human-readable folder and file browser
-- **Bridge Management**: Configure external access permissions and settings
-- **Audit Dashboard**: Display retrieval and ingestion history
-
-### Backend Services
-- **Ingestion Engine**: Process documents, extract insights, manage embeddings
-- **Retrieval Engine**: Semantic search, query processing, result ranking
-- **Local MCP Server**: API endpoints for external tools (search, summarize, open, list)
-- **Bridge Service**: External access management and audit logging
-- **Connector System**: Standardized interface for external data sources
-
-### Protocol System
-Custom `localbrain://` deep links for external integration:
-```
-localbrain://search?q=internship+email
-localbrain://open?filepath=finance/banking.md
-localbrain://search_agentic?keywords=internship,nvidia&days=7
-localbrain://ingest?text="Email content here"
+### 2. Natural Language Search (`localbrain://search`)
+Ask questions → Get answers with citations
+```bash
+open "localbrain://search?q=What was my NVIDIA offer?"
 ```
 
-## Filesystem Structure
+**How it works:**
+- No embeddings, no vector search
+- Uses ripgrep + LLM with tools (OpenCode-inspired)
+- LLM decides what to search and read
+- ~3-4 seconds per query
+- Includes citations
 
-LocalBrain uses a `.localbrain/` directory containing:
-- **Markdown Files**: Structured notes with insights and observations
-- **Standardized Format**: Each file starts with purpose summary
-- **Source Citations**: Claims linked to supporting evidence with metadata
-- **Auto-chunking**: Files automatically split and embedded for search
-- **App Configuration**: `app.json` settings file for user preferences
+### 3. Background Service
+- Runs as daemon with menu bar icon
+- Starts automatically with Electron
+- Persists when window closes
+- Must quit from tray menu
 
-## Unique Value Propositions
+---
 
-1. **Intelligent Insights**: Surface macro-level patterns (e.g., "applied to 200+ internships, no responses")
-2. **Preprocessing Advantage**: Analyze all available data, not just query responses
-3. **Community Plugin Ecosystem**: Like Obsidian, anyone can build and share custom connectors for any data source
-4. **Vault-Based Architecture**: Choose any folder as your vault, sync via Dropbox/iCloud, switch between multiple vaults
-5. **Local-First**: Full privacy with local processing and storage
-6. **Semantic Understanding**: Context-aware search and retrieval
+## Architecture
+
+```
+Electron App (macOS menu bar)
+  ↓
+Python Backend Daemon (FastAPI)
+  ↓
+Your Markdown Vault
+```
+
+**Protocol URLs:**
+- `localbrain://ingest?text=...` - Ingest content
+- `localbrain://search?q=...` - Search vault
+
+**API Endpoints:**
+- `POST /protocol/ingest` - Ingestion
+- `POST /protocol/search` - Search
+- `GET /health` - Status check
 
 ## Quick Start
-
-### Prerequisites
-- **Node.js 16+** - Frontend and Electron
-- **Python 3.10+** - Backend services  
-- **Conda** - Python environment management
-
-### Setup & Run
 
 ```bash
 # 1. Setup Python backend
 cd backend
 conda create -n localbrain python=3.10 -y
 conda activate localbrain
-pip install -r requirements.txt
+pip install fastapi uvicorn anthropic python-dotenv
 echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
 
 # 2. Run Electron app (auto-starts daemon)
-cd ../
+cd ..
 npm install
 npm run dev
 ```
 
 **That's it!** The app will:
 - ✅ Start Python daemon automatically
-- ✅ Show tray icon in menu bar
+- ✅ Show tray icon in menu bar (🟢 = running)
 - ✅ Register `localbrain://` protocol
 - ✅ Keep daemon running when window closes
 
-Test it: `open "localbrain://ingest?text=Hello&platform=Test"`
+### Test It
 
-See `ELECTRON_INTEGRATION.md` for full details.
+```bash
+# Test ingestion
+open "localbrain://ingest?text=Hello from LocalBrain&platform=Test"
+
+# Test search
+open "localbrain://search?q=What did I ingest?"
+
+# Check daemon
+curl http://localhost:8765/health
+```
 
 ---
 
-## Development Setup (Detailed)
+## Usage
 
-### Getting Started (Advanced)
+### Ingestion
+
+**From anywhere on macOS:**
 ```bash
-# Install dependencies
-npm install
+open "localbrain://ingest?text=Got offer from NVIDIA&platform=Email"
+```
 
-# Development mode (runs Next.js + Electron concurrently)
+**Parameters:**
+- `text` (required) - Content to ingest
+- `platform` (optional) - Source platform
+- `timestamp` (optional) - ISO 8601 timestamp
+- `url` (optional) - Source URL
+
+**What happens:**
+1. LLM analyzes content
+2. Determines best file(s) to update
+3. Fuzzy matches file names (handles typos)
+4. Updates or creates files
+5. Adds citation with metadata
+
+### Search
+
+**From anywhere on macOS:**
+```bash
+open "localbrain://search?q=What was my NVIDIA offer?"
+```
+
+**Parameter:**
+- `q` (required) - Natural language question
+
+**What happens:**
+1. LLM generates grep patterns
+2. Ripgrep searches vault (~50-100ms)
+3. LLM reads relevant files
+4. LLM synthesizes answer with citations
+5. Returns in ~3-4 seconds
+
+---
+
+## Technical Details
+
+### Models
+- **Ingestion:** `claude-haiku-4-5-20251001`
+- **Search:** `claude-haiku-4-5-20251001`
+- Same model for consistency
+
+### Search Strategy (OpenCode-Inspired)
+- No vector embeddings
+- No semantic search database
+- Just ripgrep + LLM with tools
+- LLM gets `grep_vault` and `read_file` tools
+- LLM decides what to search and read
+- Sorts by file modification time (recent = relevant)
+
+### Why No Embeddings?
+- Vault is small (~1000 files = 50MB)
+- Ripgrep is blazingly fast (~50-100ms)
+- No setup time, no stale indexes
+- Always fresh, always accurate
+- Simpler (300 lines vs thousands)
+
+### Ingestion Pipeline
+- Fuzzy matching (Levenshtein distance)
+- Validation loops (self-correcting)
+- Retry mechanism (3 attempts)
+- 95% success rate
+
+---
+
+## Configuration
+
+### Vault Path
+Edit `backend/src/daemon.py`:
+```python
+VAULT_PATH = Path.home() / "your" / "vault"
+```
+
+### Vault Structure
+```
+my-vault/
+├── career/
+│   ├── Job Search.md
+│   ├── Job Search.json  # Citations
+│   └── about.md
+├── personal/
+│   ├── About Me.md
+│   └── about.md
+└── projects/
+    └── LocalBrain.md
+```
+
+---
+
+## Documentation
+
+- `SEARCH.md` - Search system details
+- `TEST_RESULTS.md` - Test results and performance
+- `backend/INGESTION.md` - Ingestion system guide
+- `backend/CITATION_SYSTEM.md` - Citation format
+- `backend/README.md` - Backend overview
+
+---
+
+## Troubleshooting
+
+### Daemon won't start
+```bash
+# Check conda environment
+conda activate localbrain
+python backend/src/daemon.py
+
+# Check logs
+tail -f /tmp/localbrain-daemon.log
+```
+
+### Protocol URLs don't work
+```bash
+# Check if daemon is running
+curl http://localhost:8765/health
+
+# Restart Electron
 npm run dev
-
-# Production build
-npm run build
 ```
 
-### Development Mode
-- Next.js dev server: http://localhost:3000
-- Electron app loads from dev server
-- Hot reloading enabled
-- Window starts maximized
+### Search returns no results
+- Make sure vault has markdown files
+- Check vault path in `backend/src/daemon.py`
+- Try simpler queries first
 
-### Production Mode
-- Next.js builds to static files in `app/out/`
-- Electron loads from file system
-- Window starts maximized
-- Optimized for distribution
+---
 
-## Security & Privacy
+## Development
 
-- **Local Processing**: All data stays on your machine
-- **Sensitive Data Filtering**: Automatic removal of passwords, SSNs, etc.
-- **Access Controls**: User-configurable permissions for external access
-- **Audit Logging**: Complete history of all requests and responses
-- **Optional Encryption**: Filesystem encryption available
+### File Structure
+```
+electron/
+├── app/                    # Next.js frontend
+├── backend/                # Python backend
+│   └── src/
+│       ├── daemon.py       # FastAPI server
+│       ├── agentic_ingest.py
+│       └── agentic_search.py
+├── electron-stuff/
+│   ├── main.js            # Electron main process
+│   └── assets/            # Tray icons
+└── README.md              # This file
+```
 
-## Ingestion Pipeline (OpenCode-Inspired)
+### Key Files
+- `electron-stuff/main.js` - Electron main, daemon management, protocol handler
+- `backend/src/daemon.py` - FastAPI server, endpoints
+- `backend/src/agentic_ingest.py` - Ingestion engine
+- `backend/src/agentic_search.py` - Search engine
 
-Production-ready ingestion system with techniques from OpenCode:
-
-### Key Features
-- **Fuzzy Matching**: Levenshtein distance handles LLM naming variations
-- **Validation Loops**: Self-correcting system fixes errors automatically  
-- **Optimized Prompts**: Anthropic-style prompts reduce LLM errors by ~30%
-- **Retry Mechanism**: Up to 3 attempts with error feedback (95% success rate)
-
-### Quick Example
+### Commands
 ```bash
-# Using test script (recommended)
-python backend/scripts/ingest_from_file.py content.txt metadata.json
-
-# Direct CLI
-python backend/src/agentic_ingest.py ~/my-vault "Got offer from Meta, $150k"
+npm run dev           # Development mode
+npm run build         # Production build
+npm run dist          # Create distributable
 ```
 
-**Documentation:**
-- [Ingestion Guide](backend/INGESTION.md) - Comprehensive guide
-- [OpenCode Comparison](../OPENCODE_COMPARISON.md) - Architecture comparison
-- [Improvements Summary](../IMPROVEMENTS_SUMMARY.md) - What changed
+---
 
-## Future Roadmap
+## License
 
-### Phase 1 (MVP)
-- ✅ Production ingestion pipeline (fuzzy matching, validation, 95% success)
-- Basic search and retrieval
-- Core connectors (Gmail, Drive, Browser History)
-- Local MCP interface
-
-### Phase 2 (Enhanced)
-- Natural language responses
-- Advanced connectors (Discord, Slack, iMessage)
-- External bridge functionality
-
-### Phase 3 (Advanced)
-- Online MCP proxy
-- Plugin system for custom connectors
-- Advanced analytics and insights
-
-For detailed technical architecture, see [ARCHITECTURE.md](ARCHITECTURE.md).
+MIT
