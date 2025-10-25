@@ -1,0 +1,111 @@
+{
+  "manifest_version": "0.1",
+  "name": "localbrain",
+  "version": "1.0.0",
+  "display_name": "LocalBrain",
+  "description": "Access your LocalBrain knowledge vault from Claude Desktop with semantic search, file operations, and intelligent context retrieval",
+  "long_description": "LocalBrain provides Claude with direct access to your personal knowledge vault. Search semantically across all your notes, emails, and documents, open and read files, generate summaries, and explore your vault structure - all from within Claude Desktop.\n\n**Features:**\n- 🔍 Semantic search across your entire knowledge base\n- 📂 Browse and open files directly\n- 📝 Generate summaries of documents\n- 🎯 Structured search with filters (dates, platforms, keywords)\n- 🔒 Secure local-first architecture\n\n**Prerequisites:**\n- LocalBrain FastAPI server must be running (http://127.0.0.1:8765)\n- ChromaDB Cloud account for vector embeddings",
+  "author": {
+    "name": "LocalBrain",
+    "url": "https://github.com/yourusername/localbrain"
+  },
+  "license": "MIT",
+  "keywords": [
+    "knowledge management",
+    "semantic search",
+    "personal vault",
+    "context",
+    "notes",
+    "pkm"
+  ],
+  "server": {
+    "type": "python",
+    "entry_point": "server/stdio_server.py",
+    "mcp_config": {
+      "command": "/opt/homebrew/anaconda3/envs/localbrain/bin/python3",
+      "args": [
+        "${__dirname}/server/stdio_server.py"
+      ],
+      "env": {
+        "VAULT_PATH": "${user_config.vault_path}",
+        "MCP_API_KEY": "${user_config.api_key}",
+        "MCP_BASE_URL": "http://127.0.0.1:8765",
+        "CHROMA_API_KEY": "${user_config.chroma_api_key}",
+        "CHROMA_TENANT": "${user_config.chroma_tenant}",
+        "CHROMA_DATABASE": "${user_config.chroma_database}"
+      }
+    }
+  },
+  "user_config": {
+    "vault_path": {
+      "type": "directory",
+      "title": "Vault Directory",
+      "description": "Path to your LocalBrain vault (e.g., ~/my-vault)",
+      "required": true
+    },
+    "api_key": {
+      "type": "string",
+      "title": "MCP API Key",
+      "description": "API key for LocalBrain MCP server authentication",
+      "default": "dev-key-local-only",
+      "required": false
+    },
+    "chroma_api_key": {
+      "type": "string",
+      "title": "ChromaDB API Key",
+      "description": "Your ChromaDB Cloud API key for vector embeddings",
+      "sensitive": true,
+      "required": true
+    },
+    "chroma_tenant": {
+      "type": "string",
+      "title": "ChromaDB Tenant",
+      "description": "ChromaDB Cloud tenant name",
+      "default": "default-tenant",
+      "required": false
+    },
+    "chroma_database": {
+      "type": "string",
+      "title": "ChromaDB Database",
+      "description": "ChromaDB Cloud database name",
+      "default": "default-database",
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "search",
+      "description": "Semantic search across your knowledge vault using natural language queries"
+    },
+    {
+      "name": "search_agentic",
+      "description": "Structured search with specific filters (keywords, dates, platforms)"
+    },
+    {
+      "name": "open",
+      "description": "Open and read the full contents of files in your vault"
+    },
+    {
+      "name": "summarize",
+      "description": "Generate summaries of files or content"
+    },
+    {
+      "name": "list",
+      "description": "List directory contents and explore your vault structure"
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.14.0",
+    "platforms": [
+      "darwin",
+      "linux",
+      "win32"
+    ]
+  },
+  "homepage": "https://github.com/yourusername/localbrain",
+  "documentation": "https://github.com/yourusername/localbrain/blob/main/electron/backend/src/core/mcp/USAGE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/localbrain.git"
+  }
+}

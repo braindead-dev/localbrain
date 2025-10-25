@@ -748,10 +748,249 @@ cat /tmp/localbrain-mcp.err
 
 ---
 
+## Claude Desktop Integration
+
+The LocalBrain MCP server can be integrated with Claude Desktop to give Claude direct access to your knowledge base.
+
+### Architecture
+
+The system uses a **two-part architecture**:
+
+1. **FastAPI Server** (`server.py`) - HTTP REST API for programmatic access
+2. **Stdio Wrapper** (`stdio_server.py`) - MCP protocol adapter for Claude Desktop
+
+The stdio wrapper forwards tool calls to the FastAPI server via HTTP.
+
+### Setup Steps
+
+#### 1. Install MCP SDK
+
+```bash
+cd electron/backend
+pip install mcp>=1.0.0
+```
+
+#### 2. Start FastAPI Server
+
+The FastAPI server must be running for Claude Desktop to work:
+
+```bash
+# Terminal 1: Start the FastAPI server
+python -m src.core.mcp.server
+```
+
+Keep this running in the background or run it as a service (see "As a Background Service" section).
+
+#### 3. Configure Claude Desktop
+
+**macOS:**
+
+1. Open Claude Desktop
+2. Go to **Settings** → **Developer** → **Edit Config**
+3. This opens `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Alternatively, edit directly:**
+
+```bash
+# macOS
+vim ~/Library/Application\ Support/Claude/claude_desktop_config.json
+
+# Windows
+notepad %APPDATA%\Claude\claude_desktop_config.json
+
+# Linux
+vim ~/.config/Claude/claude_desktop_config.json
+```
+
+**Add the LocalBrain configuration:**
+
+```json
+{
+  "mcpServers": {
+    "localbrain": {
+      "command": "python",
+      "args": [
+        "/Users/YOUR_USERNAME/Projects/localbrain/electron/backend/src/core/mcp/stdio_server.py"
+      ],
+      "env": {
+        "VAULT_PATH": "/Users/YOUR_USERNAME/Projects/localbrain/my-vault",
+        "MCP_API_KEY": "dev-key-local-only",
+        "MCP_BASE_URL": "http://127.0.0.1:8765"
+      }
+    }
+  }
+}
+```
+
+**IMPORTANT:**
+- Replace `/Users/YOUR_USERNAME/...` with your **absolute paths**
+- Use the same API key configured in `~/.localbrain/mcp/clients.json`
+- Ensure `VAULT_PATH` points to your vault directory
+
+**Example configuration file:** See `examples/claude_desktop_config.json`
+
+#### 4. Restart Claude Desktop
+
+Close and reopen Claude Desktop completely (not just the window).
+
+#### 5. Verify Connection
+
+Look for the **🔨 hammer icon** in the bottom-right corner of Claude Desktop. This indicates MCP servers are connected.
+
+### Testing the Integration
+
+In Claude Desktop, try these prompts:
+
+**Search your knowledge base:**
+```
+Search my vault for "internship applications"
+```
+
+**List directory contents:**
+```
+List the files in my career/ folder
+```
+
+**Open a specific file:**
+```
+Open career/job-search.md
+```
+
+**Get a summary:**
+```
+Summarize my personal/goals.md file
+```
+
+**Structured search:**
+```
+Search for emails about "nvidia" from the last 30 days
+```
+
+### Available Tools in Claude Desktop
+
+When connected, Claude has access to these tools:
+
+1. **search** - Natural language semantic search
+2. **search_agentic** - Structured search with filters
+3. **open** - Read full file contents
+4. **summarize** - Generate file summaries
+5. **list** - Browse directory structure
+
+### Troubleshooting Claude Desktop
+
+**Issue: No hammer icon appears**
+
+Solution:
+1. Check Claude Desktop config file syntax (must be valid JSON)
+2. Ensure paths are absolute, not relative
+3. Restart Claude Desktop completely
+4. Check Claude Desktop logs (Settings → Developer → View Logs)
+
+**Issue: "Cannot connect to FastAPI server"**
+
+Solution:
+1. Verify FastAPI server is running: `curl http://localhost:8765/health`
+2. Check server logs for errors
+3. Ensure port 8765 is not blocked by firewall
+
+**Issue: "Authentication failed"**
+
+Solution:
+1. Verify `MCP_API_KEY` in config matches `~/.localbrain/mcp/clients.json`
+2. Check that client is `enabled: true` in clients.json
+3. Ensure API key has proper permissions for all tools
+
+**Issue: "VAULT_PATH does not exist"**
+
+Solution:
+1. Use absolute path (e.g., `/Users/username/vault`, not `~/vault`)
+2. Ensure the directory exists
+3. Check directory permissions (readable by current user)
+
+### Configuration Examples
+
+**Multiple Vaults:**
+
+```json
+{
+  "mcpServers": {
+    "localbrain-personal": {
+      "command": "python",
+      "args": ["/path/to/stdio_server.py"],
+      "env": {
+        "VAULT_PATH": "/Users/me/personal-vault",
+        "MCP_API_KEY": "key1"
+      }
+    },
+    "localbrain-work": {
+      "command": "python",
+      "args": ["/path/to/stdio_server.py"],
+      "env": {
+        "VAULT_PATH": "/Users/me/work-vault",
+        "MCP_API_KEY": "key2",
+        "MCP_BASE_URL": "http://127.0.0.1:8766"
+      }
+    }
+  }
+}
+```
+
+**With Python Virtual Environment:**
+
+```json
+{
+  "mcpServers": {
+    "localbrain": {
+      "command": "/Users/me/Projects/localbrain/.venv/bin/python",
+      "args": ["/Users/me/Projects/localbrain/electron/backend/src/core/mcp/stdio_server.py"],
+      "env": {
+        "VAULT_PATH": "/Users/me/my-vault",
+        "MCP_API_KEY": "dev-key-local-only"
+      }
+    }
+  }
+}
+```
+
+### Debugging
+
+**Enable verbose logging in stdio_server:**
+
+Edit `stdio_server.py` and add at the top of `main()`:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
+
+**Check FastAPI server health:**
+
+```bash
+curl http://localhost:8765/health
+```
+
+**Test stdio server directly:**
+
+```bash
+python src/core/mcp/stdio_server.py
+# Then type: {"jsonrpc":"2.0","method":"tools/list","params":{},"id":1}
+# Press Ctrl+D
+```
+
+### Performance Tips
+
+1. **Keep FastAPI server running** - Start it as a background service
+2. **Use search filters** - Narrow results with platform/date filters
+3. **Cache results** - Enable caching in MCP config (`MCP_CACHE_ENABLED=true`)
+4. **Optimize queries** - Use specific keywords instead of long questions
+
+---
+
 ## Additional Resources
 
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [ChromaDB Documentation](https://docs.trychroma.com/)
-- [Model Context Protocol Specification](https://github.com/anthropics/model-context-protocol)
+- [Model Context Protocol Specification](https://modelcontextprotocol.io/)
+- [Claude Desktop MCP Guide](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop)
 
 For issues and feature requests, please file an issue in the LocalBrain repository.

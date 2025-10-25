@@ -5,7 +5,11 @@ electron/backend/.env
 *.env
 __pycache__/
 __pycache__
+electron/backend/src/core/mcp/__pycache__/
+electron/backend/src/core/mcp/__pycache__
+
 *.pyc
+.pyc
 *.pyo
 *.pyd
 .Python

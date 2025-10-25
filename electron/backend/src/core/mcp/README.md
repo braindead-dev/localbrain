@@ -8,19 +8,40 @@ Provides a local API interface for external tools and integrations. Implements t
 
 ## Quick Start
 
+### For REST API Access
+
 ```bash
 # 1. Set up environment
 cp examples/.env.example .env
 # Edit .env with your VAULT_PATH and CHROMA_API_KEY
 
 # 2. Install dependencies
-pip install fastapi uvicorn pydantic loguru chromadb sentence-transformers
+pip install fastapi uvicorn pydantic loguru chromadb sentence-transformers mcp
 
 # 3. Run server
 python -m src.core.mcp.server
 ```
 
 Server will start on `http://127.0.0.1:8765`
+
+### For Claude Desktop Integration
+
+1. **Start FastAPI server** (as above)
+2. **Configure Claude Desktop**:
+   - Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+   - Add LocalBrain server config (see `examples/claude_desktop_config.json`)
+3. **Restart Claude Desktop** - Look for 🔨 hammer icon
+
+See [USAGE.md - Claude Desktop Integration](./USAGE.md#claude-desktop-integration) for detailed setup.
+
+## Features
+
+- ✅ **REST API Server** - HTTP endpoints for programmatic access
+- ✅ **Claude Desktop Integration** - Stdio wrapper for MCP protocol
+- ✅ **5 MCP Tools** - search, search_agentic, open, summarize, list
+- ✅ **Authentication & Authorization** - API key-based with granular permissions
+- ✅ **Audit Logging** - Complete request/response tracking
+- ✅ **Rate Limiting** - Per-client request throttling
 
 See [USAGE.md](./USAGE.md) for complete documentation.
 

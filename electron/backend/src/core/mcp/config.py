@@ -115,8 +115,10 @@ class ConfigLoader:
         - MCP_LOG_DIR: Audit log directory
         """
         # --- NEW: Path Resolution Logic ---
-        # Project root is defined as 4 levels up from this config file's directory
-        project_root = Path(__file__).parent.parent.parent.parent.resolve()
+        # Project root is 6 .parent calls from config.py file
+        # config.py is at: electron/backend/src/core/mcp/config.py
+        # Path: config.py -> mcp/ -> core/ -> src/ -> backend/ -> electron/ -> project_root/
+        project_root = Path(__file__).parent.parent.parent.parent.parent.parent.resolve()
 
         vault_path_str = os.getenv("VAULT_PATH")
         if not vault_path_str:
