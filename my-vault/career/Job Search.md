@@ -1,43 +1,38 @@
 # Job Search
 
-Tracking internship and full-time opportunities for summer 2025 and beyond.
+Tracking applications, interviews, and offers for new grad SWE roles (2025-2026).
 
-## Applications
+## Active Applications
 
-Applied to Google for Software Engineering Intern position on October 15, 2024 [1]. Role focuses on infrastructure and distributed systems.
+### Google - Software Engineer, Infrastructure
+- **Applied:** September 15, 2024 [1]
+- **Status:** Pending (no response yet)
+- **Role:** Infrastructure team, distributed systems
+- **Referral:** From Sarah Chen (UCR alum) [1]
 
-Received interview request from Meta on October 20, 2024 for their production engineering intern program [2]. Initial phone screen scheduled for November 5th.
+### Stripe - Software Engineer, Payments
+- **Applied:** September 20, 2024 [2]
+- **Status:** Phone screen scheduled for November 5, 2024 [3]
+- **Role:** Payments infrastructure team
+- **Notes:** Hiring manager mentioned they're expanding the team [3]
 
-Applied to NVIDIA for AI/ML internship on October 18, 2024 [3]. Particularly interested in their work on LLMs and GPU optimization.
+### Databricks - Software Engineer, Query Engine
+- **Applied:** October 1, 2024 [4]
+- **Status:** Technical phone screen completed [5]
+- **Performance:** Solved both LC medium problems in 35 minutes [5]
+- **Next steps:** Onsite scheduled for November 12, 2024 [5]
 
-Received final interview date from Amazon for Senior SWE role on November 18th [5].
+## Interviews Completed
 
-## Interview Prep
-
-Currently working through:
-- LeetCode medium/hard problems
-- System design fundamentals
-- Distributed systems concepts
-- ML fundamentals review
-
-## Target Companies
-
-1. Google - Infrastructure teams
-2. Meta - Production Engineering
-3. NVIDIA - AI/ML research
-4. Databricks - ML Engineering
-4. Anthropic - AI safety
-5. OpenAI - Applied research
-
-
-## Projects
-
-## Projects
-
-Started working on the vector search implementation for LocalBrain. Set up ChromaDB and implemented basic embedding generation using sentence-transformers.
+### Amazon - SDE New Grad
+- **Applied:** August 25, 2024 [6]
+- **Phone Screen:** September 10, 2024 - passed [7]
+- **Final Round:** October 15, 2024 [8]
+- **Result:** No offer - feedback was "good technical skills but need more system design depth" [9]
+- **Learnings:** Need to practice distributed systems design more
 
 ## Related
 
 - [[Resume]]
-- [[Interview Notes]]
-- [[Networking]]
+- [[Interview Prep]]
+- [[Technical Skills]]

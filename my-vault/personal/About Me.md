@@ -1,33 +1,34 @@
 # About Me
 
-Henry Wang, software developer based in the Bay Area, currently studying at UC Riverside.
+Software engineer specializing in full-stack development and AI/ML applications.
 
 ## Background
 
-Born and raised in California [1]. Currently pursuing Computer Science at UC Riverside with expected graduation in 2026 [2].
+CS student at UC Riverside, expected graduation May 2026 [1]. GPA 3.8/4.0 [1]. 
 
-Passionate about AI/ML and building tools that solve real problems. Strong interest in local-first software and privacy-preserving technologies.
+Currently interning at Databricks as ML Engineering Intern on the model serving team [2].
+
+## Technical Skills
+
+**Languages:** Python, TypeScript, Go, Java  
+**Frameworks:** React, Next.js, FastAPI, PyTorch  
+**Tools:** Docker, Kubernetes, PostgreSQL, Redis
+
+## Current Focus
+
+Building LocalBrain - a local-first knowledge management system with AI-powered ingestion [3]. Working on semantic search and automated citation management.
+
+Exploring local-first software architectures and privacy-preserving ML techniques.
 
 ## Contact
 
-- Email: henry@example.com
+- Email: henry@ucr.edu
 - GitHub: github.com/henrywang
-- Location: Bay Area, CA
-
-## Interests
-
-- AI and machine learning
-- Full-stack development
-- Local-first software architecture
-- Privacy-focused technologies
-- Open source contributions
-
-
-## Career
-
-Received offer from Databricks for ML Engineer role, with a base salary of $170,000 plus equity [3].
+- Location: Riverside, CA / Bay Area
 
 ## Related
 
 - [[Career Goals]]
 - [[Projects]]
+- [[Learning]]
+- [[Learning]]
