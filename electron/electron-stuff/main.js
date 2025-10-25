@@ -138,9 +138,17 @@ function createWindow() {
 }
 
 // Python Daemon Management
-function startDaemon() {
+async function startDaemon() {
   if (daemonProcess) {
     console.log('Daemon already running');
+    return;
+  }
+
+  // Check if port is already in use
+  const isPortInUse = await checkDaemonHealth();
+  if (isPortInUse) {
+    console.log('✅ Daemon already running on port 8765');
+    updateTrayStatus(true);
     return;
   }
 
@@ -192,6 +200,9 @@ function startDaemon() {
 
   daemonProcess.on('close', (code) => {
     console.log(`Daemon process exited with code ${code}`);
+    if (code === 1) {
+      console.log('❌ Daemon failed to start (likely port 8765 already in use)');
+    }
     daemonProcess = null;
     updateTrayStatus(false);
   });
@@ -311,6 +322,10 @@ function updateTrayMenu(daemonRunning) {
 }
 
 function updateTrayStatus(isRunning) {
+  if (!tray) {
+    console.log('⚠️  Tray not initialized yet, skipping status update');
+    return;
+  }
   updateTrayMenu(isRunning);
   // Use emoji for better visibility
   tray.setTitle(isRunning ? '🟢' : '⚫');
@@ -334,14 +349,12 @@ ipcMain.handle('select-directory', async () => {
 });
 
 // App lifecycle
-app.whenReady().then(() => {
-  // Backend startup disabled until Python environment is configured
-  // To enable: install Python dependencies and uncomment the line below
-  // startDaemon();
-  console.log('Backend startup disabled - configure Python environment to enable');
-
-  // Create tray (always visible, even without window)
+app.whenReady().then(async () => {
+  // Create tray first (daemon startup needs it for status updates)
   createTray();
+
+  // Start backend daemon on app launch
+  await startDaemon();
 
   // Create window
   createWindow();
