@@ -335,12 +335,14 @@ ipcMain.handle('select-directory', async () => {
 
 // App lifecycle
 app.whenReady().then(() => {
-  // Start daemon first
-  startDaemon();
-  
+  // Backend startup disabled until Python environment is configured
+  // To enable: install Python dependencies and uncomment the line below
+  // startDaemon();
+  console.log('Backend startup disabled - configure Python environment to enable');
+
   // Create tray (always visible, even without window)
   createTray();
-  
+
   // Create window
   createWindow();
 });

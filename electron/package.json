@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:electron\"",
     "dev:next": "cd app && npm run dev",
-    "dev:electron": "NODE_ENV=development electron .",
+    "dev:electron": "cross-env NODE_ENV=development electron .",
+    "start": "npm run build:next && cross-env NODE_ENV=production electron .",
     "build:next": "cd app && npm run build",
     "build:electron": "npm run build:next && electron-builder",
     "build": "npm run build:next && electron-builder",
@@ -85,6 +86,7 @@
   },
   "devDependencies": {
     "concurrently": "^7.6.0",
+    "cross-env": "^10.1.0",
     "electron": "^25.0.0",
     "electron-builder": "^24.0.0"
   },

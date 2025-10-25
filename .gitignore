@@ -11,3 +11,4 @@ __pycache__
 .Python
 *.pyc
 *.pyc
+/electron/dist/win-unpacked
