@@ -1,6 +1,12 @@
 /electron/node_modules
 electron/backend/.env
 
+# Credentials and secrets - NEVER commit these!
+credentials/gmail_client_secret.json
+credentials/*.json
+.env.local
+*.key
+*.secret
 
 *.env
 __pycache__/

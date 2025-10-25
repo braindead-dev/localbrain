@@ -8,6 +8,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Label } from "./ui/label";
 import { toast } from "sonner";
+import { api } from "../lib/api";
 import {
   Search,
   Github,
@@ -191,7 +192,14 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
   const [configureDialogOpen, setConfigureDialogOpen] = useState(false);
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
   const [apiKey, setApiKey] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const highlightedRef = useRef<HTMLDivElement>(null);
+
+  // Check Gmail status on mount
+  useEffect(() => {
+    checkGmailStatus();
+  }, []);
 
   // Notify parent of integration changes
   useEffect(() => {
@@ -199,6 +207,17 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
       onIntegrationsChange(integrations.map(i => ({ id: i.id, name: i.name, connected: i.connected })));
     }
   }, [integrations, onIntegrationsChange]);
+
+  const checkGmailStatus = async () => {
+    try {
+      const status = await api.gmailStatus();
+      setIntegrations(prev => prev.map(int => 
+        int.id === 'gmail' ? { ...int, connected: status.connected } : int
+      ));
+    } catch (error) {
+      console.error('Error checking Gmail status:', error);
+    }
+  };
 
   const filteredIntegrations = integrations.filter((integration) => {
     const matchesSearch = integration.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -216,10 +235,47 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
     { id: "all", label: "All", icon: <LayoutGrid className="h-4 w-4" /> },
   ];
 
-  const handleConnect = (integration: Integration) => {
-    setSelectedIntegration(integration);
-    setApiKey("");
-    setConnectDialogOpen(true);
+  const handleConnect = async (integration: Integration) => {
+    // Special handling for Gmail - use OAuth flow
+    if (integration.id === 'gmail') {
+      try {
+        setIsConnecting(true);
+        const result = await api.gmailAuthStart();
+        // Open OAuth URL in new window
+        window.open(result.auth_url, '_blank', 'width=600,height=700');
+        
+        toast.info('Complete Gmail authentication in the popup window');
+        
+        // Poll for status change
+        const pollInterval = setInterval(async () => {
+          const status = await api.gmailStatus();
+          if (status.connected) {
+            clearInterval(pollInterval);
+            setIntegrations(prev => prev.map(int => 
+              int.id === 'gmail' ? { ...int, connected: true } : int
+            ));
+            toast.success(`Successfully connected to Gmail as ${status.email}!`);
+            setIsConnecting(false);
+          }
+        }, 2000);
+        
+        // Stop polling after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          setIsConnecting(false);
+        }, 300000);
+        
+      } catch (error: any) {
+        console.error('Gmail auth error:', error);
+        toast.error(error.message || 'Failed to start Gmail authentication');
+        setIsConnecting(false);
+      }
+    } else {
+      // For other integrations, show API key dialog
+      setSelectedIntegration(integration);
+      setApiKey("");
+      setConnectDialogOpen(true);
+    }
   };
 
   const handleConfirmConnect = () => {
@@ -237,20 +293,56 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
     setApiKey("");
   };
 
-  const handleDisconnect = (integration: Integration) => {
-    setIntegrations(integrations.map(int => 
-      int.id === integration.id 
-        ? { ...int, connected: false }
-        : int
-    ));
-
-    toast.success(`Disconnected from ${integration.name}`);
+  const handleDisconnect = async (integration: Integration) => {
+    // Special handling for Gmail
+    if (integration.id === 'gmail') {
+      try {
+        await api.gmailRevoke();
+        setIntegrations(integrations.map(int => 
+          int.id === integration.id 
+            ? { ...int, connected: false }
+            : int
+        ));
+        toast.success(`Disconnected from ${integration.name}`);
+      } catch (error: any) {
+        console.error('Gmail disconnect error:', error);
+        toast.error(error.message || 'Failed to disconnect Gmail');
+      }
+    } else {
+      setIntegrations(integrations.map(int => 
+        int.id === integration.id 
+          ? { ...int, connected: false }
+          : int
+      ));
+      toast.success(`Disconnected from ${integration.name}`);
+    }
   };
 
-  const handleConfigure = (integration: Integration) => {
-    setSelectedIntegration(integration);
-    setApiKey("");
-    setConfigureDialogOpen(true);
+  const handleConfigure = async (integration: Integration) => {
+    // Special handling for Gmail - trigger sync
+    if (integration.id === 'gmail') {
+      try {
+        setIsSyncing(true);
+        toast.info('Syncing and ingesting emails from the last 10 minutes...');
+        
+        const result = await api.gmailSync(10, 10, true); // max 10 emails, last 10 minutes, ingest=true
+        
+        if (result.success) {
+          toast.success(`Synced ${result.count} emails. Ingested: ${result.ingested_count || 0}, Failed: ${result.failed_count || 0}`);
+        } else {
+          toast.error(result.error || 'Sync failed');
+        }
+      } catch (error: any) {
+        console.error('Gmail sync error:', error);
+        toast.error(error.message || 'Failed to sync Gmail');
+      } finally {
+        setIsSyncing(false);
+      }
+    } else {
+      setSelectedIntegration(integration);
+      setApiKey("");
+      setConfigureDialogOpen(true);
+    }
   };
 
   const handleConfirmConfigure = () => {
@@ -364,9 +456,10 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
                             size="sm"
                             className="flex-1 shadow-sm hover:shadow-md transition-shadow"
                             onClick={() => handleConfigure(integration)}
+                            disabled={isSyncing && integration.id === 'gmail'}
                           >
                             <Settings className="h-4 w-4 mr-2" />
-                            Configure
+                            {integration.id === 'gmail' ? (isSyncing ? 'Syncing...' : 'Sync') : 'Configure'}
                           </Button>
                           <Button
                             variant="outline"
@@ -382,8 +475,9 @@ export function ConnectionsView({ highlightedConnection, onConnectionViewed, onI
                           size="sm"
                           className="flex-1 shadow-sm hover:shadow-md transition-shadow"
                           onClick={() => handleConnect(integration)}
+                          disabled={isConnecting && integration.id === 'gmail'}
                         >
-                          Connect
+                          {isConnecting && integration.id === 'gmail' ? 'Connecting...' : 'Connect'}
                         </Button>
                       )}
                     </div>

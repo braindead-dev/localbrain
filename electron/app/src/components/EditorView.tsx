@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { Button } from "./ui/button";
-import { FileText, Save, FolderOpen } from "lucide-react";
+import { FileText, Save, FolderOpen, Loader2, AlertCircle } from "lucide-react";
+import { api } from "../lib/api";
+import { toast } from "sonner";
 
 interface EditorViewProps {
   initialFilePath?: string;
@@ -13,15 +15,35 @@ export function EditorView({ initialFilePath, initialContent = "", showLineNumbe
   const [content, setContent] = useState(initialContent);
   const [filePath, setFilePath] = useState<string | null>(initialFilePath || null);
   const [isSaved, setIsSaved] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [citations, setCitations] = useState<Record<string, any>>({});
 
-  // Update content and file path when props change
+  // Load file when initialFilePath changes
   useEffect(() => {
-    if (initialFilePath !== filePath) {
-      setFilePath(initialFilePath || null);
-      setContent(initialContent);
-      setIsSaved(true);
+    if (initialFilePath && initialFilePath !== filePath) {
+      loadFile(initialFilePath);
     }
-  }, [initialFilePath, initialContent]);
+  }, [initialFilePath]);
+
+  const loadFile = async (path: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      setFilePath(path);
+      
+      const fileInfo = await api.getFile(path);
+      setContent(fileInfo.content);
+      setCitations(fileInfo.citations);
+      setIsSaved(true);
+    } catch (error: any) {
+      console.error('Error loading file:', error);
+      setError(error.message || 'Failed to load file');
+      toast.error(error.message || 'Failed to load file');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
@@ -29,8 +51,10 @@ export function EditorView({ initialFilePath, initialContent = "", showLineNumbe
   };
 
   const handleSave = () => {
-    // TODO: Implement actual file saving via Electron IPC
-    console.log("Saving file:", filePath, content);
+    // Note: File saving would require a backend API endpoint
+    // For now, we'll just mark as saved
+    toast.info("File saving not yet implemented. Edits are view-only.");
+    console.log("Would save file:", filePath, content);
     setIsSaved(true);
   };
 
@@ -58,7 +82,22 @@ export function EditorView({ initialFilePath, initialContent = "", showLineNumbe
 
       {/* Editor Area */}
       <div className="flex-1 overflow-hidden">
-        {filePath ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Loading file...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+              <p className="text-sm text-muted-foreground">{error}</p>
+              <p className="text-xs text-muted-foreground">Make sure the daemon is running</p>
+            </div>
+          </div>
+        ) : filePath ? (
           showLineNumbers ? (
             <div className="flex h-full">
               {/* Line Numbers */}
@@ -95,9 +134,20 @@ export function EditorView({ initialFilePath, initialContent = "", showLineNumbe
               <FolderOpen className="h-12 w-12 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium mb-2">No file open</h3>
-            <p className="text-muted-foreground max-w-md">
-              Open the Vault sidebar and double-click on any editable file to start editing
+            <p className="text-muted-foreground max-w-md mb-4">
+              Open the Vault sidebar and double-click on any file to view its content
             </p>
+            {Object.keys(citations).length > 0 && (
+              <div className="mt-4 p-4 bg-muted/30 rounded-lg max-w-md">
+                <h4 className="text-sm font-medium mb-2">Citations</h4>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  {citations.platform && <p><strong>Source:</strong> {citations.platform}</p>}
+                  {citations.timestamp && <p><strong>Date:</strong> {new Date(citations.timestamp).toLocaleString()}</p>}
+                  {citations.url && <p><strong>URL:</strong> <a href={citations.url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{citations.url}</a></p>}
+                  {citations.quote && <p><strong>Quote:</strong> {citations.quote}</p>}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
