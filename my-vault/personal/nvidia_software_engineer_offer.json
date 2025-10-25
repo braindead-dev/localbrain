@@ -1,0 +1,9 @@
+{
+  "1": {
+    "platform": "File Ingestion",
+    "timestamp": "2025-10-25T05:46:17.727569Z",
+    "description": "An employment offer letter from NVIDIA extending a full-time Software Engineer position with detailed compensation and employment terms.",
+    "url": "sample_ingestion/nvidia_offer.txt",
+    "quote": "NVIDIA extends a full-time Software Engineer - Deep Learning position offer to Alex with a start date of July 14, 2025, at their Santa Clara headquart..."
+  }
+}
