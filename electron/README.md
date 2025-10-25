@@ -70,6 +70,8 @@ Your Markdown Vault
 - `POST /protocol/search` - Search (returns context chunks)
 - `GET /file/{filepath}` - Fetch full file content
 - `GET /list/{path}` - List files and directories
+- `GET /config` - Get configuration
+- `PUT /config` - Update configuration
 - `GET /health` - Status check
 
 ## Quick Start
@@ -198,10 +200,30 @@ open "localbrain://search?q=What was my NVIDIA offer?"
 
 ## Configuration
 
-### Vault Path
-Edit `backend/src/daemon.py`:
-```python
-VAULT_PATH = Path.home() / "your" / "vault"
+### Config File Location
+`~/.localbrain/config.json`
+
+### Get Current Config
+```bash
+curl http://localhost:8765/config
+```
+
+### Change Vault Path
+```bash
+curl -X PUT http://localhost:8765/config \
+  -H "Content-Type: application/json" \
+  -d '{"vault_path": "/path/to/your/vault"}'
+```
+
+**Note:** Requires daemon restart after changing vault path
+
+### Default Config
+```json
+{
+  "vault_path": "~/Documents/GitHub/localbrain/my-vault",
+  "port": 8765,
+  "auto_start": true
+}
 ```
 
 ### Vault Structure

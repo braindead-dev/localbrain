@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from agentic_ingest import AgenticIngestionPipeline
 from agentic_search import Search
 from utils.file_ops import read_file
+from config import load_config, update_config, get_vault_path
 
 # Setup logging
 logging.basicConfig(
@@ -49,15 +50,86 @@ logger = logging.getLogger('localbrain-daemon')
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
 
-# Global config
-VAULT_PATH = Path.home() / "Documents" / "GitHub" / "localbrain" / "my-vault"
-PORT = 8765
+# Load config
+CONFIG = load_config()
+VAULT_PATH = get_vault_path()
+PORT = CONFIG.get('port', 8765)
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "localbrain-daemon"}
+
+
+@app.get("/config")
+async def get_config():
+    """
+    Get current configuration.
+    
+    Returns:
+        Current config including vault_path, port, etc.
+    """
+    config = load_config()
+    return JSONResponse(content={
+        'vault_path': config['vault_path'],
+        'port': config['port'],
+        'auto_start': config.get('auto_start', True)
+    })
+
+
+@app.put("/config")
+async def update_config_endpoint(request: Request):
+    """
+    Update configuration.
+    
+    Body:
+        {
+            "vault_path": "/path/to/vault",  # optional
+            "port": 8765,                     # optional
+            "auto_start": true                # optional
+        }
+    
+    Note: Changing vault_path or port requires restart.
+    """
+    try:
+        body = await request.json()
+        
+        # Validate vault_path if provided
+        if 'vault_path' in body:
+            vault_path = Path(body['vault_path']).expanduser()
+            if not vault_path.exists():
+                return JSONResponse(
+                    status_code=400,
+                    content={'error': f'Path does not exist: {body["vault_path"]}'}
+                )
+            if not vault_path.is_dir():
+                return JSONResponse(
+                    status_code=400,
+                    content={'error': f'Path is not a directory: {body["vault_path"]}'}
+                )
+            # Store absolute path
+            body['vault_path'] = str(vault_path)
+        
+        # Update config
+        updated_config = update_config(body)
+        
+        # Check if restart needed
+        restart_needed = 'vault_path' in body or 'port' in body
+        
+        return JSONResponse(content={
+            'success': True,
+            'config': updated_config,
+            'restart_required': restart_needed,
+            'message': 'Config updated. Restart daemon to apply changes.' if restart_needed else 'Config updated.'
+        })
+        
+    except Exception as e:
+        logger.exception("Error updating config")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
 
 
 @app.post("/protocol/ingest")

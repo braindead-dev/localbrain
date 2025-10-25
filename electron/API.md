@@ -166,6 +166,59 @@ curl http://localhost:8765/health
 
 ---
 
+### 6. GET /config
+Get current configuration.
+
+**Request:**
+```bash
+curl http://localhost:8765/config
+```
+
+**Response:**
+```json
+{
+  "vault_path": "/Users/henry/Documents/GitHub/localbrain/my-vault",
+  "port": 8765,
+  "auto_start": true
+}
+```
+
+---
+
+### 7. PUT /config
+Update configuration.
+
+**Request:**
+```bash
+curl -X PUT http://localhost:8765/config \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vault_path": "/path/to/new/vault",
+    "auto_start": false
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "config": {
+    "vault_path": "/path/to/new/vault",
+    "port": 8765,
+    "auto_start": false
+  },
+  "restart_required": true,
+  "message": "Config updated. Restart daemon to apply changes."
+}
+```
+
+**Notes:**
+- Changing `vault_path` or `port` requires daemon restart
+- Config stored in `~/.localbrain/config.json`
+- `vault_path` must exist and be a directory
+
+---
+
 ## Complete AI App Flow
 
 ### Scenario: GPT helping with career decisions
