@@ -1,213 +1,116 @@
-# Backend Setup & Testing Guide
+# Setup Guide
 
-## Initial Setup with Conda
+## Prerequisites
 
-### 1. Create Conda Environment
+- Python 3.10+
+- Conda (recommended) or venv
+- Anthropic API key
+
+---
+
+## Installation
+
+### 1. Create Environment
 
 ```bash
 # Navigate to backend directory
-cd /Users/henry/Documents/GitHub/localbrain/electron/backend
+cd electron/backend
 
 # Create conda environment
 conda create -n localbrain python=3.10 -y
-
-# Activate environment
 conda activate localbrain
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Verify Environment Variables
+### 2. Configure API Key
 
-Check that `.env` exists with your API key:
 ```bash
+# Create .env file
+echo "ANTHROPIC_API_KEY=sk-ant-your-key-here" > .env
+
+# Verify
 cat .env
-# Should show: ANTHROPIC_API_KEY=sk-ant-...
+```
+
+### 3. Initialize Vault
+
+```bash
+# Initialize your vault (one time)
+python src/init_vault.py ~/my-vault
+```
+
+**Creates:**
+```
+my-vault/
+├── .localbrain/           # Config and internal data
+├── personal/              # Personal notes
+├── career/                # Job search, applications
+├── projects/              # Project work
+├── research/              # Research notes
+├── social/                # Social interactions
+├── finance/               # Financial information
+├── health/                # Health tracking
+├── learning/              # Learning notes
+└── archive/               # Archived content
 ```
 
 ---
 
-## Testing Vault Initialization + Simple Ingestion
-
-### Step 1: Create Test Vault
+## Quick Test
 
 ```bash
-# Create a test directory
-mkdir ~/test-vault
+# Test with example content
+python scripts/ingest_from_file.py scripts/example_content.txt
 ```
 
-### Step 2: Initialize Vault
-
+**Check results:**
 ```bash
-# Make sure conda environment is activated
-conda activate localbrain
-
-# Run initialization script
-python src/init_vault.py ~/test-vault
+cat ~/my-vault/career/Job\ Search.md
+cat ~/my-vault/personal/About\ Me.md
 ```
-
-**Expected output:**
-```
-🚀 Initializing LocalBrain vault at: /Users/henry/test-vault
-✅ Vault directory ready: /Users/henry/test-vault
-✅ Created .localbrain/ directory
-✅ Created internal directories (data/, logs/)
-✅ Created app.json with default configuration
-✅ Created 9 default folders:
-   - personal/
-   - career/
-   - projects/
-   - research/
-   - social/
-   - finance/
-   - health/
-   - learning/
-   - archive/
-
-🎉 Vault initialization complete!
-📂 Vault location: /Users/henry/test-vault
-📝 Ready to ingest content!
-```
-
-### Step 3: Verify Vault Structure
-
-```bash
-# List vault contents
-ls -la ~/test-vault
-
-# Should see:
-# .localbrain/
-# personal/
-# career/
-# projects/
-# research/
-# social/
-# finance/
-# health/
-# learning/
-# archive/
-
-# Check config file
-cat ~/test-vault/.localbrain/app.json
-
-# Check a sample about.md
-cat ~/test-vault/career/about.md
-```
-
-### Step 4: Test Simple Ingestion
-
-```bash
-# Test 1: Job search context (should go to career/)
-python src/test_ingestion.py ~/test-vault \
-  "I applied to NVIDIA for a software engineering internship on March 15, 2024"
-
-# Verify file created
-cat ~/test-vault/career/job-search.md
-```
-
-**Expected file content:**
-```markdown
-# job-search
-
-Tracking and organizing career-related information.
-
-## Content
-
-I applied to NVIDIA for a software engineering internship on March 15, 2024[^1].
-
----
-
-[^1]: Manual input, October 24, 2024
-```
-
-### Step 5: Test Appending to Existing File
-
-```bash
-# Add another job application
-python src/test_ingestion.py ~/test-vault \
-  "Got rejection from Google on March 20, 2024"
-
-# Check that it appended
-cat ~/test-vault/career/job-search.md
-```
-
-**Should now have both entries with [^1] and [^2] footnotes**
-
-### Step 6: Test Different Categories
-
-```bash
-# Project context (should go to projects/)
-python src/test_ingestion.py ~/test-vault \
-  "Built a new React app for personal finance tracking"
-
-cat ~/test-vault/projects/current-projects.md
-
-# Learning context (should go to learning/)
-python src/test_ingestion.py ~/test-vault \
-  "Completed React course on Udemy covering hooks and context"
-
-cat ~/test-vault/learning/notes.md
-
-# Personal context (should go to personal/)
-python src/test_ingestion.py ~/test-vault \
-  "Need to remember my mom's birthday is May 15th"
-
-cat ~/test-vault/personal/notes.md
-
-# Finance context (should go to finance/)
-python src/test_ingestion.py ~/test-vault \
-  "Paid $1200 for rent on October 1st"
-
-cat ~/test-vault/finance/transactions.md
-```
-
----
-
-## What's Working Now
-
-✅ Vault initialization with proper structure
-✅ Default folder creation (personal/, career/, etc.)
-✅ about.md files in each folder
-✅ Simple keyword-based ingestion
-✅ File creation with markdown template
-✅ Appending to existing files
-✅ Automatic footnote numbering
-✅ Context organized by category
-
----
-
-## Next Steps (Not Implemented Yet)
-
-- [ ] LLM-powered file selection (replace keyword matching)
-- [ ] Intelligent content formatting
-- [ ] Surgical file edits (file modification agent)
-- [ ] Citation extraction from sources
-- [ ] Embeddings and vector search
-- [ ] Connectors (Gmail, Discord, etc.)
 
 ---
 
 ## Troubleshooting
 
-**"Vault not initialized" error:**
+### "ANTHROPIC_API_KEY not found"
+
+Add your API key to `.env`:
 ```bash
-# Make sure you ran init_vault.py first
-python src/init_vault.py ~/test-vault
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
 ```
 
-**Module not found errors:**
-```bash
-# Activate conda environment
-conda activate localbrain
+### "Vault not initialized"
 
-# Reinstall dependencies
+Initialize first:
+```bash
+python src/init_vault.py ~/my-vault
+```
+
+### "Module not found"
+
+Reinstall dependencies:
+```bash
+conda activate localbrain
 pip install -r requirements.txt
 ```
 
-**Permission denied:**
-```bash
-# Make scripts executable
-chmod +x src/init_vault.py
-chmod +x src/test_ingestion.py
-```
+---
+
+## What's Implemented
+
+✅ AI-powered ingestion (V2 pipeline)  
+✅ Single-pass content analysis  
+✅ Smart file routing  
+✅ Citation management  
+✅ Priority-based detail levels  
+✅ Validation system  
+
+## What's Next
+
+- [ ] Embeddings and semantic search
+- [ ] Web connectors (Gmail, Discord, etc.)
+- [ ] Conflict detection
+- [ ] Relationship linking
