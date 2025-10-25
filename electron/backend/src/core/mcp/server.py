@@ -88,19 +88,16 @@ class MCPServer:
         # Initialize retrieval engine
         from ..retrieval.retrieval import RetrievalEngine
 
-        try:
-            retrieval_engine = RetrievalEngine(
-                vault_path=self.config.vault_path,
-                chroma_api_key=self.config.database.chroma_api_key,
-                chroma_tenant=self.config.database.chroma_tenant,
-                chroma_database=self.config.database.chroma_database,
-                embedding_model=self.config.database.embedding_model,
-                collection_name=self.config.database.collection_name
-            )
-            logger.info("Retrieval engine initialized")
-        except Exception as e:
-            logger.error(f"Failed to initialize retrieval engine: {e}")
-            retrieval_engine = None
+        # If this fails, the server should crash with the real error.
+        retrieval_engine = RetrievalEngine(
+            vault_path=self.config.vault_path,
+            chroma_api_key=self.config.database.chroma_api_key,
+            chroma_tenant=self.config.database.chroma_tenant,
+            chroma_database=self.config.database.chroma_database,
+            embedding_model=self.config.database.embedding_model,
+            collection_name=self.config.database.collection_name
+        )
+        logger.info("Retrieval engine initialized")
 
         # Initialize MCP tools
         self.tools = MCPTools(
