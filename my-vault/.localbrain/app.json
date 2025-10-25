@@ -1,0 +1,19 @@
+{
+  "version": "0.1.0",
+  "created": "2025-10-25T05:36:44.227850Z",
+  "settings": {
+    "auto_embed": false,
+    "default_folders": [
+      "personal",
+      "career",
+      "projects",
+      "research",
+      "social",
+      "finance",
+      "health",
+      "learning",
+      "archive"
+    ],
+    "embedding_model": "gemini-embedding-001"
+  }
+}
