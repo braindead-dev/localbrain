@@ -77,6 +77,12 @@ curl -X POST http://localhost:8765/protocol/search \
   -H "Content-Type: application/json" \
   -d '{"q": "What was my NVIDIA offer?"}'
 
+# List files in root
+curl http://localhost:8765/list
+
+# List files in specific folder
+curl http://localhost:8765/list/career
+
 # Fetch full file (for deep dive)
 curl http://localhost:8765/file/personal/nvidia_offer.md
 
@@ -106,6 +112,54 @@ GET /file/{filepath}
 ```
 
 **Use case:** Context chunk mentions file → AI app fetches full content
+
+---
+
+## List Files Endpoint
+
+Browse vault structure and discover available files:
+
+```bash
+GET /list              # Root directory
+GET /list/career       # Specific folder
+GET /list/personal     # Another folder
+```
+
+**Returns:**
+```json
+{
+  "path": "career",
+  "items": [
+    {
+      "name": "Job Search.md",
+      "type": "file",
+      "size": 1278,
+      "last_modified": 1761410603.329
+    },
+    {
+      "name": "offers",
+      "type": "directory",
+      "item_count": 3,
+      "last_modified": 1761410603.330
+    }
+  ],
+  "total": 2
+}
+```
+
+**Use cases:**
+- AI app discovers what files exist
+- Browse folder structure
+- Find all files in a category
+- Check what context is available
+
+**Example flow:**
+```
+GPT: "Show me all your job offers"
+→ Search finds career/ folder mentioned
+→ GET /list/career to see all files
+→ GET /file/career/Job%20Search.md for details
+```
 
 ---
 

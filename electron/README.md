@@ -69,6 +69,7 @@ Your Markdown Vault
 - `POST /protocol/ingest` - Ingestion
 - `POST /protocol/search` - Search (returns context chunks)
 - `GET /file/{filepath}` - Fetch full file content
+- `GET /list/{path}` - List files and directories
 - `GET /health` - Status check
 
 ## Quick Start

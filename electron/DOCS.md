@@ -19,6 +19,11 @@ All docs are now consolidated and simplified.
 - Performance details
 - Testing
 
+### `/API.md` - API reference
+- Complete endpoint documentation
+- Request/response examples
+- Use cases and flows
+
 ### `/TEST_RESULTS.md` - Test results
 - Search test results
 - Performance metrics
@@ -56,6 +61,9 @@ All docs are now consolidated and simplified.
 
 **Want to understand search?**
 → Read `/SEARCH.md`
+
+**Want API documentation?**
+→ Read `/API.md`
 
 **Want ingestion details?**
 → Read `/backend/INGESTION.md`

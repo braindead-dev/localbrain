@@ -247,6 +247,93 @@ async def get_file(filepath: str):
         )
 
 
+@app.get("/list/{path:path}")
+@app.get("/list")
+async def list_files(path: str = ""):
+    """
+    List files and directories in vault.
+    
+    Allows AI apps to discover available files and browse structure.
+    
+    Examples:
+        GET /list              # Root directory
+        GET /list/career       # career/ folder
+        GET /list/career/offers  # nested folder
+    """
+    try:
+        # Build full path
+        if path:
+            full_path = VAULT_PATH / path
+        else:
+            full_path = VAULT_PATH
+        
+        # Security: ensure path is within vault
+        if not full_path.is_relative_to(VAULT_PATH):
+            return JSONResponse(
+                status_code=403,
+                content={'error': 'Access denied: path outside vault'}
+            )
+        
+        if not full_path.exists():
+            return JSONResponse(
+                status_code=404,
+                content={'error': f'Path not found: {path}'}
+            )
+        
+        if not full_path.is_dir():
+            return JSONResponse(
+                status_code=400,
+                content={'error': f'Path is not a directory: {path}'}
+            )
+        
+        # List directory contents
+        items = []
+        for item in sorted(full_path.iterdir()):
+            # Skip hidden files and system files
+            if item.name.startswith('.'):
+                continue
+            
+            stat = item.stat()
+            
+            if item.is_file():
+                # Only include markdown and json files
+                if item.suffix not in ['.md', '.json']:
+                    continue
+                
+                items.append({
+                    'name': item.name,
+                    'type': 'file',
+                    'size': stat.st_size,
+                    'last_modified': stat.st_mtime
+                })
+            elif item.is_dir():
+                # Count items in directory
+                try:
+                    item_count = len([f for f in item.iterdir() if not f.name.startswith('.')])
+                except:
+                    item_count = 0
+                
+                items.append({
+                    'name': item.name,
+                    'type': 'directory',
+                    'item_count': item_count,
+                    'last_modified': stat.st_mtime
+                })
+        
+        return JSONResponse(content={
+            'path': path if path else '/',
+            'items': items,
+            'total': len(items)
+        })
+        
+    except Exception as e:
+        logger.exception("Error listing files")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
 @app.get("/protocol/parse")
 async def parse_protocol_url(url: str):
     """
