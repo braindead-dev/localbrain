@@ -50,7 +50,8 @@ class ContentFormatter:
         vault_path: Path,
         file_path: Path,
         context: str,
-        source_metadata: Dict
+        source_metadata: Dict,
+        priority: str = "primary"
     ) -> Tuple[str, Dict]:
         """
         Format content for appending to existing file.
@@ -74,6 +75,24 @@ class ContentFormatter:
         # Get next citation number
         next_num = get_next_citation_number(file_path)
         
+        # Priority-based detail level
+        detail_instruction = ""
+        if priority == "primary":
+            detail_instruction = """
+DETAIL LEVEL: PRIMARY (Full Details)
+- Include ALL specific information (numbers, dates, names, amounts)
+- Cite each factual claim separately
+- Be comprehensive and thorough
+"""
+        else:  # secondary
+            detail_instruction = """
+DETAIL LEVEL: SECONDARY (High-Level Summary)
+- Include only the KEY FACT or main point
+- Keep it brief and concise (1-2 sentences max)
+- Don't duplicate detailed information from primary files
+- Example: "Accepted position at NVIDIA" NOT "Accepted position at NVIDIA for $155k with $25k bonus and $180k RSUs"
+"""
+        
         # Build prompt
         prompt = f"""Format this content for appending to an existing file:
 
@@ -89,11 +108,13 @@ SOURCE METADATA:
 EXISTING FILE PREVIEW:
 {file_preview}
 
+{detail_instruction}
+
 INSTRUCTIONS:
 1. Format content as clean markdown
 2. Use citation numbers starting from [{next_num}]
 3. Only cite factual claims that need verification
-4. Make it fit naturally with existing content style
+4. Adjust detail level based on DETAIL LEVEL above
 5. Return JSON with two fields:
    - "markdown": The formatted content
    - "citations": Object mapping citation numbers to metadata

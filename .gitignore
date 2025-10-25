@@ -1,2 +1,10 @@
 /electron/node_modules
 electron/backend/.env
+
+
+*.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python

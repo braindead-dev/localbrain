@@ -121,7 +121,8 @@ class AgenticIngestionPipeline:
                         success = self._append_to_file(
                             file_path,
                             context,
-                            source_metadata
+                            source_metadata,
+                            priority=selection.get('priority', 'primary')
                         )
                         if success:
                             results['files_modified'].append(str(file_path))
@@ -131,7 +132,8 @@ class AgenticIngestionPipeline:
                         success = self._modify_file(
                             file_path,
                             context,
-                            source_metadata
+                            source_metadata,
+                            priority=selection.get('priority', 'primary')
                         )
                         if success:
                             results['files_modified'].append(str(file_path))
@@ -190,22 +192,25 @@ class AgenticIngestionPipeline:
         self,
         file_path: Path,
         context: str,
-        source_metadata: Dict
+        source_metadata: Dict,
+        priority: str = "primary"
     ) -> bool:
         """Append content to existing file."""
-        print(f"   Appending to file...")
+        detail_level = "full details" if priority == "primary" else "high-level summary"
+        print(f"   Appending to file ({detail_level})...")
         
         # Check if file exists
         if not file_path.exists():
             print(f"   File doesn't exist, creating new file instead...")
             return self._create_new_file(file_path, context, source_metadata)
         
-        # Format content
+        # Format content with priority
         formatted_md, new_citations = self.formatter.format_for_append(
             self.vault_path,
             file_path,
             context,
-            source_metadata
+            source_metadata,
+            priority=priority
         )
         
         # Determine where to place content
@@ -239,14 +244,15 @@ class AgenticIngestionPipeline:
         self,
         file_path: Path,
         context: str,
-        source_metadata: Dict
+        source_metadata: Dict,
+        priority: str = "primary"
     ) -> bool:
         """Modify existing content in file."""
         print(f"   Modifying existing content...")
         
         # Same as append but with different edit strategy
         # The modifier will determine if it's a true modification or append
-        return self._append_to_file(file_path, context, source_metadata)
+        return self._append_to_file(file_path, context, source_metadata, priority=priority)
 
 
 def main():
