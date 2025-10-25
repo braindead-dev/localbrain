@@ -1,0 +1,1 @@
+In this folder you should put the gmail_client_secret.json file
