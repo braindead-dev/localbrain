@@ -5,7 +5,7 @@ pydantic==2.12.3
 python-dotenv==1.1.1
 anthropic==0.71.0
 sentence-transformers==5.1.2
-chromadb==1.0.20
+chromadb==0.5.23
 numpy==1.26.4
 pandas==2.2.2
 openai==1.109.1

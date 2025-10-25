@@ -57,31 +57,19 @@ class RetrievalEngine:
         
         # Initialize ChromaDB Cloud client
         logger.info(f"Connecting to ChromaDB Cloud (tenant: {chroma_tenant}, db: {chroma_database})")
-        self.chroma_client = chromadb.HttpClient(
-            host="api.trychroma.com",
-            port=443,
-            ssl=True,
-            headers={"Authorization": f"Bearer {chroma_api_key}"},
-            settings=Settings(
-                chroma_client_auth_provider="chromadb.auth.token.TokenAuthClientProvider",
-                chroma_client_auth_credentials=chroma_api_key
-            )
+        self.chroma_client = chromadb.CloudClient(
+            api_key=chroma_api_key,
+            tenant=chroma_tenant,
+            database=chroma_database
         )
         
-        # Get or create collection
+        # Get or create collection (matching ingestion script pattern)
         try:
-            self.collection = self.chroma_client.get_collection(
-                name=collection_name,
-                embedding_function=None  # We handle embeddings ourselves
-            )
-            logger.info(f"Connected to existing collection: {collection_name}")
+            self.collection = self.chroma_client.get_or_create_collection(name=collection_name)
+            logger.info(f"Connected to collection: {collection_name}")
         except Exception as e:
-            logger.warning(f"Collection {collection_name} not found, creating new one")
-            self.collection = self.chroma_client.create_collection(
-                name=collection_name,
-                embedding_function=None,
-                metadata={"description": "LocalBrain document chunks with embeddings"}
-            )
+            logger.error(f"Failed to connect to ChromaDB collection: {e}")
+            raise
         
         # Query cache
         self._query_cache: Dict[str, List[Dict[str, Any]]] = {}
