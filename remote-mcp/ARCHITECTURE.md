@@ -240,6 +240,66 @@ Daemon:  localhost:8765
 
 Official LocalBrain relay service. Coming soon.
 
+## Request/Response Architecture
+
+### Concurrency Handling
+
+The bridge uses an async request/response matching system to handle multiple concurrent requests over a single WebSocket:
+
+**Single Receiver Pattern:**
+```python
+# In tunnel_connect() - ONLY place that receives from WebSocket
+while True:
+    message = await websocket.receive_json()
+
+    if message.get("type") == "ping":
+        # Handle keepalive
+        await websocket.send_json({"type": "pong"})
+
+    elif "request_id" in message:
+        # Route response to waiting Future
+        tunnel_manager.handle_response(tunnel_id, message)
+```
+
+**Future-Based Waiting:**
+```python
+# In forward_request() - multiple can run concurrently
+response_future = asyncio.Future()
+pending_responses[tunnel_id][request_id] = response_future
+
+# Send request (with lock for serialization)
+async with lock:
+    await tunnel.send_json(request)
+
+# Wait for response (without lock)
+response = await asyncio.wait_for(response_future, timeout=30.0)
+```
+
+**Key Benefits:**
+1. **No WebSocket Contention:** Only one coroutine ever calls `receive()`
+2. **Concurrent Requests:** Multiple requests can be in-flight simultaneously
+3. **Request/Response Matching:** Each response is routed to the correct waiting coroutine
+4. **Timeout Handling:** Each request has its own 30-second timeout
+
+**Flow Diagram:**
+```
+Request 1 →
+           ↓ (send with lock)
+Request 2 →  WebSocket  → Single Receiver Loop
+           ↓ (send with lock)                  ↓
+Request 3 →                           Route by request_id
+                                               ↓
+                      Future 1 ← Response 1
+                      Future 2 ← Response 2
+                      Future 3 ← Response 3
+```
+
+**Why This Design:**
+- WebSockets don't support concurrent `recv()` operations
+- Previous design with locks still had one receiver in `forward_request` and one in `tunnel_connect`
+- New design has ONLY ONE receiver that routes all messages
+- Requests wait on Futures instead of directly on WebSocket
+
 ## Performance Characteristics
 
 **Latency Added:**
