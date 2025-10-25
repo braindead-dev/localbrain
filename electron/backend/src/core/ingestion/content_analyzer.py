@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from utils.llm_client import LLMClient
-from utils.file_ops import list_vault_files
+from utils.file_ops import list_vault_files, read_file
 
 
 SYSTEM_PROMPT = """You are a knowledge vault curator. Be concise.
@@ -31,18 +31,28 @@ RULES (violations = failure):
 4. Write EXACT text to add (not descriptions like "add salary info")
 5. Match existing file structure - don't invent new formats
 6. Prefer appending to existing files over creating new ones
+7. CHECK EXISTING CONTENT - don't duplicate what's already there
+
+DUPLICATE HANDLING:
+- If info already exists with same facts → SKIP (return empty edits)
+- If info exists but NEW SOURCE confirms it → append [NEW] to existing citation
+  Example: "Accepted to NVIDIA [2]" becomes "Accepted to NVIDIA [2][NEW]"
+- If info is NEW or different → add normally with [1]
+- Citations don't need to be sequential in file, just in order added
+- IMPORTANT: For update_citation, use [NEW] placeholder, not [1]
 
 FILE SELECTION:
 - PRIMARY: Main topic file, full details
 - SECONDARY: Related context file, brief mention only
 - Create new ONLY if topic is truly distinct
-- Check existing files FIRST
+- Read existing content to avoid duplicates
 
 CONTENT WRITING:
 - Write actual markdown, not descriptions
 - Use [1] for ALL facts from this source
 - Match existing tone and formatting
 - Be surgical - minimal necessary text
+- If confirming existing fact, add [1] to existing line
 
 ERRORS TO AVOID:
 - ❌ Verbose: "I will now add..." (just do it)
@@ -50,6 +60,7 @@ ERRORS TO AVOID:
 - ❌ Citing non-facts
 - ❌ Creating files when existing fits
 - ❌ Descriptions instead of actual content
+- ❌ DUPLICATING existing information
 
 OUTPUT: Valid JSON only. No markdown fences.
 
@@ -65,10 +76,17 @@ OUTPUT: Valid JSON only. No markdown fences.
       "file": "category/filename.md",
       "priority": "primary|secondary",
       "content": "Actual markdown text with [1] citations",
-      "action": "append|create",
+      "action": "append|create|update_citation",
       "reason": "One sentence"
     }
   ]
+}
+
+For update_citation action:
+{
+  "action": "update_citation",
+  "search_text": "Exact text to find",
+  "replace_with": "Same text with [1] added"
 }
 """
 
@@ -94,14 +112,23 @@ class ContentAnalyzer:
                 "edits": [...]
             }
         """
-        # Get existing files for context
+        # Get existing files with content snippets
         existing_files = list_vault_files(vault_path, include_about=False)
         
+        file_info = []
         if existing_files:
-            file_list = "\n".join([
-                f"- {f['relative_path']}"
-                for f in existing_files[:20]  # Limit to avoid token bloat
-            ])
+            # Read top 10 most relevant files (by modification time or relevance)
+            for f in existing_files[:10]:
+                file_path = vault_path / f['relative_path']
+                try:
+                    content = read_file(file_path)
+                    # Get first 500 chars (enough to see recent additions)
+                    snippet = content[:500] + "..." if len(content) > 500 else content
+                    file_info.append(f"\n## {f['relative_path']}\n{snippet}\n")
+                except:
+                    file_info.append(f"\n## {f['relative_path']}\n(Could not read)\n")
+            
+            file_list = "".join(file_info)
         else:
             file_list = "(Vault is empty)"
         
@@ -115,21 +142,26 @@ SOURCE INFO:
 - Platform: {source_metadata.get('platform', 'Manual')}
 - Timestamp: {source_metadata.get('timestamp', 'N/A')}
 
-EXISTING FILES IN VAULT:
+EXISTING FILES IN VAULT (check for duplicates!):
 {file_list}
 
 TASK:
-1. Identify the key information in this content
-2. Decide what specific text to add to each file
-3. Choose PRIMARY vs SECONDARY detail level
-4. Create ONE citation for the source
+1. READ existing content carefully
+2. Check if this info already exists
+3. If duplicate → skip or just add citation to existing fact
+4. If new → write specific text to add
 5. Return edit plans
 
+DUPLICATE HANDLING:
+- Same info, same source → SKIP (empty edits)
+- Same info, NEW source → update_citation action (add [1] to existing)
+- New or different info → append with [1]
+
 Remember:
-- Write the actual content you want to add (don't just describe it)
-- Use [1] for citation references in the content
-- Only include files you have specific edits for
-- Don't create new files unless truly needed (prefer existing files)
+- Citations don't need to be sequential, just in order added
+- Don't duplicate existing content!
+- Write actual markdown, not descriptions
+- Use [1] for this source
 """
         
         try:
@@ -151,10 +183,21 @@ Remember:
             
             # Ensure all edits have required fields
             for edit in response['edits']:
-                if 'file' not in edit or 'content' not in edit:
-                    raise ValueError(f"Edit missing required fields: {edit}")
+                if 'file' not in edit:
+                    raise ValueError(f"Edit missing 'file' field: {edit}")
+                
+                # Set default action
                 if 'action' not in edit:
                     edit['action'] = 'append'
+                
+                # Validate fields based on action
+                if edit['action'] == 'update_citation':
+                    if 'search_text' not in edit or 'replace_with' not in edit:
+                        raise ValueError(f"update_citation edit missing search_text or replace_with: {edit}")
+                else:
+                    if 'content' not in edit:
+                        raise ValueError(f"Edit missing 'content' field: {edit}")
+                
                 if 'priority' not in edit:
                     edit['priority'] = 'primary'
             

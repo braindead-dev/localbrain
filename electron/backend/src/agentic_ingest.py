@@ -252,14 +252,19 @@ class AgenticIngestionPipeline:
         print(f"   Created {len(edit_plans)} edit plan(s):")
         for plan in edit_plans:
             print(f"   - {plan['action'].upper()}: {plan['file']} ({plan['priority']})")
-            print(f"     Content: {plan['content'][:60]}...")
+            if plan['action'] == 'update_citation':
+                print(f"     Search: {plan.get('search_text', '')[:40]}...")
+                print(f"     Replace: {plan.get('replace_with', '')[:40]}...")
+            else:
+                print(f"     Content: {plan.get('content', '')[:60]}...")
+            print(f"     Reason: {plan.get('reason', 'N/A')}")
         
         # STEP 2: Apply each edit
         print()
         for plan in edit_plans:
             file_path = self.vault_path / plan['file']
             action = plan['action']
-            content = plan['content']
+            content = plan.get('content', '')
             
             print(f"📝 Processing: {plan['file']}")
             
@@ -271,6 +276,12 @@ class AgenticIngestionPipeline:
                 
                 elif action in ['append', 'modify']:
                     success = self._edit_file(file_path, content, plan)
+                    if success:
+                        results['files_modified'].append(str(file_path))
+                
+                elif action == 'update_citation':
+                    # Add citation to existing fact
+                    success = self._update_citation(file_path, plan, source_citation)
                     if success:
                         results['files_modified'].append(str(file_path))
             
@@ -288,7 +299,13 @@ class AgenticIngestionPipeline:
         )
         print(f"   ✅ Added citation to {len(files_with_citation)} file(s)")
         
-        results['success'] = len(results['files_modified']) + len(results['files_created']) > 0
+        # Success if we made changes OR if no edits (duplicate detection)
+        files_changed = len(results['files_modified']) + len(results['files_created'])
+        results['success'] = files_changed > 0 or len(edit_plans) == 0
+        
+        # Provide feedback on duplicate detection
+        if len(edit_plans) == 0:
+            print(f"\n💡 No edits needed - content appears to be duplicate or already exists")
         
         return results
     
@@ -340,15 +357,65 @@ class AgenticIngestionPipeline:
         
         return True
     
+    def _update_citation(self, file_path: Path, plan: Dict, source_citation: Dict) -> bool:
+        """Update existing text to add citation reference."""
+        print(f"   Updating citation on existing fact...")
+        
+        if not file_path.exists():
+            print(f"   File doesn't exist, skipping...")
+            return False
+        
+        content = read_file(file_path)
+        search_text = plan.get('search_text', '')
+        replace_with = plan.get('replace_with', '')
+        
+        if not search_text or not replace_with:
+            print(f"   Missing search_text or replace_with, skipping...")
+            return False
+        
+        if search_text not in content:
+            print(f"   Search text not found, skipping...")
+            return False
+        
+        # Get next citation number
+        existing_citations = self.citations.get_citations(file_path)
+        next_num = max([int(k) for k in existing_citations.keys()], default=0) + 1
+        
+        # Add citation JSON entry
+        new_citation = {
+            str(next_num): {
+                'platform': source_citation.get('platform', 'Manual'),
+                'timestamp': source_citation.get('timestamp', ''),
+                'url': source_citation.get('url'),
+                'quote': source_citation.get('quote', '')
+            }
+        }
+        self.citations.add_citations(file_path, new_citation)
+        
+        # Replace [NEW] placeholder with the actual citation number
+        # LLM uses [NEW] as placeholder to avoid replacing existing citations
+        replace_with_correct = replace_with.replace('[NEW]', f'[{next_num}]')
+        
+        # Replace and write
+        new_content = content.replace(search_text, replace_with_correct)
+        write_file(file_path, new_content)
+        print(f"   ✅ Updated citation in: {file_path.name} (added [{next_num}])")
+        
+        return True
+    
     def _add_citation_to_files(self, edit_plans: list, source_citation: dict) -> list:
         """Add ONE citation to each file that references it."""
         files_updated = []
         
         for plan in edit_plans:
+            # Skip update_citation actions (they don't add new citations)
+            if plan.get('action') == 'update_citation':
+                continue
+            
             file_path = self.vault_path / plan['file']
             
             # Check if content references [1]
-            if '[1]' not in plan['content']:
+            if '[1]' not in plan.get('content', ''):
                 continue
             
             # Get next available citation number
@@ -368,10 +435,14 @@ class AgenticIngestionPipeline:
             self.citations.add_citations(file_path, new_citation)
             files_updated.append(plan['file'])
             
-            # Update file content to use correct citation number
+            # Update ONLY the newly added content to use correct citation number
+            # Replace [1] only in the exact content we just added
             if next_num != 1:
                 content = read_file(file_path)
-                updated = content.replace('[1]', f'[{next_num}]')
+                # Replace [1] with [next_num] only in the newly added text
+                new_content_with_correct_num = plan.get('content', '').replace('[1]', f'[{next_num}]')
+                # Now replace the old content with the corrected version
+                updated = content.replace(plan.get('content', ''), new_content_with_correct_num)
                 write_file(file_path, updated)
         
         return files_updated
