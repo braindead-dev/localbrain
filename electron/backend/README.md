@@ -28,15 +28,28 @@ Output:
 
 **NEW:** LocalBrain now runs as a background service with system-wide `localbrain://` URL support!
 
+### Ingestion
 ```bash
-# Start background service (shows in menu bar)
-python src/tray.py
-
-# Use from anywhere in macOS
+# Ingest from anywhere in macOS
 open "localbrain://ingest?text=Hello%20World&platform=Test"
 ```
 
+### Natural Language Search 🔍
+```bash
+# Search your vault - just ask in natural language
+open "localbrain://search?q=What was my Meta offer?"
+```
+
 **Features:**
+- ✅ Natural language input (no need to understand retrieval methods)
+- ✅ Agentic retrieval (LLM + ripgrep under the hood)
+- ✅ Fast (~1-2 seconds)
+- ✅ No embeddings, no indexing, no setup
+- ✅ Same model as ingestion (claude-haiku-4-5-20251022)
+
+See `../SEARCH.md` for usage.
+
+**Protocol Features:**
 - ✅ Runs even when Electron app is closed
 - ✅ macOS menu tray with status indicator
 - ✅ System-wide URL protocol

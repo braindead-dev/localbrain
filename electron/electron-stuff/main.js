@@ -391,6 +391,24 @@ app.on('open-url', async (event, url) => {
           result: ingestResponse.data
         });
       }
+    } else if (command === 'search') {
+      // Natural language search
+      console.log('Search query:', parameters.q || parameters.query);
+      
+      const searchResponse = await axios.post(`${DAEMON_URL}/protocol/search`, parameters, {
+        timeout: 30000 // Search can take time with LLM calls
+      });
+      
+      console.log('Search result:', searchResponse.data);
+      
+      // Show notification
+      if (mainWindow) {
+        mainWindow.webContents.send('protocol-command', {
+          command,
+          success: true,
+          result: searchResponse.data
+        });
+      }
     }
   } catch (error) {
     console.error('Error handling protocol URL:', error);

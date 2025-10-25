@@ -32,6 +32,7 @@ load_dotenv(dotenv_path)
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agentic_ingest import AgenticIngestionPipeline
+from agentic_search import Search
 
 # Setup logging
 logging.basicConfig(
@@ -123,6 +124,64 @@ async def handle_ingest(request: Request):
     
     except Exception as e:
         logger.exception("Error handling ingest request")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.post("/protocol/search")
+async def handle_search(request: Request):
+    """
+    Handle localbrain://search protocol requests.
+    
+    Natural language search - input any question, get relevant context + answer.
+    Uses agentic retrieval (ripgrep + LLM with tools) under the hood.
+    
+    Expected format:
+        localbrain://search?q=What was my Meta offer?
+    
+    Query parameters:
+        - q (required): Natural language search query
+    """
+    try:
+        # Parse request body
+        body = await request.json()
+        query = body.get('q', body.get('query', ''))  # Support both q and query
+        
+        if not query:
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Missing required parameter: q'}
+            )
+        
+        logger.info(f"🔍 Search: {query}")
+        
+        # Run search
+        searcher = Search(VAULT_PATH)
+        result = searcher.search(query)
+        
+        if result.get('success'):
+            logger.info(f"✅ Search complete ({result.get('iterations', 0)} iterations)")
+            return JSONResponse(content={
+                'success': True,
+                'answer': result['answer'],
+                'iterations': result.get('iterations', 0),
+                'query': query
+            })
+        else:
+            logger.error(f"❌ Search failed: {result.get('error', 'Unknown error')}")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    'success': False,
+                    'error': result.get('error', 'Search failed'),
+                    'query': query
+                }
+            )
+    
+    except Exception as e:
+        logger.exception("Error handling search")
         return JSONResponse(
             status_code=500,
             content={'error': str(e)}
