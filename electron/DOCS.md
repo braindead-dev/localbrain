@@ -49,21 +49,6 @@ All docs are now consolidated and simplified.
 
 ---
 
-## Deleted (Consolidated)
-
-~~`AGENTIC_SEARCH_SUMMARY.md`~~ → Merged into README  
-~~`ELECTRON_INTEGRATION.md`~~ → Merged into README  
-~~`FIXES.md`~~ → Outdated  
-~~`INTEGRATION_SUMMARY.md`~~ → Outdated  
-~~`SEARCH_IMPLEMENTATION.md`~~ → Merged into SEARCH.md  
-~~`AGENTIC_SEARCH.md`~~ → Merged into SEARCH.md  
-~~`AGENTIC_SEARCH_QUICKSTART.md`~~ → Merged into SEARCH.md  
-~~`PROTOCOL_SYSTEM.md`~~ → Merged into README  
-~~`QUICKSTART_PROTOCOL.md`~~ → Merged into README  
-~~`IMPLEMENTATION_SUMMARY.md`~~ → Outdated  
-
----
-
 ## Quick Reference
 
 **Want to get started?**
