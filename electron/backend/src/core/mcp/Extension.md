@@ -235,8 +235,7 @@ Once installed, Claude has access to these LocalBrain tools:
 
 | Tool | Description | Example Use |
 |------|-------------|-------------|
-| **search** | Semantic search across vault | "Find information about internships" |
-| **search_agentic** | Structured search with filters | "Search emails from last 30 days about nvidia" |
+| **search** | Natural language search | "Find information about internships" |
 | **open** | Read full file contents | "Open career/resume.md" |
 | **summarize** | Generate file summaries | "Summarize my goals document" |
 | **list** | Browse directory structure | "List all files in projects/" |

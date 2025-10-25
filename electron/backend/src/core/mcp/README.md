@@ -129,7 +129,7 @@ See [USAGE.md - Claude Desktop Integration](./USAGE.md#claude-desktop-integratio
 - ✅ **Proxy Architecture** - Thin layer that forwards to daemon backend
 - ✅ **REST API Server** - HTTP endpoints for programmatic access
 - ✅ **Claude Desktop Integration** - Stdio wrapper for MCP protocol
-- ✅ **5 MCP Tools** - search, search_agentic, open, summarize, list
+- ✅ **4 MCP Tools** - search, open, summarize, list
 - ✅ **Authentication & Authorization** - API key-based with granular permissions
 - ✅ **Audit Logging** - Complete request/response tracking
 - ✅ **Rate Limiting** - Per-client request throttling
@@ -154,11 +154,6 @@ All tool implementations live in `daemon.py`. The MCP server simply proxies requ
 - **Purpose**: Natural language search across personal knowledge base
 - **Use Case**: AI assistants, external search interfaces
 
-**search_agentic**
-- **MCP Endpoint**: `/mcp/search_agentic`
-- **Daemon Endpoint**: `/protocol/search` (with structured params)
-- **Purpose**: Structured search with specific parameters
-- **Use Case**: Automated tools, batch processing
 
 **open**
 - **MCP Endpoint**: `/mcp/open`
@@ -191,7 +186,6 @@ All tool implementations live in `daemon.py`. The MCP server simply proxies requ
 ```
 localbrain://search?q=internship+applications
 localbrain://open?filepath=career/job-search.md
-localbrain://search_agentic?keywords=internship,nvidia&days=7
 localbrain://summarize?filepath=finance/taxes.md
 localbrain://list?path=projects
 ```
@@ -312,7 +306,6 @@ electron/backend/src/core/mcp/
 - **Proxy layer only** - no direct tool implementation
 - Forwards requests to daemon backend via HTTP:
   - `search` → `/protocol/search`
-  - `search_agentic` → `/protocol/search` with filters
   - `open` → `/file/{filepath}`
   - `summarize` → fetches file + simple summary
   - `list` → `/list/{path}`
@@ -366,7 +359,7 @@ python -m src.core.mcp.server
 curl -X POST http://localhost:8766/mcp/search \
   -H "X-API-Key: dev-key-local-only" \
   -H "Content-Type: application/json" \
-  -d '{"query": "test", "top_k": 5}'
+  -d '{"query": "test"}'
 ```
 
 **Adding New Tools:**
