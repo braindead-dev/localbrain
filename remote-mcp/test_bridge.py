@@ -75,7 +75,7 @@ async def test_tunnel_active():
             # This will fail with "No active tunnel" if tunnel isn't connected
             response = await client.post(
                 f"http://{BRIDGE_HOST}:{BRIDGE_PORT}/u/{USER_ID}/list",
-                json={"path": ""},
+                json={},  # Omit path to list root directory
                 headers={"X-API-Key": REMOTE_API_KEY},
                 timeout=10.0
             )
@@ -161,7 +161,7 @@ async def test_list():
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"http://{BRIDGE_HOST}:{BRIDGE_PORT}/u/{USER_ID}/list",
-                json={"path": ""},
+                json={},  # Omit path to list root directory
                 headers={"X-API-Key": REMOTE_API_KEY},
                 timeout=10.0
             )
@@ -233,7 +233,7 @@ async def test_rate_limiting():
             for i in range(65):
                 response = await client.post(
                     f"http://{BRIDGE_HOST}:{BRIDGE_PORT}/u/{USER_ID}/list",
-                    json={"path": ""},
+                    json={},  # Omit path to list root directory
                     headers={"X-API-Key": REMOTE_API_KEY},
                     timeout=5.0
                 )

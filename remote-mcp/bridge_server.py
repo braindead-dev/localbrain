@@ -102,6 +102,12 @@ class TunnelManager:
         # Rate limiting: user_id -> list of request timestamps
         self.rate_limit_buckets: Dict[str, list] = defaultdict(list)
 
+        # WebSocket locks: tunnel_id -> asyncio.Lock (for sending requests)
+        self.tunnel_locks: Dict[str, asyncio.Lock] = {}
+
+        # Pending responses: tunnel_id -> {request_id -> asyncio.Future}
+        self.pending_responses: Dict[str, Dict[str, asyncio.Future]] = {}
+
         logger.info("TunnelManager initialized")
 
     def register_tunnel(
@@ -123,12 +129,22 @@ class TunnelManager:
                 asyncio.create_task(self.tunnels[old_tunnel_id].close())
                 del self.tunnels[old_tunnel_id]
                 del self.tunnel_info[old_tunnel_id]
+                if old_tunnel_id in self.tunnel_locks:
+                    del self.tunnel_locks[old_tunnel_id]
+                if old_tunnel_id in self.pending_responses:
+                    del self.pending_responses[old_tunnel_id]
 
         # Register new tunnel
         self.tunnels[tunnel_id] = websocket
         self.user_tunnels[user_id] = tunnel_id
         self.api_keys[api_key] = user_id
         self.user_permissions[user_id] = allowed_tools
+
+        # Create lock for this tunnel (for sending requests)
+        self.tunnel_locks[tunnel_id] = asyncio.Lock()
+
+        # Create pending responses dict for this tunnel
+        self.pending_responses[tunnel_id] = {}
 
         remote_url = f"https://mcp.localbrain.app/u/{user_id}"
 
@@ -158,6 +174,16 @@ class TunnelManager:
 
         if tunnel_id in self.tunnel_info:
             del self.tunnel_info[tunnel_id]
+
+        if tunnel_id in self.tunnel_locks:
+            del self.tunnel_locks[tunnel_id]
+
+        if tunnel_id in self.pending_responses:
+            # Cancel any pending requests
+            for future in self.pending_responses[tunnel_id].values():
+                if not future.done():
+                    future.set_exception(Exception("Tunnel disconnected"))
+            del self.pending_responses[tunnel_id]
 
         if user_id in self.user_tunnels and self.user_tunnels[user_id] == tunnel_id:
             del self.user_tunnels[user_id]
@@ -223,7 +249,16 @@ class TunnelManager:
         request_id: Optional[str] = None
     ) -> MCPResponse:
         """Forward request to local MCP server via tunnel."""
-        tunnel = self.get_tunnel_by_user(user_id)
+        # Get tunnel and tunnel_id
+        tunnel_id = self.user_tunnels.get(user_id)
+        if not tunnel_id:
+            return MCPResponse(
+                success=False,
+                error="No active tunnel",
+                request_id=request_id
+            )
+
+        tunnel = self.tunnels.get(tunnel_id)
         if not tunnel:
             return MCPResponse(
                 success=False,
@@ -231,39 +266,102 @@ class TunnelManager:
                 request_id=request_id
             )
 
-        try:
-            # Send request via WebSocket
-            request = MCPRequest(
-                tool=tool,
-                params=params,
-                request_id=request_id or str(uuid.uuid4())
+        # Get lock for this tunnel
+        lock = self.tunnel_locks.get(tunnel_id)
+        if not lock:
+            return MCPResponse(
+                success=False,
+                error="Tunnel lock not found",
+                request_id=request_id
             )
 
-            await tunnel.send_json(request.dict())
-            logger.debug(f"Forwarded request to tunnel for user {user_id}: {tool}")
+        # Generate request ID if not provided
+        req_id = request_id or str(uuid.uuid4())
 
-            # Wait for response
-            response_data = await tunnel.receive_json()
-            response = MCPResponse(**response_data)
+        # Create Future to wait for response
+        response_future = asyncio.Future()
+        self.pending_responses[tunnel_id][req_id] = response_future
 
-            logger.debug(f"Received response from tunnel for user {user_id}")
+        try:
+            # Use lock only for sending (not receiving)
+            async with lock:
+                # Send request via WebSocket
+                request = MCPRequest(
+                    tool=tool,
+                    params=params,
+                    request_id=req_id
+                )
+
+                await tunnel.send_json(request.dict())
+                logger.debug(f"Forwarded request to tunnel for user {user_id}: {tool} (ID: {req_id})")
+
+            # Wait for response (without holding the lock)
+            # Timeout after 30 seconds
+            response = await asyncio.wait_for(response_future, timeout=30.0)
+            logger.debug(f"Received response from tunnel for user {user_id} (ID: {req_id})")
             return response
 
+        except asyncio.TimeoutError:
+            logger.error(f"Request timeout for user {user_id} (ID: {req_id})")
+            # Clean up pending response
+            if req_id in self.pending_responses.get(tunnel_id, {}):
+                del self.pending_responses[tunnel_id][req_id]
+            return MCPResponse(
+                success=False,
+                error="Request timeout (30s)",
+                request_id=req_id
+            )
         except WebSocketDisconnect:
             logger.warning(f"Tunnel disconnected for user {user_id}")
-            self.unregister_tunnel(self.user_tunnels.get(user_id))
+            self.unregister_tunnel(tunnel_id)
             return MCPResponse(
                 success=False,
                 error="Tunnel disconnected",
-                request_id=request_id
+                request_id=req_id
             )
         except Exception as e:
             logger.error(f"Error forwarding request: {e}")
+            # Clean up pending response
+            if req_id in self.pending_responses.get(tunnel_id, {}):
+                del self.pending_responses[tunnel_id][req_id]
             return MCPResponse(
                 success=False,
                 error=str(e),
-                request_id=request_id
+                request_id=req_id
             )
+
+    def handle_response(self, tunnel_id: str, response_data: dict):
+        """
+        Handle incoming response from tunnel.
+
+        Routes the response to the waiting Future based on request_id.
+        """
+        request_id = response_data.get("request_id")
+        if not request_id:
+            logger.warning(f"Received response without request_id from tunnel {tunnel_id}")
+            return
+
+        # Get pending responses for this tunnel
+        pending = self.pending_responses.get(tunnel_id, {})
+        future = pending.get(request_id)
+
+        if not future:
+            logger.warning(f"Received response for unknown request_id: {request_id}")
+            return
+
+        # Remove from pending
+        del pending[request_id]
+
+        # Set the result on the Future
+        try:
+            response = MCPResponse(**response_data)
+            if not future.done():
+                future.set_result(response)
+            logger.debug(f"Routed response for request {request_id}")
+        except Exception as e:
+            logger.error(f"Error parsing response: {e}")
+            if not future.done():
+                future.set_exception(e)
 
     def get_all_tunnels(self) -> list[TunnelInfo]:
         """Get info about all active tunnels."""
@@ -419,17 +517,26 @@ async def tunnel_connect(
 
         logger.info(f"Tunnel connected: {tunnel_id} for user {user_id}")
 
-        # Keep connection alive and handle keepalive pings
+        # Keep connection alive and handle messages
         while True:
             try:
-                # Wait for messages (mostly keepalive pings from client)
+                # Wait for all messages (keepalive pings AND responses)
                 message = await websocket.receive_json()
 
+                # Handle keepalive ping
                 if message.get("type") == "ping":
                     await websocket.send_json({"type": "pong"})
                     # Update last activity
                     if tunnel_id in tunnel_manager.tunnel_info:
                         tunnel_manager.tunnel_info[tunnel_id].last_activity = datetime.utcnow()
+
+                # Handle MCP response (has request_id)
+                elif "request_id" in message:
+                    tunnel_manager.handle_response(tunnel_id, message)
+
+                # Unknown message type
+                else:
+                    logger.warning(f"Received unknown message type from tunnel {tunnel_id}: {message.get('type')}")
 
             except WebSocketDisconnect:
                 logger.info(f"Tunnel disconnected: {tunnel_id}")

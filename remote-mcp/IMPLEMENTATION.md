@@ -355,6 +355,35 @@ curl -X POST http://your-bridge.com/admin/tunnel/USER_ID/revoke \
 2. Adjust MAX_REQUESTS_PER_MINUTE in bridge config
 3. Contact admin to increase your rate limit
 
+### Issue: Concurrent requests fail with "cannot call recv" error
+
+**Symptoms:**
+- Multiple rapid requests cause errors
+- Error message: "cannot call recv while another coroutine is already waiting for the next message"
+- Some requests succeed, others fail randomly
+
+**Root Cause:**
+WebSocket connections don't support concurrent recv operations. When multiple requests arrive simultaneously, they all try to read from the same WebSocket, causing this error.
+
+**Solution (Already Implemented):**
+The bridge server uses `asyncio.Lock` to serialize WebSocket access per tunnel. Each tunnel has its own lock that ensures only one request can use the WebSocket at a time. Other requests wait in queue.
+
+**How it works:**
+```python
+# In bridge_server.py TunnelManager
+self.tunnel_locks[tunnel_id] = asyncio.Lock()
+
+# In forward_request()
+async with lock:
+    await tunnel.send_json(request.dict())
+    response_data = await tunnel.receive_json()
+```
+
+**If you still see this error:**
+1. Restart bridge server (locks are created on tunnel registration)
+2. Restart tunnel client to re-establish connection
+3. Check bridge server version has the fix (look for `tunnel_locks` in code)
+
 ## Production Deployment
 
 ### Bridge Server Best Practices
@@ -402,9 +431,11 @@ curl -X POST http://your-bridge.com/admin/tunnel/USER_ID/revoke \
 ## Limitations
 
 1. **Request/Response Size:** Limited by WebSocket message size (typically 16MB)
-2. **Concurrent Requests:** One request at a time per tunnel (synchronous forwarding)
+2. **Concurrent Requests:** One request at a time per tunnel (serialized with locks for reliability)
 3. **Latency:** Added latency from extra network hops (bridge relay)
 4. **Availability:** Depends on local machine being online and tunnel connected
+
+**Note on Concurrency:** Multiple requests can arrive at the bridge simultaneously, but they're queued and processed serially per tunnel using `asyncio.Lock`. This ensures reliability and prevents WebSocket race conditions. True concurrent processing requires a more complex request/response matching system (planned future enhancement).
 
 ## Future Enhancements
 
