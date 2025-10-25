@@ -42,36 +42,53 @@ Processes and stores new documents and data into the LocalBrain system. Responsi
 - **Filename as Title**: `job-search.md` (no YAML frontmatter needed)
 - **Purpose Summary**: Opening paragraph explaining file content
 - **Content Sections**: Organized by topic/theme
-- **Wikipedia-Style Citations**: Inline `[^1]` references with footnotes
+- **Numbered Citations**: Inline `[1]` references with separate JSON metadata file
 - **Related Topics**: Wiki-style `[[links]]` to other files
 
 **Example Structure:**
+
+**filename.md:**
 ```markdown
-# filename.md
+# filename
 
 Purpose summary paragraph explaining what this file contains.
 
 ## Main Section
 
-Content with factual claims cited inline[^1]. Observations and 
-insights that connect multiple sources[^2].
+Content with factual claims cited inline [1]. Observations and 
+insights that connect multiple sources [2].
 
 ## Related Topics
 
 - [[related-file]]
 - [[another-topic]]
+```
 
----
-
-[^1]: Source/Platform, Date, Details or URL
-[^2]: Gmail thread, March 2024, Subject: "Meeting notes"
+**filename.json:**
+```json
+{
+  "1": {
+    "platform": "Gmail",
+    "timestamp": "2024-03-15T10:30:00Z",
+    "description": "Email thread about project updates",
+    "url": null,
+    "quote": "The deadline has been moved to April 1st"
+  },
+  "2": {
+    "platform": "Discord",
+    "timestamp": "2024-03-20T14:00:00Z",
+    "description": "Team discussion in #engineering channel",
+    "url": "https://discord.com/channels/...",
+    "quote": null
+  }
+}
 ```
 
 **Citation Guidelines:**
 - **Cite factual claims**: Numbers, dates, quotes, specific events
 - **Don't cite everything**: General observations and opinions don't need sources
-- **Format**: `[^n]` inline, `[^n]: Details` in footnotes section
-- **Source info**: Platform/source, date, quote/URL/context
+- **Format**: `[1]` inline in markdown, full metadata in JSON file
+- **JSON fields**: platform, timestamp, description, url (nullable), quote (nullable)
 
 **Auto-Initialization:**
 - Files created with purpose summary
@@ -110,14 +127,23 @@ The file modification agent works like a modern coding agent (Cursor, Copilot, e
 ```python
 # Input: New context
 context = "Received offer from Startup X for $120k"
+source_metadata = {
+    "platform": "Gmail",
+    "timestamp": "2024-03-15T09:00:00Z",
+    "description": "Offer letter from Startup X",
+    "url": None,
+    "quote": "We're pleased to offer you $120k base salary"
+}
 
 # Agent analyzes job-search.md
 # Determines this is a positive outcome in job search
 # Appends to relevant section with citation
 
 # Output: Surgical edit
-insert_after_line(23, "Received offer from Startup X for $120k base salary[^4].")
-append_footnote("[^4]: Email from recruiter@startupx.com, March 15 2024")
+insert_after_line(23, "Received offer from Startup X for $120k base salary [4].")
+
+# Update job-search.json
+update_json_file("job-search.json", citation_num=4, metadata=source_metadata)
 ```
 
 **Conflict Avoidance:**
@@ -144,14 +170,15 @@ ORGANIZATION PRINCIPLES:
 FILE STRUCTURE:
 - Start with purpose summary (what this file is about)
 - Main content in ## sections
-- Factual claims need citations [^1]
-- Footnotes at bottom with full source details
+- Factual claims need citations [1], [2], etc.
+- Separate .json file with citation metadata
 - Related topics section for cross-references
 
 CITATION RULES:
 - Cite factual claims: numbers, dates, quotes, decisions
 - Don't cite: opinions, observations, general knowledge
-- Format: [^n]: [Source/Platform], [Date], [Details/URL]
+- Format: [n] inline in markdown
+- JSON metadata: platform, timestamp, description, url, quote
 
 WHEN TO CREATE NEW FILES:
 - Topic is distinct from existing files
@@ -183,12 +210,14 @@ Return: {action: "create"|"append", target: "path/filename.md", section: "sectio
 ```
 Extract structured information from this context:
 
-1. Key facts and observations (with inline citation markers)
-2. Source details for footnotes
+1. Key facts and observations (with inline citation markers like [1])
+2. Source metadata (platform, timestamp, description, url, quote)
 3. Related topics for linking
 4. Suggested file section (if appending)
 
-Format as markdown following the file structure guidelines.
+Output:
+- Markdown content with [n] citations
+- JSON object with citation metadata
 ```
 
 ## Configuration
