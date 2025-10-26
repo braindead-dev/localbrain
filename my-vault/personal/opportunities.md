@@ -2822,6 +2822,72 @@ Anyone found in possession will be removed from event premises[81]:
 - **Report Issues**: +1 (409) 202-6060 or incidents@mlh.io[94]
 
 
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event**: Cal Hacks 12.0[95]
+- **Organizer**: Major League Hacking (MLH)[95]
+- **Date**: October 23-25, 2025[95]
+- **Recipient Email**: hwang585@ucr.edu[95]
+
+### Sponsor Credits & Prizes
+
+#### OpenRouter - $10 AI Credits[95]
+- $10 in credits for LLMs, AI, and inference[95]
+- Unified API for hundreds of AI models[95]
+- Claim link provided in email[95]
+
+#### Reach Capital - Best Use of AI[95]
+- **Prize**: Logitech Webcam + meeting with Reach Capital investors[95]
+- **Focus Areas**: Learning, health, or work transformation[95]
+- **Talent Network**: Reach's 130+ portfolio companies (Replit, Brilliant, ClassDojo, GPTZero, Desmos) seeking talent[95]
+
+#### .Tech Domain - Best .Tech Domain Name[95]
+- **Prize**: Blue Snowball Microphone + free .Tech domain for up to 10 years[95]
+- **Promo Code**: CALHACKS25[95]
+
+#### Google Gemini API - Best Use of Gemini API[95]
+- **Prize**: Google Swag Kits[95]
+- **Capabilities**: Language understanding, information analysis, creative content generation[95]
+
+#### Snowflake API - Best Use of Snowflake API[95]
+- **Prize**: Arduino Tiny ML Kit[95]
+- **Offer**: 120-day free student trial[95]
+- **Features**: RAG-powered chatbots, AI-powered features via REST API[95]
+
+#### ElevenLabs - Best Use of ElevenLabs[95]
+- **Prize**: ElevenLabs Airpods[95]
+- **Features**: Natural, human-sounding audio generation[95]
+- **Promo Code**: Available via email link[95]
+
+#### DigitalOcean Gradient AI - Best Use of DigitalOcean Gradient AI[95]
+- **Prize**: Retro Wireless Mouse[95]
+- **Offer**: $200 in free credits[95]
+- **Features**: GPU infrastructure, serverless inference, 1-Click Models for LLM deployment[95]
+
+### Workshops & Events
+
+#### Intro to Google AI Studio[95]
+- **Topic**: Leveraging AI in hackathon projects[95]
+- **Platform**: Google AI Studio for Gemini models[95]
+- **Registration**: Preregister via MLH events link[95]
+
+#### GitHub Copilot Workshop[95]
+- **Topic**: Cutting development time in half with GitHub Copilot[95]
+- **Resource**: GitHub Student Developer Pack for free Copilot access[95]
+
+### Hardware Lab[95]
+- Available items: Arduinos, Raspberry Pis[95]
+- Contact MLH Coach for access[95]
+- Digi-Key hardware browsing available[95]
+
+### Code of Conduct[95]
+- All participants must respect MLH Code of Conduct[95]
+- **Emergency Contact**: +1 (409) 202-6060[95]
+- **Incident Email**: incidents@mlh.io[95]
+
 ## Related Offers
 - **Frontier Vacations**: Package booking for airfare, hotels, and transportation[89]
 - **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com; earn 50,000 Travel Miles after qualifying activity[89]
