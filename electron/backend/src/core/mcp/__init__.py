@@ -13,7 +13,7 @@ from .models import (
     MCPResponse,
     SearchRequest,
     OpenRequest,
-    SummarizeRequest,
+    IngestRequest,
     ListRequest
 )
 
@@ -24,6 +24,6 @@ __all__ = [
     "MCPResponse",
     "SearchRequest",
     "OpenRequest",
-    "SummarizeRequest",
+    "IngestRequest",
     "ListRequest"
 ]
