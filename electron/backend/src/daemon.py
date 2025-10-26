@@ -37,6 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from agentic_ingest import AgenticIngestionPipeline
 from agentic_search import Search
 from agentic_synthesis import AnswerSynthesizer
+from slack_synthesizer import SlackAnswerSynthesizer
 from bulk_ingest import BulkIngestionPipeline
 from utils.file_ops import read_file
 from config import load_config, update_config, get_vault_path
@@ -592,6 +593,251 @@ async def handle_ask(request: Request):
         )
 
 
+@app.post("/protocol/slack/answer")
+async def handle_slack_answer(request: Request):
+    """
+    Handle Slack bot queries with user impersonation.
+
+    Like /protocol/ask but specialized for Slack bot use case where the bot
+    poses as the user. Adapts tone based on Slack context and protects reputation.
+
+    Expected format:
+        POST /protocol/slack/answer
+        {
+            "question": "What was your Meta offer?",
+            "slack_context": {
+                "server_name": "ACME Corp Workspace",
+                "channel_name": "engineering",
+                "asker_name": "John Doe",
+                "thread_id": "optional_thread_id"
+            },
+            "clear_history": false  // optional
+        }
+
+    Response:
+        {
+            "success": true,
+            "question": "...",
+            "answer": "Natural language answer (no citations)",
+            "conversation_length": N
+        }
+    """
+    global conversation_history
+
+    try:
+        # Parse request body
+        body = await request.json()
+        question = body.get('question', '')
+        slack_context = body.get('slack_context', {})
+        clear_history = body.get('clear_history', False)
+
+        if not question:
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Missing required parameter: question'}
+            )
+
+        if not slack_context:
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Missing required parameter: slack_context'}
+            )
+
+        # Clear history if requested
+        if clear_history:
+            conversation_history = []
+            logger.info("🗑️  Conversation history cleared")
+
+        logger.info(f"💬 Slack question from {slack_context.get('asker_name', 'Unknown')}: {question}")
+
+        # 1. Run agentic search to get contexts
+        searcher = Search(VAULT_PATH)
+        search_result = searcher.search(question)
+
+        if not search_result.get('success'):
+            return JSONResponse(
+                status_code=500,
+                content={
+                    'success': False,
+                    'error': search_result.get('error', 'Search failed'),
+                    'question': question
+                }
+            )
+
+        contexts = search_result.get('contexts', [])
+        logger.info(f"📚 Found {len(contexts)} contexts")
+
+        # 2. Synthesize Slack-appropriate answer (poses as user)
+        synthesizer = SlackAnswerSynthesizer()
+        answer = synthesizer.synthesize(
+            question=question,
+            contexts=contexts,
+            slack_context=slack_context,
+            conversation_history=conversation_history
+        )
+        logger.info("✅ Slack answer synthesis complete")
+
+        # 3. Update conversation history
+        conversation_history.append({"role": "user", "content": question})
+        conversation_history.append({"role": "assistant", "content": answer})
+
+        # Trim to last 25 messages
+        if len(conversation_history) > MAX_CONVERSATION_HISTORY:
+            conversation_history = conversation_history[-MAX_CONVERSATION_HISTORY:]
+
+        # 4. Return response
+        return JSONResponse(content={
+            'success': True,
+            'question': question,
+            'answer': answer,
+            'conversation_length': len(conversation_history)
+        })
+
+    except Exception as e:
+        logger.exception("Error handling Slack answer request")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.post("/protocol/slack/webhook")
+async def handle_slack_webhook(request: Request):
+    """
+    Handle Slack Events API webhook.
+
+    This endpoint receives events from Slack when the bot is mentioned or messaged.
+    Automatically handles challenge verification and responds to questions.
+
+    Expected Slack Event Format:
+        {
+            "type": "url_verification",  // Initial challenge
+            "challenge": "..."
+        }
+
+        OR
+
+        {
+            "type": "event_callback",
+            "event": {
+                "type": "app_mention",
+                "text": "<@BOT_ID> what was my Meta offer?",
+                "user": "U123456",
+                "channel": "C123456",
+                "ts": "1234567890.123456",
+                "thread_ts": "1234567890.123456"  // optional
+            },
+            "team_id": "T123456",
+            ...
+        }
+
+    Note: For production use, you should verify the Slack request signature
+    using the signing secret. This basic implementation is for development.
+    """
+    try:
+        body = await request.json()
+
+        # Handle URL verification challenge (initial Slack setup)
+        if body.get('type') == 'url_verification':
+            challenge = body.get('challenge', '')
+            logger.info("✅ Slack webhook challenge received")
+            return JSONResponse(content={'challenge': challenge})
+
+        # Handle event callbacks
+        if body.get('type') == 'event_callback':
+            event = body.get('event', {})
+            event_type = event.get('type')
+
+            # Only handle app_mention and direct messages
+            if event_type not in ['app_mention', 'message']:
+                logger.debug(f"Ignoring Slack event type: {event_type}")
+                return JSONResponse(content={'ok': True})
+
+            # Extract event data
+            text = event.get('text', '')
+            user_id = event.get('user')
+            channel_id = event.get('channel')
+            thread_ts = event.get('thread_ts') or event.get('ts')
+
+            # Remove bot mention from text (e.g., "<@U123456> question" -> "question")
+            # This regex removes <@USERID> patterns
+            import re
+            question = re.sub(r'<@[A-Z0-9]+>', '', text).strip()
+
+            if not question:
+                logger.warning("Slack event received but no question found")
+                return JSONResponse(content={'ok': True})
+
+            # Get team/workspace info (you may want to fetch this via Slack API)
+            team_id = body.get('team_id', 'Unknown workspace')
+
+            # Build Slack context
+            slack_context = {
+                'server_name': team_id,  # In production, fetch workspace name via Slack API
+                'channel_name': channel_id,  # In production, fetch channel name via Slack API
+                'asker_name': user_id,  # In production, fetch user name via Slack API
+                'thread_id': thread_ts
+            }
+
+            logger.info(f"🔔 Slack webhook: Question from {user_id} in {channel_id}: {question}")
+
+            # Process the question using our answer endpoint logic
+            searcher = Search(VAULT_PATH)
+            search_result = searcher.search(question)
+
+            if not search_result.get('success'):
+                error_msg = "Sorry, I'm having trouble searching my notes right now."
+                # TODO: In production, post this response back to Slack via chat.postMessage API
+                logger.error(f"Search failed for Slack webhook: {search_result.get('error')}")
+                return JSONResponse(content={
+                    'ok': True,
+                    'response': error_msg,
+                    'note': 'Post this response to Slack via chat.postMessage API'
+                })
+
+            contexts = search_result.get('contexts', [])
+
+            # Synthesize answer
+            synthesizer = SlackAnswerSynthesizer()
+            answer = synthesizer.synthesize(
+                question=question,
+                contexts=contexts,
+                slack_context=slack_context,
+                conversation_history=conversation_history
+            )
+
+            # Update conversation history
+            conversation_history.append({"role": "user", "content": question})
+            conversation_history.append({"role": "assistant", "content": answer})
+
+            if len(conversation_history) > MAX_CONVERSATION_HISTORY:
+                conversation_history = conversation_history[-MAX_CONVERSATION_HISTORY:]
+
+            logger.info(f"✅ Slack webhook answer generated: {answer[:100]}...")
+
+            # Return response
+            # Note: For actual Slack integration, you should POST the answer back to Slack
+            # using the Slack Web API (chat.postMessage) with the channel_id and thread_ts
+            return JSONResponse(content={
+                'ok': True,
+                'answer': answer,
+                'channel': channel_id,
+                'thread_ts': thread_ts,
+                'note': 'Use Slack Web API to post this answer back to the channel/thread'
+            })
+
+        # Unknown event type
+        logger.warning(f"Unknown Slack webhook type: {body.get('type')}")
+        return JSONResponse(content={'ok': True})
+
+    except Exception as e:
+        logger.exception("Error handling Slack webhook")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
 @app.get("/file/{filepath:path}")
 async def get_file(filepath: str):
     """
@@ -789,11 +1035,13 @@ def main():
     logger.info(f"Protocol: localbrain://")
     logger.info("")
     logger.info("Available endpoints:")
-    logger.info("  POST /protocol/ingest - Ingest content")
-    logger.info("  POST /protocol/search - Natural language search (raw contexts)")
-    logger.info("  POST /protocol/ask    - Conversational search (synthesized answers)")
-    logger.info("  GET  /file/<path>      - Get file contents")
-    logger.info("  GET  /list/<path>      - List directory")
+    logger.info("  POST /protocol/ingest       - Ingest content")
+    logger.info("  POST /protocol/search       - Natural language search (raw contexts)")
+    logger.info("  POST /protocol/ask          - Conversational search (synthesized answers)")
+    logger.info("  POST /protocol/slack/answer - Slack bot query (user impersonation)")
+    logger.info("  POST /protocol/slack/webhook - Slack Events API webhook")
+    logger.info("  GET  /file/<path>           - Get file contents")
+    logger.info("  GET  /list/<path>           - List directory")
     logger.info("")
     logger.info("Gmail Connector:")
     logger.info("  POST /connectors/gmail/auth/start    - Start OAuth")
