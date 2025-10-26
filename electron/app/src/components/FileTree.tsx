@@ -17,25 +17,37 @@ function TreeNode({
   depth = 0,
   onFileDoubleClick,
   onLoadChildren,
-  highlightedPath
+  highlightedPath,
+  expandedFolders,
+  onToggleExpanded
 }: {
   item: TreeItem;
   depth?: number;
   onFileDoubleClick?: (item: TreeItem) => void;
   onLoadChildren?: (item: TreeItem) => Promise<void>;
   highlightedPath?: string;
+  expandedFolders?: Set<string>;
+  onToggleExpanded?: (itemId: string, expanded: boolean) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const isOpen = expandedFolders?.has(item.id) || false;
 
   // Check if this item or any of its children contain the highlighted path
   const isHighlighted = item.path === highlightedPath;
   const containsHighlighted = highlightedPath?.startsWith(item.path + '/') || false;
 
+  // Auto-load children if folder is expanded but not loaded
+  useEffect(() => {
+    if (item.type === "folder" && isOpen && !item.loaded && onLoadChildren) {
+      setIsLoading(true);
+      onLoadChildren(item).finally(() => setIsLoading(false));
+    }
+  }, [isOpen, item.loaded]);
+
   // Auto-expand if this folder contains the highlighted path
   useEffect(() => {
     if (item.type === "folder" && containsHighlighted && !isOpen) {
-      setIsOpen(true);
+      onToggleExpanded?.(item.id, true);
       if (!item.loaded && onLoadChildren) {
         setIsLoading(true);
         onLoadChildren(item).finally(() => setIsLoading(false));
@@ -46,8 +58,8 @@ function TreeNode({
   const handleClick = async () => {
     if (item.type === "folder") {
       const willOpen = !isOpen;
-      setIsOpen(willOpen);
-      
+      onToggleExpanded?.(item.id, willOpen);
+
       // Load children if opening and not already loaded
       if (willOpen && !item.loaded && onLoadChildren) {
         setIsLoading(true);
@@ -99,6 +111,8 @@ function TreeNode({
               onFileDoubleClick={onFileDoubleClick}
               onLoadChildren={onLoadChildren}
               highlightedPath={highlightedPath}
+              expandedFolders={expandedFolders}
+              onToggleExpanded={onToggleExpanded}
             />
           ))}
         </div>
@@ -116,11 +130,48 @@ export function FileTree({ onFileDoubleClick, highlightedFilePath }: FileTreePro
   const [files, setFiles] = useState<TreeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(() => {
+    // Load expanded folders from localStorage on mount
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('localBrainVaultExpandedFolders');
+        if (saved) {
+          return new Set(JSON.parse(saved));
+        }
+      } catch (error) {
+        console.error('Error loading expanded folders:', error);
+      }
+    }
+    return new Set();
+  });
+
+  // Save expanded folders to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('localBrainVaultExpandedFolders', JSON.stringify(Array.from(expandedFolders)));
+      } catch (error) {
+        console.error('Error saving expanded folders:', error);
+      }
+    }
+  }, [expandedFolders]);
 
   // Load root directory on mount
   useEffect(() => {
     loadDirectory("");
   }, []);
+
+  const handleToggleExpanded = (itemId: string, expanded: boolean) => {
+    setExpandedFolders(prev => {
+      const next = new Set(prev);
+      if (expanded) {
+        next.add(itemId);
+      } else {
+        next.delete(itemId);
+      }
+      return next;
+    });
+  };
 
   const loadDirectory = async (path: string) => {
     try {
@@ -234,6 +285,8 @@ export function FileTree({ onFileDoubleClick, highlightedFilePath }: FileTreePro
             onFileDoubleClick={onFileDoubleClick}
             onLoadChildren={handleLoadChildren}
             highlightedPath={highlightedFilePath}
+            expandedFolders={expandedFolders}
+            onToggleExpanded={handleToggleExpanded}
           />
         ))}
       </div>

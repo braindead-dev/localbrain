@@ -130,6 +130,7 @@ function AppContent() {
     setOpenedFile(file);
     setActiveTab("search"); // Switch to editor tab
     setSidebarOpen(false); // Close the vault sidebar
+    // Keep highlightedFilePath so it persists when sidebar reopens
   };
 
   const handleConnectionClick = (connectionId: string) => {

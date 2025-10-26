@@ -21,7 +21,10 @@ export function EditorView({ initialFilePath, initialContent = "", showLineNumbe
 
   // Load file when initialFilePath changes
   useEffect(() => {
-    if (initialFilePath && initialFilePath !== filePath) {
+    if (initialFilePath) {
+      // Always load if we have an initialFilePath, even if it's the "same" file
+      // This fixes the issue where clicking a file after highlighting it from chat
+      // would show blank content
       loadFile(initialFilePath);
     }
   }, [initialFilePath]);
