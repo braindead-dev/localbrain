@@ -1,0 +1,100 @@
+# Caddyfile Example for Remote MCP Bridge
+#
+# PRODUCTION CONFIG (with domain and automatic HTTPS)
+# Copy this file to /etc/caddy/Caddyfile on your server
+# Replace localbrain.henr.ee with your actual domain
+
+localbrain.henr.ee {
+    # WebSocket tunnel endpoint (most important - must support WebSocket upgrade)
+    handle /tunnel/* {
+        reverse_proxy localhost:8767 {
+            header_up Upgrade {http.request.header.Upgrade}
+            header_up Connection {http.request.header.Connection}
+        }
+    }
+
+    # Health check endpoint
+    handle /health {
+        reverse_proxy localhost:8767
+    }
+
+    # MCP tool endpoints (external tools access these)
+    handle /u/* {
+        reverse_proxy localhost:8767
+    }
+
+    # Admin endpoints (optional - only if you need them)
+    handle /admin/* {
+        reverse_proxy localhost:8767
+
+        # Optional: Restrict admin endpoints to specific IPs
+        # Uncomment and replace with your IP:
+        # @allowed {
+        #     remote_ip YOUR_IP_ADDRESS_HERE
+        # }
+        # handle @allowed {
+        #     reverse_proxy localhost:8767
+        # }
+    }
+
+    # Logging
+    log {
+        output file /var/log/caddy/mcp-bridge.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}
+
+# ============================================================================
+# DEVELOPMENT/TESTING CONFIG (HTTP only, no domain required)
+# ============================================================================
+#
+# Uncomment this section if you want to test without a domain:
+#
+# :80 {
+#     handle /tunnel/* {
+#         reverse_proxy localhost:8767 {
+#             header_up Upgrade {http.request.header.Upgrade}
+#             header_up Connection {http.request.header.Connection}
+#         }
+#     }
+#
+#     handle /health {
+#         reverse_proxy localhost:8767
+#     }
+#
+#     handle /u/* {
+#         reverse_proxy localhost:8767
+#     }
+#
+#     handle /admin/* {
+#         reverse_proxy localhost:8767
+#     }
+# }
+
+# ============================================================================
+# NOTES
+# ============================================================================
+#
+# 1. When using a domain name (like localbrain.henr.ee):
+#    - Caddy automatically obtains SSL certificates from Let's Encrypt
+#    - Caddy automatically renews certificates before expiry
+#    - Your bridge will be accessible via https:// and wss://
+#    - No manual certificate management required!
+#
+# 2. DNS Setup Required:
+#    - Create an A record pointing your domain to your droplet's IP
+#    - Wait for DNS propagation (can take 5-60 minutes)
+#    - Caddy will automatically get the SSL certificate on first request
+#
+# 3. Firewall:
+#    - Ensure ports 80 and 443 are open (for HTTP and HTTPS)
+#    - Port 80 is needed for Let's Encrypt verification
+#    - Port 8767 should NOT be exposed (Caddy proxies to it)
+#
+# 4. Testing:
+#    - Validate config: sudo caddy validate --config /etc/caddy/Caddyfile
+#    - Reload Caddy: sudo systemctl reload caddy
+#    - Check logs: sudo journalctl -u caddy -f
+#    - Test health: curl https://your-domain.com/health

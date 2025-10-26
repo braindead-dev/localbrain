@@ -34,8 +34,7 @@ if env_path.exists():
 # ============================================================================
 
 # Bridge server configuration
-BRIDGE_URL = os.getenv("BRIDGE_URL", "ws://localhost:8767")
-BRIDGE_WS_ENDPOINT = f"{BRIDGE_URL}/tunnel/connect"
+BRIDGE_URL = os.getenv("BRIDGE_URL", "ws://localhost:8767/tunnel/connect")
 
 # Local MCP server configuration
 LOCAL_MCP_URL = os.getenv("LOCAL_MCP_URL", "http://127.0.0.1:8766")
@@ -48,6 +47,9 @@ ALLOWED_TOOLS = os.getenv("ALLOWED_TOOLS", "search,search_agentic,open,summarize
 
 # Keepalive configuration
 KEEPALIVE_INTERVAL = int(os.getenv("KEEPALIVE_INTERVAL", "30"))  # seconds
+
+# SSL configuration for wss://
+SSL_VERIFY = os.getenv("SSL_VERIFY", "true").lower() == "true"
 
 # Validation
 if not USER_ID:
@@ -135,7 +137,22 @@ class TunnelClient:
 
         logger.info("Connecting to bridge...")
 
-        async with websockets.connect(url) as websocket:
+        # Configure SSL context if using wss://
+        ssl_context = None
+        if self.bridge_url.startswith("wss://"):
+            import ssl
+            if not SSL_VERIFY:
+                # Disable SSL verification for self-signed certificates
+                ssl_context = ssl.create_default_context()
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+                logger.warning("SSL certificate verification is disabled.")
+            else:
+                # Use default SSL context (verifies certificates)
+                ssl_context = ssl.create_default_context()
+                logger.info("SSL certificate verification enabled.")
+
+        async with websockets.connect(url, ssl=ssl_context) as websocket:
             self.websocket = websocket
 
             # Wait for confirmation
@@ -297,7 +314,7 @@ async def main():
 
     # Create tunnel client
     client = TunnelClient(
-        bridge_url=BRIDGE_WS_ENDPOINT,
+        bridge_url=BRIDGE_URL,
         local_mcp_url=LOCAL_MCP_URL,
         local_api_key=LOCAL_API_KEY,
         user_id=USER_ID,
