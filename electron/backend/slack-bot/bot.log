@@ -1,3 +1,124 @@
 2025-10-26 03:02:29,160 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
 2025-10-26 03:02:29,160 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
 2025-10-26 03:02:29,160 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 03:20:15,898 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 03:20:15,898 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 03:20:15,898 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 03:23:53,611 - __main__ - INFO - Handling URL verification challenge
+2025-10-26 03:49:42,249 - __main__ - INFO - Queued mention for processing: where are you getting internships...
+2025-10-26 03:49:42,250 - __main__ - INFO - Processing message from user U09KVU3VAKZ: where are you getting internships
+2025-10-26 03:49:42,250 - __main__ - INFO - Asking daemon: where are you getting internships
+2025-10-26 03:49:48,461 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 03:49:48,461 - __main__ - INFO - Daemon responded: Hey! I'm actively looking right now — I just applied to Uber Freight for a Software Engineer Intern ...
+2025-10-26 03:49:48,461 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:49:48,717 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:49:48,718 - __main__ - ERROR - Error processing message: The request to the Slack API failed. (url: https://slack.com/api/chat.postMessage)
+The server responded with: {'ok': False, 'error': 'missing_scope', 'needed': 'chat:write:bot', 'provided': 'identify,im:history,files:read,im:read,users:read'}
+2025-10-26 03:49:48,718 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:49:49,116 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:49:49,117 - __main__ - ERROR - Failed to send error message to Slack
+2025-10-26 03:50:21,840 - __main__ - INFO - Queued mention for processing: where are you getting internships...
+2025-10-26 03:50:21,841 - __main__ - INFO - Processing message from user U09L4V0LNRX: where are you getting internships
+2025-10-26 03:50:21,841 - __main__ - INFO - Asking daemon: where are you getting internships
+2025-10-26 03:50:28,913 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 03:50:28,914 - __main__ - INFO - Daemon responded: Hey! So I'm using a few different approaches right now:
+
+1. **Job boards & alerts** — I've got alert...
+2025-10-26 03:50:28,914 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:50:29,105 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:50:29,106 - __main__ - ERROR - Error processing message: The request to the Slack API failed. (url: https://slack.com/api/chat.postMessage)
+The server responded with: {'ok': False, 'error': 'missing_scope', 'needed': 'chat:write:bot', 'provided': 'identify,im:history,files:read,im:read,users:read'}
+2025-10-26 03:50:29,106 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:50:29,296 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:50:29,296 - __main__ - ERROR - Failed to send error message to Slack
+2025-10-26 03:54:12,752 - __main__ - INFO - Queued mention for processing: where are you getting internships...
+2025-10-26 03:54:12,754 - __main__ - INFO - Processing message from user U09KVU3VAKZ: where are you getting internships
+2025-10-26 03:54:12,754 - __main__ - INFO - Asking daemon: where are you getting internships
+2025-10-26 03:54:20,271 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 03:54:20,272 - __main__ - INFO - Daemon responded: Hey! So I'm using a few different approaches right now:
+
+1. **Job boards & alerts** — I've got alert...
+2025-10-26 03:54:20,272 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:54:20,518 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:54:20,518 - __main__ - ERROR - Error processing message: The request to the Slack API failed. (url: https://slack.com/api/chat.postMessage)
+The server responded with: {'ok': False, 'error': 'missing_scope', 'needed': 'chat:write:bot', 'provided': 'identify,im:history,files:read,im:read,users:read'}
+2025-10-26 03:54:20,519 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:54:21,697 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:54:21,697 - __main__ - ERROR - Failed to send error message to Slack
+2025-10-26 03:57:41,934 - __main__ - INFO - Queued mention for processing: where are you getting internships...
+2025-10-26 03:57:41,936 - __main__ - INFO - Processing message from user U09KVU3VAKZ: where are you getting internships
+2025-10-26 03:57:41,936 - __main__ - INFO - Asking daemon: where are you getting internships
+2025-10-26 03:57:49,625 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 03:57:49,626 - __main__ - INFO - Daemon responded: Hey! I'm using a few different approaches:
+
+1. **Job boards & alerts** — I've got alerts set up for ...
+2025-10-26 03:57:49,626 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:57:49,865 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:57:49,865 - __main__ - ERROR - Error processing message: The request to the Slack API failed. (url: https://slack.com/api/chat.postMessage)
+The server responded with: {'ok': False, 'error': 'missing_scope', 'needed': 'chat:write:bot', 'provided': 'identify,im:history,files:read,im:read,users:read'}
+2025-10-26 03:57:49,865 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:57:50,058 - __main__ - ERROR - Error sending Slack message: missing_scope
+2025-10-26 03:57:50,059 - __main__ - ERROR - Failed to send error message to Slack
+2025-10-26 03:58:26,338 - __main__ - INFO - HTTP client closed
+2025-10-26 03:58:34,827 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 03:58:34,871 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 03:58:34,871 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 03:58:34,871 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 03:58:50,180 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 03:58:50,181 - __main__ - INFO - 📬 Event callback type: app_mention
+2025-10-26 03:58:50,181 - __main__ - INFO -    Channel: C09N90JAUDD
+2025-10-26 03:58:50,181 - __main__ - INFO -    User: U09KVU3VAKZ
+2025-10-26 03:58:50,181 - __main__ - INFO -    Text preview: <@U09NMP94PQW> where are you getting internships...
+2025-10-26 03:58:50,181 - __main__ - INFO - Queued mention for processing: where are you getting internships...
+2025-10-26 03:58:50,181 - __main__ - INFO - Processing message from user U09KVU3VAKZ: where are you getting internships
+2025-10-26 03:58:50,181 - __main__ - INFO - Asking daemon: where are you getting internships
+2025-10-26 03:58:57,095 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 03:58:57,095 - __main__ - INFO - Daemon responded: Hey! I'm actively looking at internships right now. I've already applied to Uber Freight for a Softw...
+2025-10-26 03:58:57,095 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:58:57,347 - __main__ - INFO - Message sent successfully
+2025-10-26 03:58:57,347 - __main__ - INFO - Message processed successfully
+2025-10-26 03:59:57,211 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 03:59:57,213 - __main__ - INFO - 📬 Event callback type: app_mention
+2025-10-26 03:59:57,213 - __main__ - INFO -    Channel: C09N90JAUDD
+2025-10-26 03:59:57,213 - __main__ - INFO -    User: U09KVU3VAKZ
+2025-10-26 03:59:57,213 - __main__ - INFO -    Text preview: <@U09NMP94PQW> who are you?...
+2025-10-26 03:59:57,214 - __main__ - INFO - Queued mention for processing: who are you?...
+2025-10-26 03:59:57,215 - __main__ - INFO - Processing message from user U09KVU3VAKZ: who are you?
+2025-10-26 03:59:57,215 - __main__ - INFO - Asking daemon: who are you?
+2025-10-26 03:59:58,937 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 03:59:58,937 - __main__ - INFO - Daemon responded: I'm not sure - I don't have information about that in my notes....
+2025-10-26 03:59:58,937 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 03:59:59,221 - __main__ - INFO - Message sent successfully
+2025-10-26 03:59:59,221 - __main__ - INFO - Message processed successfully
+2025-10-26 04:01:18,320 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:01:18,321 - __main__ - INFO - 📬 Event callback type: app_mention
+2025-10-26 04:01:18,321 - __main__ - INFO -    Channel: C09N90JAUDD
+2025-10-26 04:01:18,321 - __main__ - INFO -    User: U09L4V0LNRX
+2025-10-26 04:01:18,321 - __main__ - INFO -    Text preview: <@U09NMP94PQW> what is your name?...
+2025-10-26 04:01:18,321 - __main__ - INFO - Queued mention for processing: what is your name?...
+2025-10-26 04:01:18,323 - __main__ - INFO - Processing message from user U09L4V0LNRX: what is your name?
+2025-10-26 04:01:18,323 - __main__ - INFO - Asking daemon: what is your name?
+2025-10-26 04:01:19,775 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 04:01:19,776 - __main__ - INFO - Daemon responded: I'm not sure - I don't have information about that in my notes....
+2025-10-26 04:01:19,776 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 04:01:20,109 - __main__ - INFO - Message sent successfully
+2025-10-26 04:01:20,109 - __main__ - INFO - Message processed successfully
+2025-10-26 04:01:34,935 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:01:34,936 - __main__ - INFO - 📬 Event callback type: app_mention
+2025-10-26 04:01:34,936 - __main__ - INFO -    Channel: C09N90JAUDD
+2025-10-26 04:01:34,937 - __main__ - INFO -    User: U09L4V0LNRX
+2025-10-26 04:01:34,937 - __main__ - INFO -    Text preview: <@U09NMP94PQW> what internships do you have?...
+2025-10-26 04:01:34,937 - __main__ - INFO - Queued mention for processing: what internships do you have?...
+2025-10-26 04:01:34,937 - __main__ - INFO - Processing message from user U09L4V0LNRX: what internships do you have?
+2025-10-26 04:01:34,937 - __main__ - INFO - Asking daemon: what internships do you have?
+2025-10-26 04:01:43,653 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 04:01:43,654 - __main__ - INFO - Daemon responded: Right now I'm actively pursuing the **Uber Freight Software Engineer Intern** position — I applied b...
+2025-10-26 04:01:43,654 - __main__ - INFO - Sending message to Slack channel C09N90JAUDD
+2025-10-26 04:01:43,950 - __main__ - INFO - Message sent successfully
+2025-10-26 04:01:43,950 - __main__ - INFO - Message processed successfully
+2025-10-26 04:12:37,016 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:12:37,018 - __main__ - INFO - 📬 Event callback type: message
+2025-10-26 04:12:37,018 - __main__ - INFO -    Channel: D09NLU3M1A9
+2025-10-26 04:12:37,018 - __main__ - INFO -    User: U09KVU3VAKZ
+2025-10-26 04:12:37,018 - __main__ - INFO -    Text preview: added an integration to this channel: <https://cal...
+2025-10-26 04:12:37,018 - __main__ - INFO - Ignoring bot message

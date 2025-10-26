@@ -14,7 +14,10 @@
       "Bash(npx tsc:*)",
       "Bash(python3:*)",
       "Bash(npm run build:*)",
-      "Bash(npx next lint:*)"
+      "Bash(npx next lint:*)",
+      "Bash(cat:*)",
+      "Read(//private/tmp/**)",
+      "Bash(ps:*)"
     ],
     "deny": [],
     "ask": []

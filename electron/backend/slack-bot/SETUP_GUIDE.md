@@ -79,6 +79,11 @@ SLACK_CHANNEL_ID=C01234ABCDE
 # LocalBrain Daemon Configuration
 DAEMON_URL=http://127.0.0.1:8765
 
+# Trigger Keywords (optional - comma-separated)
+# Bot responds in channels when messages contain these keywords
+# Default: "localbrain", "lb", "?", "help", "what", "how", etc.
+TRIGGER_KEYWORDS=internship,interview,job,offer,resume
+
 # Server Configuration
 HOST=0.0.0.0
 PORT=8000
@@ -87,6 +92,8 @@ PORT=8000
 **Notes**:
 - If you leave `SLACK_CHANNEL_ID` empty, the bot will respond in all channels where it's added
 - `DAEMON_URL` should point to your running LocalBrain daemon
+- `TRIGGER_KEYWORDS`: Add custom keywords to trigger bot responses in channels
+- **DMs always respond** to all messages, regardless of keywords
 
 ## Step 4: Start LocalBrain Daemon
 
@@ -150,10 +157,16 @@ Copy the HTTPS URL (e.g., `https://xyz789.ngrok.io`)
 ```
 
 **Test in a DM:**
-1. In Slack, click on the bot name "LocalBrain Assistant" in your workspace
-2. Start a direct message with the bot
+
+⚠️ **IMPORTANT**: You **cannot test by DMing yourself**! Slack does not send events when you message yourself or a bot you own. This is a Slack platform limitation.
+
+To test DMs:
+1. Ask a coworker/friend to DM the bot
+2. Or create a test Slack account and message the bot from that account
 3. Send a message: "What projects am I working on?"
 4. The bot should respond directly in the DM
+
+Self-messaging will never work in Slack!
 
 ## Step 7: Deploy to Production (Optional)
 
@@ -212,11 +225,16 @@ Set up nginx/caddy with SSL, then update Slack Event Subscription URL.
 
 ### Bot not responding
 
+**⚠️ Are you trying to DM yourself?**
+Slack does NOT send events when you message yourself or your own bot. This is a Slack platform limitation, not a bug. You must test with another user or a separate test account.
+
 **Check these things:**
-1. Bot is invited to the channel: `/invite @LocalBrain Assistant`
-2. Webhook URL is correct in Slack app settings
-3. LocalBrain daemon is running: `curl http://127.0.0.1:8765/`
-4. Check logs: `tail -f bot.log`
+1. Test with another user (not yourself!)
+2. Bot is invited to the channel: `/invite @LocalBrain Assistant`
+3. Webhook URL is correct in Slack app settings
+4. LocalBrain daemon is running: `curl http://127.0.0.1:8765/`
+5. Check logs: `tail -f bot.log`
+6. Event Subscriptions include `message.im`, `message.channels`, `app_mention`
 
 ### Slack signature verification failed
 

@@ -216,9 +216,13 @@ Set up reverse proxy (nginx/caddy) with SSL, then update Slack Event Subscriptio
 
 ## Features
 
+- **Smart Keyword Triggering**: In channels, bot responds only when message contains:
+  - Bot name variations ("localbrain", "local brain", "lb")
+  - Question indicators ("?", "help", "what", "how", "where", "why", etc.)
+  - Custom keywords you configure (e.g., "internship", "job", "interview")
+  - @mentions of the bot
+- **Direct Messages (DMs)**: Responds to ALL DM messages automatically
 - **Message Monitoring**: Listens to messages in specified channel(s)
-- **Direct Messages (DMs)**: Responds to private messages with the bot
-- **@Mentions**: Responds when bot is @mentioned (optional)
 - **Thread Support**: Replies in threads to keep conversations organized
 - **Signature Verification**: Validates all requests come from Slack
 - **Background Processing**: Handles messages asynchronously to prevent timeouts
@@ -228,10 +232,19 @@ Set up reverse proxy (nginx/caddy) with SSL, then update Slack Event Subscriptio
 
 ### Bot not responding
 
+**IMPORTANT: You cannot DM yourself!** Slack does not send events when you message yourself or a bot you own. This is a Slack limitation, not a bot issue.
+
+To test the bot:
+- Have another person DM the bot or message in a channel
+- Or create a test Slack account
+- Self-messaging will never work in Slack
+
+Other checks:
 - Check that the bot is invited to the channel: `/invite @LocalBrain Assistant`
 - Verify webhook URL is correct in Slack app settings
 - Check server logs: `tail -f bot.log`
 - Ensure LocalBrain daemon is running: `curl http://127.0.0.1:8765/`
+- Verify Event Subscriptions include `message.im`, `message.channels`, and `app_mention`
 
 ### Daemon connection errors
 
@@ -320,6 +333,31 @@ Message appears in Slack thread
 
 ## Advanced Configuration
 
+### Configuring Trigger Keywords
+
+By default, the bot responds in channels when messages contain:
+- Bot names: "localbrain", "local brain", "lb"
+- Questions: "?", "help", "explain", "what", "how", "where", "why", "when", "who"
+- @mentions
+
+Add custom keywords in `.env`:
+
+```env
+TRIGGER_KEYWORDS=internship,interview,job,offer,resume,startup,funding
+```
+
+**Examples:**
+
+```
+"Where are you getting internships?" → ✅ Responds ("where" + "internship")
+"I like pizza" → ❌ Ignores (no keywords)
+"localbrain what's your opinion?" → ✅ Responds ("localbrain")
+"How does this work?" → ✅ Responds ("how" + "?")
+"Tell me about your job search" → ✅ Responds ("job")
+```
+
+**Note**: DMs always respond to ALL messages, regardless of keywords.
+
 ### Monitoring Multiple Channels
 
 Leave `SLACK_CHANNEL_ID` empty in `.env`:
@@ -329,8 +367,6 @@ SLACK_CHANNEL_ID=
 ```
 
 Then invite the bot to multiple channels. It will respond in all of them.
-
-**Note**: DMs always work regardless of the `SLACK_CHANNEL_ID` setting. The bot will respond to direct messages even if you have a specific channel configured.
 
 ### Only Responding to @Mentions
 

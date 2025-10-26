@@ -47,6 +47,10 @@ DAEMON_URL = os.getenv("DAEMON_URL", "http://127.0.0.1:8765")
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 
+# Trigger keywords for channels (comma-separated)
+TRIGGER_KEYWORDS = os.getenv("TRIGGER_KEYWORDS", "").lower()
+TRIGGER_KEYWORDS_LIST = [kw.strip() for kw in TRIGGER_KEYWORDS.split(",") if kw.strip()]
+
 # Validate required environment variables
 required_vars = {
     "SLACK_BOT_TOKEN": SLACK_BOT_TOKEN,
@@ -62,6 +66,15 @@ app = FastAPI(title="LocalBrain Slack Bot")
 
 # Initialize Slack client
 slack_client = WebClient(token=SLACK_BOT_TOKEN)
+
+# Get bot's own user ID to detect self-messaging
+try:
+    bot_info = slack_client.auth_test()
+    BOT_USER_ID = bot_info["user_id"]
+    logger.info(f"Bot user ID: {BOT_USER_ID}")
+except Exception as e:
+    logger.warning(f"Could not fetch bot user ID: {e}")
+    BOT_USER_ID = None
 
 # HTTP client for daemon requests
 http_client = httpx.AsyncClient(timeout=30.0)
@@ -96,6 +109,46 @@ def verify_slack_signature(request_body: bytes, timestamp: str, signature: str) 
 
     # Compare signatures
     return hmac.compare_digest(expected_signature, signature)
+
+
+def should_respond_to_message(text: str, is_dm: bool) -> tuple[bool, str]:
+    """
+    Determine if bot should respond based on message content.
+
+    Args:
+        text: Message text
+        is_dm: Whether this is a DM
+
+    Returns:
+        (should_respond: bool, reason: str)
+    """
+    # Always respond to DMs
+    if is_dm:
+        return True, "DM"
+
+    # For channels, check for trigger keywords
+    text_lower = text.lower()
+
+    # Bot name variations
+    bot_names = ["localbrain", "local brain", "lb"]
+    for name in bot_names:
+        if name in text_lower:
+            return True, f"bot_name:{name}"
+
+    # Question indicators
+    question_words = ["?", "help", "explain", "what", "how", "where", "why", "when", "who"]
+    for word in question_words:
+        if word in text_lower:
+            return True, f"question:{word}"
+
+    # Custom trigger keywords from env
+    if TRIGGER_KEYWORDS_LIST:
+        for keyword in TRIGGER_KEYWORDS_LIST:
+            if keyword in text_lower:
+                return True, f"custom:{keyword}"
+
+    # No triggers found
+    return False, "no_trigger"
 
 
 async def ask_daemon(question: str, slack_context: dict) -> str:
@@ -264,15 +317,25 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON")
 
+    # Debug: Log all incoming events
+    event_type_top = event_data.get("type")
+    logger.info(f"📨 Received Slack event type: {event_type_top}")
+
     # Handle URL verification challenge
-    if event_data.get("type") == "url_verification":
-        logger.info("Handling URL verification challenge")
+    if event_type_top == "url_verification":
+        logger.info("✅ Handling URL verification challenge")
         return JSONResponse({"challenge": event_data.get("challenge")})
 
     # Handle event callbacks
-    if event_data.get("type") == "event_callback":
+    if event_type_top == "event_callback":
         event = event_data.get("event", {})
         event_type = event.get("type")
+
+        # Debug: Log event details
+        logger.info(f"📬 Event callback type: {event_type}")
+        logger.info(f"   Channel: {event.get('channel', 'N/A')}")
+        logger.info(f"   User: {event.get('user', 'N/A')}")
+        logger.info(f"   Text preview: {event.get('text', '')[:50]}...")
 
         # Process message events (both channels and DMs)
         if event_type == "message":
@@ -286,6 +349,11 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
             # Ignore bot messages to prevent loops
             if event.get("bot_id"):
                 logger.info("Ignoring bot message")
+                return JSONResponse({"status": "ok"})
+
+            # Check if user is messaging themselves (Slack limitation - won't work)
+            if BOT_USER_ID and user == BOT_USER_ID:
+                logger.warning(f"⚠️  Detected self-message from bot user {user}. Slack doesn't send events for messages from the bot itself.")
                 return JSONResponse({"status": "ok"})
 
             # Ignore message edits and deletions
@@ -303,9 +371,17 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
                 logger.info(f"Ignoring message from channel {channel} (not monitoring)")
                 return JSONResponse({"status": "ok"})
 
-            # Log message type
+            # Check if we should respond based on message content
+            should_respond, trigger_reason = should_respond_to_message(text, is_dm)
+
+            if not should_respond:
+                message_type = "DM" if is_dm else "channel"
+                logger.info(f"⏭️  Ignoring {message_type} message (no trigger keywords): {text[:50]}...")
+                return JSONResponse({"status": "ok"})
+
+            # Log message type and trigger reason
             message_type = "DM" if is_dm else "channel"
-            logger.info(f"Received {message_type} message from user {user}")
+            logger.info(f"Received {message_type} message from user {user} (trigger: {trigger_reason})")
 
             # Process message in background to avoid timeout
             background_tasks.add_task(
