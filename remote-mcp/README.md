@@ -30,14 +30,139 @@ See [IMPLEMENTATION.md](./IMPLEMENTATION.md) for complete setup and usage instru
 
 ## Quick Start
 
-### Step 1: Install Dependencies
+### Option A: Connect to an Existing Bridge
+
+**If someone is already running a bridge server** (e.g., `localbrain.henr.ee`), you can connect to it directly without running your own. This is the simplest option!
+
+#### Step 1: Install Dependencies
 
 ```bash
 cd remote-mcp
 pip install -r requirements.txt
 ```
 
-### Step 2: Start Bridge Server (One-Time Setup)
+#### Step 2: Configure Your Tunnel Client
+
+**Copy the environment template:**
+
+```bash
+cp .env.example .env
+```
+
+**Generate your unique credentials:**
+
+```bash
+# Generate USER_ID (your unique identifier)
+python3 -c "import uuid; print(str(uuid.uuid4()))"
+# Example output: 3f079754-88ea-40d7-a486-d41944c0bfd4
+
+# Generate REMOTE_API_KEY (your secret access key)
+python3 -c "import secrets; print('lb_' + secrets.token_urlsafe(32))"
+# Example output: lb_Tj1oK5B-S0jTSw0vUU63txbal0S1ugcFrjB7pgsf3PI
+```
+
+**Edit your `.env` file:**
+
+```bash
+nano .env
+# or: vim .env
+# or: code .env (VS Code)
+```
+
+**Update these values in `.env`:**
+
+```env
+# Bridge server URL (replace with the bridge you're connecting to)
+BRIDGE_URL=wss://localbrain.henr.ee/tunnel/connect
+
+# Your generated credentials (paste from above)
+USER_ID=3f079754-88ea-40d7-a486-d41944c0bfd4
+REMOTE_API_KEY=lb_Tj1oK5B-S0jTSw0vUU63txbal0S1ugcFrjB7pgsf3PI
+
+# Keep these defaults (they should already be correct)
+LOCAL_MCP_URL=http://127.0.0.1:8766
+LOCAL_API_KEY=dev-key-local-only
+ALLOWED_TOOLS=search,search_agentic,open,summarize,list
+KEEPALIVE_INTERVAL=30
+
+# SSL verification (set to "true" for production bridges with valid certificates)
+SSL_VERIFY=true
+```
+
+**Important Notes:**
+- ⚠️ **Keep your `USER_ID` and `REMOTE_API_KEY` secret!** These are your credentials.
+- ✅ **Each user must generate their own unique credentials** - don't share or reuse them.
+- 🔒 **Never commit `.env` to git** - it's already in `.gitignore` for safety.
+- 📝 **Save your credentials somewhere safe** - you'll need them to reconnect later.
+
+#### Step 3: Start Your Local MCP Server
+
+**Ensure your MCP server and daemon are running:**
+
+```bash
+# From project root (localbrain/)
+python electron/backend/src/core/mcp/extension/start_servers.py
+
+# You should see:
+# ✅ Daemon running on http://127.0.0.1:8765
+# ✅ MCP Server running on http://127.0.0.1:8766
+```
+
+Keep this terminal open. The servers must be running for the tunnel to work.
+
+#### Step 4: Start Your Tunnel
+
+**In a new terminal:**
+
+```bash
+cd remote-mcp
+./start_tunnel.sh
+```
+
+**You should see:**
+
+```
+✅ SSL certificate verification enabled.
+✅ Tunnel established successfully!
+  Tunnel ID: f8e2d3c1-9a7b-4c5d-8e6f-2a3b4c5d6e7f
+  Remote URL: https://localbrain.henr.ee/u/3f079754-88ea-40d7-a486-d41944c0bfd4
+
+Your LocalBrain is now accessible remotely at:
+  https://localbrain.henr.ee/u/3f079754-88ea-40d7-a486-d41944c0bfd4
+
+External tools can now access your vault using:
+  URL: https://localbrain.henr.ee/u/3f079754-88ea-40d7-a486-d41944c0bfd4/{tool}
+  API Key: lb_Tj1oK5B-S0jTSw0vUU63txbal0S1ugcFrjB7pgsf3PI
+```
+
+**That's it!** Your LocalBrain is now accessible remotely through the bridge.
+
+#### Step 5: Test Your Connection
+
+```bash
+# Replace USER_ID and REMOTE_API_KEY with your values
+curl -X POST https://localbrain.henr.ee/u/YOUR_USER_ID/search \
+  -H "X-API-Key: YOUR_REMOTE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "test search", "top_k": 3}'
+```
+
+If successful, you'll get search results from your local vault!
+
+---
+
+### Option B: Run Your Own Bridge Server
+
+**If you want to run your own bridge** (self-hosted on VPS/cloud), follow these steps:
+
+#### Step 1: Install Dependencies
+
+```bash
+cd remote-mcp
+pip install -r requirements.txt
+```
+
+#### Step 2: Start Bridge Server (One-Time Setup)
 
 **For local testing:**
 
@@ -46,9 +171,9 @@ pip install -r requirements.txt
 # Bridge runs on http://localhost:8767
 ```
 
-**For production:** Deploy to VPS/cloud with HTTPS (see IMPLEMENTATION.md)
+**For production:** Deploy to VPS/cloud with HTTPS (see [DEPLOY_DIGITALOCEAN.md](./DEPLOY_DIGITALOCEAN.md))
 
-### Step 3: Configure Tunnel Client
+#### Step 3: Configure Tunnel Client
 
 ```bash
 # Copy environment template
@@ -62,7 +187,9 @@ python3 -c "import secrets; print('REMOTE_API_KEY=lb_' + secrets.token_urlsafe(3
 vim .env
 ```
 
-### Step 4: Start Tunnel
+See `.env.example` for all configuration options. Update `BRIDGE_URL` to point to your bridge server.
+
+#### Step 4: Start Tunnel
 
 **Ensure your MCP server is running first:**
 
@@ -78,17 +205,24 @@ cd remote-mcp
 You'll see your remote URL:
 ```
 ✅ Tunnel established successfully!
-Remote URL: https://mcp.localbrain.app/u/YOUR_USER_ID
+Remote URL: https://your-bridge.com/u/YOUR_USER_ID
 ```
 
-### Step 5: Use from External Tools
+#### Step 5: Use from External Tools
 
 ```bash
-curl -X POST http://localhost:8767/u/YOUR_USER_ID/search \
+curl -X POST https://your-bridge.com/u/YOUR_USER_ID/search \
   -H "X-API-Key: YOUR_REMOTE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query": "internship applications", "top_k": 5}'
 ```
+
+---
+
+For more detailed setup instructions, see:
+- [QUICKSTART.md](./QUICKSTART.md) - 5-minute local testing guide
+- [DEPLOY_DIGITALOCEAN.md](./DEPLOY_DIGITALOCEAN.md) - Production deployment on DigitalOcean
+- [IMPLEMENTATION.md](./IMPLEMENTATION.md) - Complete implementation details
 
 ## Purpose
 
