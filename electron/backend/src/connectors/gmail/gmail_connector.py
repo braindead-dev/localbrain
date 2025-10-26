@@ -140,16 +140,9 @@ class GmailConnector(BaseConnector):
         
         try:
             # Use existing _sync_emails method but adapt the return format
-            if since:
-                # Calculate minutes since the timestamp
-                now = datetime.now()
-                minutes_diff = int((now - since).total_seconds() / 60)
-                print(f"   - Fetching emails from last {minutes_diff} minutes (since last sync)")
-                result = self._sync_emails(max_results=limit or 100, minutes=max(minutes_diff, 1))
-            else:
-                # Default to last 7 days (1 week) on first sync
-                print(f"   - First sync: fetching emails from last 7 days")
-                result = self._sync_emails(max_results=limit or 100, minutes=10080)  # 7 days = 7 * 24 * 60 = 10080 minutes
+            # ALWAYS fetch just the most recent 1 email - no bulk syncing
+            print(f"   - Fetching 1 most recent email")
+            result = self._sync_emails(max_results=1, minutes=None)  # No time filter, just get latest
             
             # Convert to ConnectorData format
             connector_data = []
@@ -559,8 +552,8 @@ class GmailConnector(BaseConnector):
         # Calculate timestamp for 2 weeks ago
         two_weeks_ago = datetime.now() - timedelta(days=14)  # 2 weeks = 14 days
         
-        # Build query - fetch emails from last 2 weeks in primary inbox
-        query = f'after:{two_weeks_ago.strftime("%Y/%m/%d")} in:inbox category:primary -in:spam -in:trash'
+        # Build query - fetch emails from last 2 weeks in inbox (all categories)
+        query = f'after:{two_weeks_ago.strftime("%Y/%m/%d")} in:inbox -in:spam -in:trash'
         
         # Fetch emails
         emails = self._fetch_emails(query, max_results)
@@ -596,13 +589,13 @@ class GmailConnector(BaseConnector):
             'emails': processed_emails
         }
 
-    def _sync_emails(self, max_results: int = 100, minutes: int = 10) -> Dict:
+    def _sync_emails(self, max_results: int = 1, minutes: Optional[int] = None) -> Dict:
         """
-        Sync emails from the last N minutes.
+        Sync most recent emails from inbox.
         
         Args:
-            max_results: Maximum number of emails to fetch (default: 100)
-            minutes: Fetch emails from last N minutes (default: 10)
+            max_results: Maximum number of emails to fetch (default: 1)
+            minutes: NOT USED - we just fetch most recent emails
             
         Returns:
             Dict with sync statistics
@@ -610,18 +603,8 @@ class GmailConnector(BaseConnector):
         if not self.is_authenticated():
             raise Exception("Not authenticated. Please connect Gmail first.")
         
-        # Check if initial sync is needed (first connection)
-        if self.needs_initial_sync():
-            print("🔄 Gmail: Running initial sync (2 weeks of emails)...")
-            return self.initial_sync(max_results=500)  # Use larger limit for initial sync
-        
-        # Calculate timestamp for N minutes ago
-        time_ago = datetime.now() - timedelta(minutes=minutes)
-        # Convert to Unix timestamp for Gmail API
-        timestamp = int(time_ago.timestamp())
-        
-        # Build query - fetch emails from last N minutes in primary inbox
-        query = f'after:{timestamp} in:inbox category:primary -in:spam -in:trash'
+        # Simple query - just get most recent emails from inbox, no time filtering
+        query = f'in:inbox -in:spam -in:trash'
         
         # Fetch emails
         emails = self._fetch_emails(query, max_results)
@@ -647,8 +630,6 @@ class GmailConnector(BaseConnector):
             'success': True,
             'emails_fetched': len(emails),
             'emails_processed': len(processed_emails),
-            'time_window_minutes': minutes,
-            'query_time': time_ago.isoformat(),
             'emails': processed_emails
         }
     
@@ -666,9 +647,9 @@ class GmailConnector(BaseConnector):
         if not self.is_authenticated():
             raise Exception("Not authenticated. Please connect Gmail first.")
         
-        # Build query for last N days - only primary inbox
+        # Build query for last N days - all inbox emails
         start_date = datetime.now() - timedelta(days=days)
-        query = f'after:{start_date.strftime("%Y/%m/%d")} in:inbox category:primary -in:spam -in:trash'
+        query = f'after:{start_date.strftime("%Y/%m/%d")} in:inbox -in:spam -in:trash'
         
         # Fetch emails
         emails = self._fetch_emails(query, max_results)
@@ -741,6 +722,10 @@ class GmailConnector(BaseConnector):
         Returns:
             List of full email objects
         """
+        print(f"\n🔍 [Gmail API] Executing query...")
+        print(f"   - Query: {query}")
+        print(f"   - Max results: {max_results}")
+        
         emails = []
         service = self._get_service()
         
@@ -753,9 +738,18 @@ class GmailConnector(BaseConnector):
             ).execute()
             
             messages = results.get('messages', [])
+            result_size_estimate = results.get('resultSizeEstimate', 0)
+            
+            print(f"   ✅ Gmail API returned {len(messages)} message IDs (resultSizeEstimate: {result_size_estimate})")
+            
+            if len(messages) == 0:
+                print(f"   ⚠️  No messages found matching the query")
+                print(f"   💡 Tip: Check if you have emails in your inbox from the specified time range")
+                return []
             
             # Fetch full message for each ID
-            for msg in messages:
+            print(f"   📥 Fetching full content for {len(messages)} emails...")
+            for i, msg in enumerate(messages, 1):
                 try:
                     message = service.users().messages().get(
                         userId='me',
@@ -763,12 +757,21 @@ class GmailConnector(BaseConnector):
                         format='full'
                     ).execute()
                     emails.append(message)
+                    if i % 10 == 0:  # Progress indicator every 10 emails
+                        print(f"      - Fetched {i}/{len(messages)} emails...")
                 except HttpError as e:
-                    print(f"Error fetching message {msg['id']}: {e}")
+                    print(f"      ❌ Error fetching message {msg['id']}: {e}")
                     continue
+            
+            print(f"   ✅ Successfully fetched {len(emails)} complete emails\n")
         
         except HttpError as e:
-            print(f"Error listing messages: {e}")
+            print(f"   ❌ Gmail API error: {e}")
+            print(f"   Details: {e.resp.status} - {e.reason}\n")
+        except Exception as e:
+            print(f"   ❌ Unexpected error: {e}")
+            import traceback
+            traceback.print_exc()
         
         return emails
     

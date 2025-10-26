@@ -161,8 +161,9 @@ async def auto_sync_calendar():
 @app.on_event("startup")
 async def startup_event():
     """Start background tasks on app startup."""
-    asyncio.create_task(auto_sync_connectors())
-    logger.info("📅 Auto-sync task started (runs every 10 minutes)")
+    # DISABLED: Auto-sync removed - all syncing is now manual only
+    # asyncio.create_task(auto_sync_connectors())
+    logger.info("⚠️  Auto-sync DISABLED - all syncing is manual only")
 
 
 @app.get("/health")
