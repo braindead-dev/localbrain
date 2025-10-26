@@ -28,7 +28,8 @@ from connectors.base_connector import (
     BaseConnector,
     ConnectorMetadata,
     ConnectorStatus,
-    ConnectorData
+    ConnectorData,
+    SyncResult
 )
 
 
@@ -198,6 +199,92 @@ class CalendarConnector(BaseConnector):
             return self._revoke_calendar_access()
         except Exception:
             return False
+    
+    def sync(self, auto_ingest: bool = False, limit: Optional[int] = None) -> SyncResult:
+        """
+        Override BaseConnector sync to handle Calendar-specific logic and use agentic ingestion.
+        
+        On first sync: Fetches 3 months of past events
+        On subsequent syncs: Fetches 7 days of events
+        """
+        try:
+            # Check if this is the first sync
+            last_sync = self._get_last_sync()
+            is_first_sync = last_sync is None
+            
+            # Determine time range based on first sync
+            if is_first_sync:
+                # First sync: Get 3 months of past data
+                days_to_fetch = 90  # 3 months
+                print(f"📅 First Calendar sync - fetching {days_to_fetch} days of events...")
+            else:
+                # Regular sync: Get last 7 days
+                days_to_fetch = 7
+                print(f"📅 Regular Calendar sync - fetching {days_to_fetch} days of events...")
+            
+            # Calculate time range
+            now = datetime.now(timezone.utc)
+            start_time = now - timedelta(days=days_to_fetch)
+            
+            # Fetch events
+            events = self._fetch_events(start_time, now, limit or 500)
+            
+            # Convert to ConnectorData format
+            connector_data = []
+            for event in events:
+                try:
+                    event_data = self._event_to_structured_data(event)
+                    connector_data.append(ConnectorData(
+                        content=event_data['text'],
+                        source_id=event_data['metadata']['source'].split('/')[-1],
+                        timestamp=datetime.fromisoformat(event_data['metadata']['timestamp'].replace('Z', '+00:00')) if 'T' in event_data['metadata']['timestamp'] else datetime.now(),
+                        metadata=event_data['metadata']
+                    ))
+                except Exception as e:
+                    print(f"Error processing event: {e}")
+                    continue
+            
+            print(f"📥 Fetched {len(connector_data)} calendar events")
+            
+            # Optionally ingest using Agentic Ingestion Pipeline
+            ingested_count = 0
+            if auto_ingest and self.vault_path:
+                print(f"🔄 Ingesting {len(connector_data)} events into vault...")
+                ingested_count = self._ingest_data_agentic(connector_data)
+                print(f"✅ Ingested {ingested_count} events")
+            
+            # Update last sync timestamp
+            now_timestamp = datetime.now()
+            self._save_last_sync(now_timestamp)
+            
+            # Update config with sync stats
+            config = self._load_config()
+            config['last_sync'] = now_timestamp.isoformat()
+            config['event_count'] = len(connector_data)
+            config['total_events_processed'] = config.get('total_events_processed', 0) + len(connector_data)
+            if is_first_sync:
+                config['initial_sync_completed'] = True
+                config['initial_sync_date'] = now_timestamp.isoformat()
+            self._save_config(config)
+            
+            return SyncResult(
+                success=True,
+                items_fetched=len(connector_data),
+                items_ingested=ingested_count,
+                last_sync_timestamp=now_timestamp,
+                metadata={
+                    'is_first_sync': is_first_sync,
+                    'days_fetched': days_to_fetch
+                }
+            )
+            
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return SyncResult(
+                success=False,
+                errors=[str(e)]
+            )
     
     # ========================================================================
     # Authentication Methods
@@ -426,9 +513,10 @@ class CalendarConnector(BaseConnector):
             'events': processed_events
         }
 
-    def sync(self, max_results: int = 100, days: int = 7) -> Dict:
+    def _sync_legacy(self, max_results: int = 100, days: int = 7) -> Dict:
         """
-        Sync calendar events from the last N days.
+        Legacy sync method - kept for compatibility.
+        Use the sync() method from BaseConnector instead for agentic ingestion.
         
         Args:
             max_results: Maximum number of events to fetch (default: 100)
@@ -609,6 +697,62 @@ class CalendarConnector(BaseConnector):
             print(f"Error listing calendars: {e}")
         
         return events
+    
+    def _ingest_data_agentic(self, items: List[ConnectorData]) -> int:
+        """
+        Ingest Calendar data using the Agentic Ingestion Pipeline.
+        
+        This uses the sophisticated ingestion system that:
+        - Analyzes content intelligently
+        - Routes to appropriate existing files
+        - Uses proper citations and formatting
+        - Follows vault structure (personal/, career/, etc.)
+        """
+        if not self.vault_path or not items:
+            return 0
+        
+        try:
+            # Import the agentic ingestion pipeline
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+            from agentic_ingest import AgenticIngestionPipeline
+            
+            # Initialize pipeline
+            pipeline = AgenticIngestionPipeline(self.vault_path)
+            
+            ingested_count = 0
+            for item in items:
+                try:
+                    # Prepare source metadata for the pipeline
+                    source_metadata = {
+                        'platform': 'Google Calendar',
+                        'timestamp': item.timestamp.isoformat() if item.timestamp else datetime.now().isoformat(),
+                        'url': item.metadata.get('url'),
+                        'quote': item.metadata.get('quote', item.content[:200] + '...' if len(item.content) > 200 else item.content)
+                    }
+                    
+                    # Use the agentic pipeline to ingest
+                    result = pipeline.ingest(
+                        context=item.content,
+                        source_metadata=source_metadata
+                    )
+                    
+                    if result.get('success', False):
+                        ingested_count += 1
+                        print(f"✅ Ingested Calendar event: {item.metadata.get('quote', 'Event')[:50]}...")
+                    else:
+                        print(f"⚠️  Failed to ingest Calendar event: {result.get('errors', ['Unknown error'])}")
+                        
+                except Exception as e:
+                    print(f"⚠️  Error ingesting Calendar item: {e}")
+                    continue
+            
+            return ingested_count
+            
+        except Exception as e:
+            print(f"⚠️  Agentic ingestion failed, falling back to simple ingestion: {e}")
+            # Fallback to simple ingestion if agentic pipeline fails
+            return self._ingest_data(items)
     
     def _event_to_structured_data(self, event: Dict) -> Dict:
         """

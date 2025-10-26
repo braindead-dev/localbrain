@@ -35,5 +35,25 @@
 
 **Action Required:** Accept team invitation via provided link [2]
 
+
+## PC Backup
+
+**Event:** Recurring backup of PC [7]
+
+**Schedule:** Every Friday, 4:00 PM - 5:00 PM PT [7]
+
+**Calendar:** pranavbalaji9276@gmail.com [7]
+
+
+## PC Backup
+
+**Task:** Back up pc [8]
+
+**Schedule:** Recurring event, Fridays 4:00 PM - 5:00 PM PST [8]
+
+**Next Occurrence:** August 1, 2025 [8]
+
+**Calendar:** pranavbalaji9276@gmail.com [8]
+
 ## Related
 

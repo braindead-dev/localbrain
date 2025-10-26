@@ -24,5 +24,18 @@
 **Environmental Impact:** Saved 1454 grams of CO2 emissions riding with Waymo's all-electric fleet [1]
 
 
+
+## Flight to Indianapolis
+
+**Date:** August 22, 2025 [2]
+
+**Flight:** American Airlines AA 4636 [2]
+
+**Departure:** 8:25 AM PDT from Boston (BOS) [2]
+
+**Arrival:** 11:03 AM PDT [2]
+
+**Destination:** Indianapolis [2]
+
 ## Related
 

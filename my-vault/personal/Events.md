@@ -293,5 +293,109 @@
 
 **Check-in Status:** Check-ins on hold as of October 25, 2025; announcement pending for reopening [67]
 
+
+## TIME TICJET TMR
+
+**Date:** July 28, 2025 [68]
+
+**Time:** 12:30 PM - 1:30 PM (PDT) [68]
+
+**Duration:** 1 hour [68]
+
+**Calendar:** pranavbalaji9276@gmail.com [68]
+
+
+## ECE Purdue Time Ticket
+
+**Event:** ECE Purdue Time Ticket [69]
+
+**Date:** July 29, 2025 [69]
+
+**Time:** 11:00 AM - 12:00 PM (PDT) [69]
+
+**Calendar:** pranavbalaji9276@gmail.com [69]
+
+
+## LeetCode Premium Study Session
+
+**Date:** August 1, 2025 [70]
+
+**Time:** 5:30 PM - 6:30 PM PDT [70]
+
+**Duration:** 1 hour [70]
+
+
+## LeetCode Premium
+
+**Date:** August 6, 2025 [71]
+
+**Time:** 2:00 PM - 3:00 PM (PDT) [71]
+
+**Duration:** 1 hour [71]
+
+**Calendar:** pranavbalaji9276@gmail.com [71]
+
+
+## The Naked Gun
+
+**Event:** The Naked Gun movie screening [72]
+
+**Date:** August 14, 2025 [72]
+
+**Time:** 6:50 PM - 7:50 PM [72]
+
+**Location:** AMC DINE-IN Framingham 16, 22 Flutie Pass, Framingham, MA 01701 [72]
+
+**Duration:** 1 hour [72]
+
+
+
+
+## Maynard Golf Course Reservation
+
+**Date:** August 21, 2025 [73]
+
+**Time:** 1:48 PM - 2:48 PM (PDT) [73]
+
+**Location:** Maynard Golf Course [73]
+
+**Status:** Accepted [73]
+
+
+
+
+## ECE 270 Lecture
+
+**Course:** ECE 270 [74]
+
+**Schedule:** Mondays, Wednesdays, Fridays 1:30 PM - 2:20 PM (recurring) [74]
+
+**Location:** PHYS 114 [74]
+
+**Calendar:** https://www.google.com/calendar/event?eid=NGJhNHYxdGNhcjVxN3M2NTM0Y2ZxcG5tZ21fMjAyNTA4MjVUMjAzMDAwWiBwcmFuYXZiYWxhamk5Mjc2QG0 [74]
+
+
+## TIME TICJET TMR
+
+**Date:** July 28, 2025 [75]
+
+**Time:** 12:30 PM - 1:30 PM PST [75]
+
+**Duration:** 1 hour [75]
+
+**Location:** TBD [75]
+
+
+
+## ECE Purdue Time Ticket
+
+**Event:** ECE Purdue Time Ticket [76]
+
+**Date:** July 29, 2025 [76]
+
+**Time:** 11:00 AM - 12:00 PM (PDT) [76]
+
+**Location:** TBD [76]
+
 ## Related
 
