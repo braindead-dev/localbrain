@@ -15,261 +15,224 @@ This gap is only getting bigger as we move to an AI-adjusted world.
 
 LocalBrain is the open-source layer that fixes this gap; it automatically organizes your personal digital footprint into a **local, source-backed, readable knowledge base** that any AI app can query to understand you, safely and privately.
 
-<img width="1035" height="543" alt="Screenshot 2025-10-26 at 3 05 40 AM" src="https://github.com/user-attachments/assets/87795413-06c2-4da5-8f74-ece0c9fbb09f" />
+<img width="1035" height="543" alt="high level architecture" src="https://github.com/user-attachments/assets/87795413-06c2-4da5-8f74-ece0c9fbb09f" />
 
-## What is LocalBrain?
+## Architecture
 
-Using connector plugins, LocalBrain automatically checks for new info about you from your communication channels (Gmail, Discord, etc.). Any time something new about your life is revealed, LocalBrain automatically ingests it 
+### Data Flow
 
-**Ask questions like:**
-- "What internship applications did I submit?"
-- "Find emails about the Q3 launch"
-- "Show me notes about machine learning"
-
-**Get instant answers** from your personal knowledge base.
-
----
-
-## ✨ Features
-
-### 🔍 **Agentic Search**
-- Natural language queries powered by Claude
-- 95% retrieval accuracy on benchmark tests
-- Multi-tool agentic system (grep, read, analyze)
-
-### 🔌 **Universal Connectors**
-Plugin system for syncing external data:
-- **Gmail** - Emails and threads
-- **Discord** - DMs and channels
-- **Browser History** - Web activity
-- **iMessage** - Text conversations (coming soon)
-- **Custom** - Easy to add your own!
-
-### 🎯 **Claude Desktop Integration**
-- MCP (Model Context Protocol) extension
-- Search your vault directly from Claude
-- Open files, list directories, generate summaries
-
-### 🚀 **Smart Ingestion**
-- Automatic chunking with citations
-- Metadata extraction
-- Multi-stage summarization
-- Source tracking
-
----
-
-## 🏗️ Architecture
-
+**Search Query:**
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Claude Desktop                        │
-│                  (MCP Extension)                         │
-└──────────────────────┬──────────────────────────────────┘
-                       │ stdio
-┌──────────────────────▼──────────────────────────────────┐
-│                  MCP Server (Port 8766)                  │
-│           Pure proxy - auth, audit, routing              │
-└──────────────────────┬──────────────────────────────────┘
-                       │ HTTP
-┌──────────────────────▼──────────────────────────────────┐
-│              Daemon Backend (Port 8765)                  │
-│  • Agentic Search (Claude + Tools)                      │
-│  • Connector Manager (Plugin System)                    │
-│  • Ingestion Pipeline                                   │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-           ┌───────────┴───────────┐
-           │                       │
-┌──────────▼──────────┐  ┌────────▼─────────┐
-│   Markdown Vault    │  │    Connectors    │
-│  (Your Knowledge)   │  │  (Gmail, Discord) │
-└─────────────────────┘  └──────────────────┘
+User types "conferences attended"
+  ↓
+Frontend POST /protocol/search {"q": "conferences attended"}
+  ↓
+Daemon receives query
+  ↓
+Agentic search: LLM generates grep pattern "conference|attended|event"
+  ↓
+Execute ripgrep on vault files
+  ↓
+Read relevant file sections
+  ↓
+Synthesize answer with citations
+  ↓
+Return JSON response with results + metadata
 ```
 
----
-
-## 🚀 Quick Start
-
-**Get running in 5 minutes!**
-
-```bash
-# 1. Clone
-git clone https://github.com/yourusername/localbrain.git
-cd localbrain
-
-# 2. Install backend
-cd electron/backend
-pip install -r requirements.txt
-
-# 3. Configure
-mkdir -p ~/.localbrain
-echo '{"vault_path": "'$HOME'/my-vault", "port": 8765}' > ~/.localbrain/config.json
-export ANTHROPIC_API_KEY="your-key"
-
-# 4. Create test vault
-mkdir -p ~/my-vault
-echo "# Test\nMachine learning project notes" > ~/my-vault/test.md
-
-# 5. Start
-python src/daemon.py
+**Ingestion:**
+```
+Connector fetches new data (e.g., Gmail emails)
+  ↓
+Convert to ConnectorData format (title, content, timestamp, source_url)
+  ↓
+LLM analyzes: "Where does this belong in the vault?"
+  ↓
+Generate structured markdown with ## sections
+  ↓
+Fuzzy match existing files/sections (tolerance for typos)
+  ↓
+Apply changes to vault files
+  ↓
+Validate markdown structure (title, citations, sections)
+  ↓
+If errors: regenerate with feedback (max 3 retries)
+  ↓
+Save citation metadata to .json sidecar
 ```
 
-**First search:**
-```bash
-curl -X POST http://localhost:8765/protocol/search \
-  -d '{"q": "machine learning"}'
-```
+LocalBrain is a three-layer system: **Electron frontend** (macOS app) → **FastAPI daemon** → **hybrid markdown vault**. Also an optional **MCP proxy server** enables AI apps to query the vault.
 
-**[Full setup guide →](docs/QUICKSTART.md)**
+### Core Components
 
----
+**1. FastAPI Daemon**
+- Main service running as background process
+- Handles agentic search, ingestion, and connector management
+- Auto-syncs connected data sources every 10 minutes
+- Stateless HTTP API with CORS for frontend access
 
-## 📚 Documentation
+**2. Agentic Search Engine**
+- Uses Claude Haiku (claude-haiku-4-5-20251001) with tool calling
+    - *we chose this model since its fast, cheap, and accurate, but it can be swapped out for any LLM*
+- Tools: `grep_vault` (ripgrep-based regex search) and `read_file`
+- LLM decides search strategy: decompose query → generate patterns → grep files → read relevant sections → synthesize answer
+- No vector embeddings, no similarity scoring—pure regex + LLM reasoning
+- 95% accuracy on LongMemEval benchmark (19/20 questions)
+    - *this is a random sample of questions from the benchmark, not a full evaluation*
+- We took inspiration from how SoTA coding agents retrieve the most relevant info while being blazingly fast
 
-- **[Architecture Overview](docs/ARCHITECTURE.md)** - System design and components
-- **[Search System](docs/SEARCH.md)** - How agentic search works
-- **[Connectors](docs/CONNECTORS.md)** - Plugin system for external data
-- **[MCP Extension](docs/MCP.md)** - Claude Desktop integration
-- **[API Reference](docs/API.md)** - REST endpoints
+**3. Ingestion Pipeline**
+- LLM analyzes raw data (emails, messages, docs) and updates the structured markdown filesystem to include the new info if its releavant to the user
+- Fuzzy matching for section/file names using Levenshtein distance
+- Validation feedback loop: attempts ingestion → checks markdown structure → retries if errors (max 3 attempts)
+- Citations tracked in `.json` sidecars with source URLs, timestamps, and metadata
 
----
+**4. Connector Plugin System**
+- We made a standardized connector framework, so all connector plugins work nicely and are relatively easy to develop
+- Source can either be external (over the web, like Gmail, Discord, etc) or pull from a local source (browser history, iMessage database, etc)
+- Auto-discovery: drop `<name>_connector.py` in `connectors/<name>/` and it's loaded on startup
+- Interface: `BaseConnector` with 4 methods (`get_metadata`, `has_updates`, `fetch_updates`, `get_status`)
+- Generic REST routes (`/api/connectors/<id>/sync`, `/status`, etc.) work for all connectors
 
-## 🎯 Use Cases
+**5. MCP Proxy Server**
+- This is how AI apps can safely query your local filesystem knowledge base
+- **Pure format translator**—zero business logic
+- Bridges Claude Desktop (stdio) ↔ Daemon (HTTP)
+- Handles authentication (API keys) and audit logging
+- Tools exposed to Claude: `search`, `open`, `summarize`, `list`
+- Packaged as `.mcpb` extension for one-click Claude Desktop installation
 
-### Personal Knowledge Management
-- Search across emails, notes, and documents
-- Find information instantly without manual organization
-- Track projects, ideas, and research
+**6. Electron Frontend**
+- Next.js app wrapped in Electron for native desktop experience
+- Real-time status indicators for daemon and MCP server health
+- Resizable panels: file tree, editor, chat, connections, notes
+- Dark mode with shadcn/ui components and Tailwind CSS
 
-### Professional Work
-- Quick access to past conversations
-- Project documentation search
-- Meeting notes and action items
+### Why This Architecture?
 
-### Research & Learning
-- Aggregate research papers and notes
-- Cross-reference sources
-- Build knowledge graphs
+**No vector database for search:**
+- Ripgrep is instant (<100ms on 10K files)
+- LLM generates optimal search patterns (better than embedding similarity)
+- Zero indexing overhead, works on any markdown vault
+- Transparent: see exactly what matched via grep results
 
----
+**LLM-powered ingestion:**
+- Handles ambiguity and context (e.g., "Q3 launch" → finds correct project section)
+- Self-correcting via validation loops (95%+ success rate)
+- Maintains human-readable markdown structure
+- No brittle rules or templates—adapts to any content
 
-## 🧪 Performance
+**Plugin architecture:**
+- Add new connectors without touching daemon code
+- Generic API routes scale to infinite connectors
+- Easy testing: each connector is isolated
 
-**Benchmark**: LongMemEval test suite (20 questions)
+**MCP as pure proxy:**
+- All intelligence in daemon (single source of truth)
+- MCP just translates formats (no duplicate logic)
+- Easy to debug: test daemon directly, MCP is transparent layer
 
-| Metric | Score |
-|--------|-------|
-| **Retrieval Accuracy** | 95% (19/20) |
-| **Average Query Time** | 2-4 seconds |
-| **False Positives** | 1/20 |
+**Markdown as storage:**
+- Human-readable and editable
+- Git-friendly (version control, diffs, branches)
+- Portable (works with any markdown editor)
+- No vendor lock-in, no database corruption
 
----
+### Performance Characteristics
 
-## 🔌 Connector System
+- **Search latency:** 1-3s (ripgrep ~50ms + LLM calls ~200ms each)
+- **Ingestion speed:** ~5s per item (LLM analysis + fuzzy matching + validation)
+- **Memory footprint:** ~200MB (FastAPI + Anthropic SDK)
+- **Disk usage:** Vault size + ~10% overhead for citation JSON files
+- **Concurrent requests:** FastAPI handles 100+ RPS easily
 
-Add new data sources by implementing 4 methods:
+### Tech Stack
 
-```python
-from connectors.base_connector import BaseConnector
+**Backend:**
+- FastAPI (async Python web framework)
+- Anthropic SDK (Claude Haiku API client)
+- ripgrep (Rust-based regex search, 100x faster than grep)
+- Levenshtein (fuzzy string matching for section names)
+- python-dotenv (environment configuration)
 
-class MyConnector(BaseConnector):
-    def get_metadata(self) -> ConnectorMetadata:
-        # Connector info
-        pass
-    
-    def has_updates(self, since=None) -> bool:
-        # Check for new data
-        pass
-    
-    def fetch_updates(self, since=None, limit=None) -> List[ConnectorData]:
-        # Fetch and convert data
-        pass
-    
-    def get_status(self) -> ConnectorStatus:
-        # Return connection status
-        pass
-```
+**Frontend:**
+- Next.js 15 (React SSR framework)
+- Electron 33 (native desktop wrapper)
+- TailwindCSS (utility-first styling)
+- shadcn/ui (component library)
+- Motion/Framer Motion (animations)
 
-Drop in `connectors/<name>/` and it's auto-discovered!
+**Integration:**
+- Model Context Protocol (Claude Desktop stdio bridge)
+- OAuth 2.0 (Gmail authentication)
+- Discord.py (Discord API wrapper)
 
-See [Connector Plugin Architecture](electron/backend/src/connectors/PLUGIN_ARCHITECTURE.md) for details.
-
----
-
-## 🛠️ Tech Stack
-
-**Backend**
-- FastAPI - REST API
-- Claude Haiku - Agentic search
-- ChromaDB - Vector storage (optional)
-- Python 3.10+
-
-**Frontend**
-- Next.js - Web interface
-- Electron - Desktop app
-- TailwindCSS - Styling
-
-**Integration**
-- MCP Protocol - Claude Desktop
-- OAuth 2.0 - Gmail connector
-- Discord.py - Discord connector
-
----
-
-## 📦 Project Structure
+### Project Structure
 
 ```
 localbrain/
-├── docs/                    # Documentation
 ├── electron/
-│   ├── app/                 # Next.js frontend
-│   └── backend/             # FastAPI backend
+│   ├── app/                        # Next.js frontend
+│   │   ├── src/
+│   │   │   ├── app/page.tsx       # Main app layout
+│   │   │   └── components/        # React components
+│   │   └── package.json           # Frontend deps
+│   │
+│   └── backend/                    # Python backend
 │       ├── src/
-│       │   ├── daemon.py    # Main service
-│       │   ├── agentic_search.py  # Search engine
-│       │   ├── connectors/  # Plugin system
-│       │   └── core/
-│       │       └── mcp/     # Claude Desktop integration
+│       │   ├── daemon.py           # Main FastAPI service
+│       │   ├── agentic_search.py   # Search engine (LLM + ripgrep)
+│       │   ├── agentic_ingest.py   # Ingestion pipeline (LLM + fuzzy match)
+│       │   ├── connectors/         # Plugin system
+│       │   │   ├── base_connector.py
+│       │   │   ├── connector_manager.py
+│       │   │   ├── gmail/
+│       │   │   ├── browser/
+│       │   │   └── ...
+│       │   ├── core/
+│       │   │   ├── mcp/            # MCP proxy server
+│       │   │   │   ├── server.py
+│       │   │   │   ├── stdio_server.py
+│       │   │   │   └── tools.py
+│       │   │   └── ingestion/      # Ingestion utilities
+│       │   └── utils/              # Shared utilities
 │       └── requirements.txt
-├── my-vault/                # Example vault
-└── README.md                # This file
+│
+└── my-vault/                       # Markdown knowledge base
+    ├── projects/
+    ├── personal/
+    └── ...
 ```
 
----
+### Implementation Details
 
-## 🤝 Contributing
+**Agentic Search Prompt Strategy:**
+- Ultra-concise system prompt (OpenCode-inspired)
+- Example-driven: shows LLM exactly how to use tools
+- "Minimize output, answer directly" → reduces token usage
+- Forces LLM to check line numbers before reading full files
 
-We welcome contributions! Areas we'd love help with:
+**Fuzzy Matching Algorithm:**
+- Levenshtein distance with configurable threshold (default: 0.7 similarity)
+- Tries exact match first, falls back to fuzzy if no match
+- Prevents duplicate sections from slight name variations
 
-- **New connectors** (Slack, Notion, Todoist, etc.)
-- **Search improvements** (better retrieval, ranking)
-- **UI enhancements** (better visualization)
-- **Performance optimization**
+**Validation Loop:**
+- After ingestion: parse markdown, check for required sections (# title, ## Related)
+- Verify citation markers `[1]` match entries in `.json` file
+- If errors found: pass to LLM with specific error messages
+- Max 3 retries → fail gracefully with detailed error log
 
-See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.
+**Connector Auto-Discovery:**
+- Scan `connectors/` directory for `*_connector.py` files
+- Import and instantiate classes inheriting from `BaseConnector`
+- Register REST routes dynamically using FastAPI's router system
+- Maintain singleton `ConnectorManager` for lifecycle management
 
----
+**MCP Extension Packaging:**
+- `stdio_server.py` copied into `extension/server/` directory
+- `manifest.json` declares tool schemas (JSON Schema format)
+- `package.sh` creates `.mcpb` bundle (ZIP with manifest)
+- Claude Desktop loads bundle, spawns stdio server subprocess
 
-## 📝 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Built with [Claude](https://anthropic.com) by Anthropic
-- Inspired by personal knowledge management systems
-- Thanks to the open-source community
-
----
-
-## 💬 Support
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/localbrain/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/localbrain/discussions)
-- **Email**: support@localbrain.dev
-
----
-
-**Made with ❤️ for personal knowledge management**
+This architecture optimizes for **transparency** (see what's happening), **simplicity** (minimal abstractions), and **extensibility** (easy to add connectors/features). The markdown vault is the single source of truth, everything else is stateless logic.
