@@ -236,3 +236,7 @@ localbrain/
 - Claude Desktop loads bundle, spawns stdio server subprocess
 
 This architecture optimizes for **transparency** (see what's happening), **simplicity** (minimal abstractions), and **extensibility** (easy to add connectors/features). The markdown vault is the single source of truth, everything else is stateless logic.
+
+---
+
+Made with ❤️ by Henry Wang, Sid Songirkar, Taymur Faruqui, and Pranav Balaji
