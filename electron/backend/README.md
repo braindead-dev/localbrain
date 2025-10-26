@@ -1,80 +1,110 @@
 # LocalBrain Backend
 
-Python backend for ingestion and search.
+FastAPI backend service with agentic search, connector system, and MCP integration.
 
 ---
 
-## Features
-
-### 1. AI Ingestion
-```bash
-open "localbrain://ingest?text=Got offer from NVIDIA&platform=Email"
-```
-
-- Analyzes content with Claude
-- Fuzzy matches to existing files
-- Updates or creates files
-- Adds citations automatically
-- 95% success rate
-
-### 2. Natural Language Search
-```bash
-open "localbrain://search?q=What was my NVIDIA offer?"
-```
-
-- Returns context chunks + citations (not LLM synthesis)
-- No embeddings, just ripgrep + LLM
-- ~3-4 seconds per query
-- OpenCode-inspired
-- **Context layer for AI apps**
-
----
-
-## Setup
+## Quick Start
 
 ```bash
-conda create -n localbrain python=3.10 -y
-conda activate localbrain
-pip install fastapi uvicorn anthropic python-dotenv
-echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
-```
+# Install dependencies
+pip install -r requirements.txt
 
-## Running
+# Configure vault
+echo '{"vault_path": "/path/to/vault", "port": 8765}' > ~/.localbrain/config.json
 
-```bash
-# Via Electron (auto-starts)
-cd ..
-npm run dev
+# Set API key
+export ANTHROPIC_API_KEY="your-key"
 
-# Or standalone
+# Start daemon
 python src/daemon.py
 ```
 
----
-
-## Technical Details
-
-### Model
-- **claude-haiku-4-5-20251001** for both ingestion and search
-- Fast (~1-2s response)
-- Cost-effective (~$0.01 per operation)
-
-### Ingestion Pipeline
-- Fuzzy matching (handles typos)
-- Validation loops (self-correcting)
-- Retry mechanism (3 attempts max)
-- 95% success rate
-
-### Search Strategy
-- OpenCode-inspired (no embeddings)
-- Ripgrep + LLM with tools
-- grep_vault and read_file tools
-- ~3-4 seconds per query
+Server runs on **http://localhost:8765**
 
 ---
 
-## Documentation
+## Key Components
 
-- `INGESTION.md` - Ingestion system guide
-- `CITATION_SYSTEM.md` - Citation format
-- `SETUP.md` - Setup instructions
+### daemon.py
+Main service - handles all requests
+
+### agentic_search.py
+Intelligent search using Claude + tools
+
+### connectors/
+Plugin system for external data sources
+- Gmail
+- Discord  
+- Browser History
+- Easy to add more!
+
+### core/mcp/
+Claude Desktop integration (MCP protocol)
+
+---
+
+## API Endpoints
+
+### Search
+```bash
+POST /protocol/search
+Body: {"q": "your query"}
+```
+
+### File Operations
+```bash
+GET /file/{filepath}
+GET /list/{path}
+```
+
+### Connectors
+```bash
+GET /connectors
+POST /connectors/{id}/sync
+GET /connectors/{id}/status
+```
+
+See [API docs](../../docs/API.md) for complete reference.
+
+---
+
+## Testing
+
+```bash
+# Unit tests
+pytest
+
+# Test search
+curl -X POST http://localhost:8765/protocol/search \
+  -d '{"q": "test"}'
+```
+
+---
+
+## Configuration
+
+**Config file**: `~/.localbrain/config.json`
+```json
+{
+  "vault_path": "/Users/you/vault",
+  "port": 8765,
+  "auto_start": false
+}
+```
+
+**Environment**:
+- `ANTHROPIC_API_KEY` - Required for search
+- `MCP_API_KEY` - For MCP server (default: dev-key-local-only)
+
+---
+
+## Architecture
+
+See [Architecture docs](../../docs/ARCHITECTURE.md) for detailed design.
+
+**Key principles:**
+- Agentic search (Claude + tools)
+- Plugin-based connectors
+- Pure proxy MCP layer
+- Local-first storage
