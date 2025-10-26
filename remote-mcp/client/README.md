@@ -1,117 +1,71 @@
 # MCP Tunnel Client
 
-**Run this on your local machine (Mac)**
+This client runs on your local machine and creates a secure tunnel to the remote bridge server.
 
-Connects your local MCP server to the remote bridge, making your LocalBrain accessible from anywhere.
+## Quick Start
 
-## What It Does
-
-- Connects to remote bridge via WebSocket tunnel
-- Forwards JSON-RPC requests from bridge to your local MCP server (port 8766)
-- Returns responses back through the tunnel
-- Keeps connection alive with ping/pong
-
-## Prerequisites
-
-Your local MCP server must be running:
-```bash
-cd /Users/henry/Documents/GitHub/localbrain/electron/backend
-python src/core/mcp/extension/start_servers.py
-```
-
-This starts:
-- Daemon on port 8765
-- MCP server on port 8766
-
-## Setup (One-Time)
-
-### 1. Generate Credentials
+### 1. Generate credentials
 
 ```bash
-# Generate USER_ID
+# Generate unique user ID
 python3 -c "import uuid; print(str(uuid.uuid4()))"
+# Example output: a1b2c3d4-e5f6-7890-abcd-ef1234567890
 
-# Generate REMOTE_API_KEY
+# Generate secure API key
 python3 -c "import secrets; print('lb_' + secrets.token_urlsafe(32))"
+# Example output: lb_abc123xyz789_secure_random_string
 ```
 
-**Save these values!** You'll need the API key for MCP clients.
-
-### 2. Configure Environment
+### 2. Configure client
 
 ```bash
-cd /Users/henry/Documents/GitHub/localbrain/remote-mcp/client
+cd client
 cp .env.example .env
 nano .env
 ```
 
-Fill in:
+Add your credentials:
 ```env
-BRIDGE_URL=ws://146.190.120.44:8767/tunnel/connect
-LOCAL_MCP_URL=http://127.0.0.1:8766
-LOCAL_API_KEY=dev-key-local-only
-USER_ID=<your-generated-uuid>
-REMOTE_API_KEY=<your-generated-api-key>
-KEEPALIVE_INTERVAL=30
-SSL_VERIFY=false
+USER_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+REMOTE_API_KEY=lb_abc123xyz789_secure_random_string
 ```
 
-### 3. Install Dependencies
+### 3. Install dependencies
 
 ```bash
-# Already installed if you have conda environment
-# If not:
-pip install websockets httpx loguru python-dotenv
+pip install aiohttp python-dotenv
 ```
 
-## Daily Usage
+### 4. Start your local MCP server
 
-### Start Tunnel
-
-**Terminal 1 - Local MCP Server:**
+**Terminal 1:**
 ```bash
-cd /Users/henry/Documents/GitHub/localbrain/electron/backend
+cd /Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/electron/backend
 python src/core/mcp/extension/start_servers.py
 ```
 
 Wait for:
 ```
-✅ Daemon running on http://127.0.0.1:8765
-✅ MCP Server running on http://127.0.0.1:8766
+✅ MCP server started (PID: xxxxx)
 ```
 
-**Terminal 2 - Tunnel Client:**
+### 5. Start tunnel client
+
+**Terminal 2:**
 ```bash
-cd /Users/henry/Documents/GitHub/localbrain/remote-mcp/client
-/Users/henry/miniconda3/bin/python mcp_tunnel_client.py
+cd /Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/remote-mcp/client
+python mcp_tunnel_client.py
 ```
 
-Expected output:
+You should see:
 ```
-✅ Local MCP server is running
 ✅ Tunnel established successfully!
+  User: a1b2c3d4-e5f6-7890-abcd-ef1234567890
   Remote MCP Endpoint: http://146.190.120.44:8767/mcp
-
-Your LocalBrain is now accessible via MCP at:
-  http://146.190.120.44:8767/mcp
-
-Configure MCP clients with:
-  "url": "http://146.190.120.44:8767/mcp"
-  "headers": {"Authorization": "Bearer lb_YOUR_API_KEY"}
+  Authorization: Bearer lb_abc123xyz789_secure_random_string
 ```
 
-### Stop Tunnel
-
-Just press `Ctrl+C` in the tunnel terminal.
-
-## Configure MCP Clients
-
-### Your Remote Endpoint
-
-```
-URL: http://146.190.120.44:8767/mcp
-API Key: <your-REMOTE_API_KEY>
-```
+## Using with MCP Clients
 
 ### Claude Desktop
 
@@ -121,99 +75,145 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "localbrain-remote": {
-      "command": "python3",
-      "args": ["-c", "
-import sys, json, http.client
-API_URL = '146.190.120.44:8767'
-API_KEY = 'YOUR_REMOTE_API_KEY'
-
-for line in sys.stdin:
-    conn = http.client.HTTPConnection(API_URL)
-    conn.request('POST', '/mcp', line, {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {API_KEY}'
-    })
-    resp = conn.getresponse()
-    print(resp.read().decode())
-    sys.stdout.flush()
-"]
+      "command": "curl",
+      "args": [
+        "-X", "POST",
+        "-H", "Authorization: Bearer YOUR_REMOTE_API_KEY",
+        "-H", "Content-Type: application/json",
+        "-d", "@-",
+        "http://146.190.120.44:8767/mcp"
+      ]
     }
   }
 }
 ```
 
-Replace `YOUR_REMOTE_API_KEY` with your actual key from `.env`.
+### Cursor
 
-### Cursor / Continue
+Add to your Cursor settings:
 
-Add to settings:
 ```json
 {
-  "mcp": {
-    "servers": {
-      "localbrain": {
-        "url": "http://146.190.120.44:8767/mcp",
-        "headers": {
-          "Authorization": "Bearer YOUR_REMOTE_API_KEY"
-        }
+  "mcp.servers": {
+    "localbrain": {
+      "endpoint": "http://146.190.120.44:8767/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_REMOTE_API_KEY"
       }
     }
   }
 }
 ```
 
-## Testing
+### Testing
 
-Test from anywhere:
+Test your connection:
+
 ```bash
 curl -X POST http://146.190.120.44:8767/mcp \
   -H "Authorization: Bearer YOUR_REMOTE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "tools/call",
-    "params": {
-      "name": "search",
-      "arguments": {
-        "query": "test search",
-        "top_k": 3
-      }
-    }
-  }'
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
+## Automation
+
+### Start with shell script
+
+Create `start_tunnel.sh`:
+
+```bash
+#!/bin/bash
+
+# Start local MCP server in background
+cd /path/to/electron/backend
+python src/core/mcp/extension/start_servers.py &
+MCP_PID=$!
+
+# Wait for MCP server to start
+sleep 3
+
+# Start tunnel client
+cd /path/to/remote-mcp/client
+python mcp_tunnel_client.py
+
+# Cleanup on exit
+kill $MCP_PID
+```
+
+Make executable:
+```bash
+chmod +x start_tunnel.sh
+./start_tunnel.sh
+```
+
+### macOS Launch Agent (Auto-start)
+
+Create `~/Library/LaunchAgents/com.localbrain.tunnel.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.localbrain.tunnel</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/path/to/remote-mcp/client/mcp_tunnel_client.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/path/to/remote-mcp/client</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+</dict>
+</plist>
+```
+
+Load:
+```bash
+launchctl load ~/Library/LaunchAgents/com.localbrain.tunnel.plist
 ```
 
 ## Troubleshooting
 
-### "Cannot connect to local MCP server"
+### Tunnel won't connect
 
-Start your local MCP server first:
-```bash
-cd /Users/henry/Documents/GitHub/localbrain/electron/backend
-python src/core/mcp/extension/start_servers.py
-```
+1. **Check local MCP server**:
+   ```bash
+   curl http://127.0.0.1:8766/health
+   ```
 
-### "Connection failed"
+2. **Check remote server**:
+   ```bash
+   curl http://146.190.120.44:8767/health
+   ```
 
-Check bridge is running on server:
-```bash
-curl http://146.190.120.44:8767/health
-```
+3. **Verify credentials** in `.env`
 
-### Wrong credentials
+4. **Check network**:
+   ```bash
+   ping 146.190.120.44
+   ```
 
-Regenerate and update `.env`:
-```bash
-python3 -c "import uuid; print(str(uuid.uuid4()))"
-python3 -c "import secrets; print('lb_' + secrets.token_urlsafe(32))"
-```
+### Connection drops frequently
 
-## Files
+- Increase `PING_INTERVAL` in `.env`
+- Check network stability
+- Review server logs
 
-- `mcp_tunnel_client.py` - Tunnel client
-- `.env` - Your credentials (not in git)
-- `README.md` - This file
+### "No active tunnel" error
 
----
+- Ensure tunnel client is running
+- Check credentials match server configuration
+- Restart both MCP server and tunnel client
 
-**Keep this running whenever you want remote MCP access to your LocalBrain.**
+## Security Notes
+
+1. **Keep your API key secret** - Never share or commit to git
+2. **Use unique USER_ID** - Don't reuse across devices
+3. **Rotate keys regularly** - Generate new keys periodically
+4. **Monitor access** - Check server logs for unauthorized access

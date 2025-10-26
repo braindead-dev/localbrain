@@ -63,7 +63,7 @@ class ServerLauncher:
             self.daemon_process = subprocess.Popen(
                 [sys.executable, "src/daemon.py"],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
                 universal_newlines=True,
                 bufsize=1
             )
@@ -80,7 +80,7 @@ class ServerLauncher:
             self.mcp_process = subprocess.Popen(
                 [sys.executable, "-m", "src.core.mcp.server"],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
                 universal_newlines=True,
                 bufsize=1
             )
@@ -159,12 +159,26 @@ class ServerLauncher:
             # Check daemon
             if self.daemon_process and self.daemon_process.poll() is not None:
                 print("\n❌ Daemon process died unexpectedly!")
+                # Show stderr if available
+                if self.daemon_process.stderr:
+                    stderr = self.daemon_process.stderr.read()
+                    if stderr:
+                        print(f"Daemon error output:\n{stderr}")
                 self.stop_servers()
                 sys.exit(1)
 
             # Check MCP server
             if self.mcp_process and self.mcp_process.poll() is not None:
                 print("\n❌ MCP server process died unexpectedly!")
+                # Show stderr if available
+                if self.mcp_process.stderr:
+                    stderr = self.mcp_process.stderr.read()
+                    if stderr:
+                        print(f"MCP server error output:\n{stderr}")
+                if self.mcp_process.stdout:
+                    stdout = self.mcp_process.stdout.read()
+                    if stdout:
+                        print(f"MCP server stdout:\n{stdout}")
                 self.stop_servers()
                 sys.exit(1)
 

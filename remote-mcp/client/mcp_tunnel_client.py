@@ -2,293 +2,343 @@
 """
 MCP Tunnel Client
 
-Connects local MCP server to remote MCP-compliant bridge via WebSocket tunnel.
-Forwards JSON-RPC 2.0 messages between local MCP server and remote bridge.
+This client runs on your local machine and:
+1. Connects to the remote bridge server via WebSocket
+2. Authenticates with your credentials
+3. Forwards MCP requests to your local MCP server (127.0.0.1:8766)
+4. Sends responses back through the tunnel
+
+This allows remote MCP clients to access your local vault securely.
 """
 
 import asyncio
 import json
+import logging
 import os
 import sys
+import signal
+from datetime import datetime
 from typing import Optional, Dict, Any
 from pathlib import Path
 
-import httpx
-import websockets
-from loguru import logger
+import aiohttp
+from aiohttp import ClientSession, ClientWebSocketResponse
 from dotenv import load_dotenv
 
-# Load environment
-dotenv_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path)
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Configuration
+REMOTE_SERVER = os.getenv('REMOTE_SERVER', 'ws://146.190.120.44:8767/tunnel')
+LOCAL_MCP_SERVER = os.getenv('LOCAL_MCP_SERVER', 'http://127.0.0.1:8766')
+USER_ID = os.getenv('USER_ID')
+REMOTE_API_KEY = os.getenv('REMOTE_API_KEY')
+PING_INTERVAL = int(os.getenv('PING_INTERVAL', '30'))  # seconds
+RECONNECT_DELAY = int(os.getenv('RECONNECT_DELAY', '5'))  # seconds
+MAX_RECONNECT_ATTEMPTS = int(os.getenv('MAX_RECONNECT_ATTEMPTS', '10'))
 
 
 class MCPTunnelClient:
-    """Tunnel client for MCP-compliant bridge"""
+    """Tunnel client for forwarding MCP requests."""
     
-    def __init__(
-        self,
-        bridge_url: str,
-        local_mcp_url: str,
-        user_id: str,
-        api_key: str,
-        keepalive_interval: int = 30
-    ):
-        self.bridge_url = bridge_url
-        self.local_mcp_url = local_mcp_url
-        self.user_id = user_id
-        self.api_key = api_key
-        self.keepalive_interval = keepalive_interval
-        
-        self.websocket: Optional[websockets.WebSocketClientProtocol] = None
-        self.http_client: Optional[httpx.AsyncClient] = None
+    def __init__(self):
+        self.session: Optional[ClientSession] = None
+        self.ws: Optional[ClientWebSocketResponse] = None
         self.running = False
-        self.tunnel_id: Optional[str] = None
+        self.reconnect_attempts = 0
+        self.ping_task = None
         
-        logger.info("MCPTunnelClient initialized")
-        logger.info(f"  Bridge: {bridge_url}")
-        logger.info(f"  Local MCP: {local_mcp_url}")
-        logger.info(f"  User ID: {user_id}")
+        # Validate configuration
+        if not USER_ID or not REMOTE_API_KEY:
+            logger.error("Missing USER_ID or REMOTE_API_KEY in environment")
+            logger.error("Please configure your .env file with:")
+            logger.error("  USER_ID=<your-unique-user-id>")
+            logger.error("  REMOTE_API_KEY=<your-api-key>")
+            sys.exit(1)
+        
+        # Register signal handlers
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
     
-    async def connect(self):
-        """Connect to bridge server"""
-        logger.info("Connecting to MCP bridge...")
-        
-        # Check local MCP server
-        if not await self._check_local_mcp():
-            logger.error("❌ Cannot connect to local MCP server")
-            logger.error("Please ensure your MCP server is running:")
-            logger.error("  cd electron/backend")
-            logger.error("  python src/core/mcp/extension/start_servers.py")
-            return False
-        
-        logger.info("✅ Local MCP server is running")
-        
-        # Connect to bridge
+    def signal_handler(self, signum, frame):
+        """Handle shutdown signals."""
+        logger.info("Shutdown signal received, closing tunnel...")
+        self.running = False
+        asyncio.create_task(self.shutdown())
+    
+    async def check_local_mcp_server(self) -> bool:
+        """Check if local MCP server is running."""
         try:
-            self.websocket = await websockets.connect(
-                self.bridge_url,
-                ping_interval=self.keepalive_interval,
-                ping_timeout=10
+            async with aiohttp.ClientSession() as session:
+                url = f"{LOCAL_MCP_SERVER}/health"
+                async with session.get(url, timeout=5) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        logger.info(f"✅ Local MCP server is running: {data.get('status', 'unknown')}")
+                        return True
+                    else:
+                        logger.error(f"Local MCP server returned status {resp.status}")
+                        return False
+        except aiohttp.ClientError as e:
+            logger.error(f"❌ Cannot connect to local MCP server at {LOCAL_MCP_SERVER}")
+            logger.error(f"   Error: {e}")
+            logger.error("   Please ensure the MCP server is running:")
+            logger.error("   cd electron/backend && python src/core/mcp/extension/start_servers.py")
+            return False
+        except Exception as e:
+            logger.error(f"Error checking local MCP server: {e}")
+            return False
+    
+    async def connect(self) -> bool:
+        """Connect to remote bridge server."""
+        try:
+            if self.session is None:
+                self.session = ClientSession()
+            
+            logger.info(f"🔌 Connecting to remote server: {REMOTE_SERVER}")
+            
+            # Connect WebSocket
+            self.ws = await self.session.ws_connect(
+                REMOTE_SERVER,
+                heartbeat=30,
+                autoping=True
             )
             
-            # Send authentication
-            await self.websocket.send(json.dumps({
+            # Authenticate
+            auth_msg = {
                 "type": "auth",
-                "user_id": self.user_id,
-                "api_key": self.api_key
-            }))
-            
-            # Wait for confirmation
-            response = await self.websocket.recv()
-            data = json.loads(response)
-            
-            if data.get("type") == "error":
-                logger.error(f"❌ Authentication failed: {data.get('message')}")
-                return False
-            
-            if data.get("type") == "connected":
-                self.tunnel_id = data.get("tunnel_id")
-                remote_url = data.get("remote_url")
-                
-                logger.info("✅ Tunnel established successfully!")
-                logger.info(f"  Tunnel ID: {self.tunnel_id}")
-                logger.info(f"  Remote MCP Endpoint: {remote_url}")
-                logger.info("")
-                logger.info("Your LocalBrain is now accessible via MCP at:")
-                logger.info(f"  {remote_url}")
-                logger.info("")
-                logger.info("Configure MCP clients with:")
-                logger.info(f'  "url": "{remote_url}"')
-                logger.info(f'  "headers": {{"Authorization": "Bearer {self.api_key}"}}')
-                logger.info("")
-                
-                return True
-            
-            logger.error(f"❌ Unexpected response: {data}")
-            return False
-            
-        except Exception as e:
-            logger.error(f"❌ Connection failed: {e}")
-            return False
-    
-    async def run(self):
-        """Main event loop"""
-        if not await self.connect():
-            return
-        
-        self.running = True
-        self.http_client = httpx.AsyncClient(timeout=30.0)
-        
-        try:
-            while self.running:
-                try:
-                    message = await self.websocket.recv()
-                    data = json.loads(message)
-                    logger.info(f"📨 Received from bridge: {data.get('type')}")
-                    
-                    if data.get("type") == "request":
-                        # Forward JSON-RPC request to local MCP server
-                        logger.info(f"🔄 Forwarding to local MCP: {data.get('data')}")
-                        await self._handle_request(data.get("data"))
-                    
-                    elif data.get("type") == "ping":
-                        await self.websocket.send(json.dumps({"type": "pong"}))
-                    
-                except websockets.ConnectionClosed:
-                    logger.warning("⚠️  Connection closed, reconnecting...")
-                    if not await self.connect():
-                        break
-                
-                except Exception as e:
-                    logger.error(f"Error in event loop: {e}")
-                    await asyncio.sleep(1)
-        
-        finally:
-            await self.cleanup()
-    
-    async def _handle_request(self, jsonrpc_message: Any):
-        """Handle JSON-RPC request from bridge"""
-        try:
-            # Forward to local MCP server
-            # The local server expects JSON-RPC on /mcp endpoint
-            response = await self.http_client.post(
-                f"{self.local_mcp_url}/mcp",
-                json=jsonrpc_message,
-                headers={
-                    "Content-Type": "application/json",
-                    "X-API-Key": os.getenv("LOCAL_API_KEY", "dev-key-local-only")
-                }
-            )
-            
-            # Get response
-            if response.status_code == 200:
-                result = response.json()
-            elif response.status_code == 202:
-                # Notification/response only, no result expected
-                return
-            else:
-                # Error - extract ID from first request if batch
-                req_id = None
-                if isinstance(jsonrpc_message, list) and len(jsonrpc_message) > 0:
-                    req_id = jsonrpc_message[0].get("id")
-                elif isinstance(jsonrpc_message, dict):
-                    req_id = jsonrpc_message.get("id")
-                    
-                result = {
-                    "jsonrpc": "2.0",
-                    "id": req_id,
-                    "error": {
-                        "code": -32000,
-                        "message": f"Local MCP server error: {response.status_code}"
-                    }
-                }
-            
-            # Extract request ID - handle batch vs single
-            req_id = None
-            if isinstance(jsonrpc_message, list) and len(jsonrpc_message) > 0:
-                req_id = jsonrpc_message[0].get("id")
-            elif isinstance(jsonrpc_message, dict):
-                req_id = jsonrpc_message.get("id")
-            
-            # Send response back to bridge
-            response_msg = {
-                "type": "response",
-                "request_id": str(req_id) if req_id is not None else None,
-                "data": result
+                "user_id": USER_ID,
+                "api_key": REMOTE_API_KEY
             }
-            logger.info(f"📤 Sending response to bridge: request_id={response_msg['request_id']}")
-            await self.websocket.send(json.dumps(response_msg))
             
+            await self.ws.send_json(auth_msg)
+            
+            # Wait for authentication response
+            auth_response = await asyncio.wait_for(self.ws.receive(), timeout=10)
+            if auth_response.type == aiohttp.WSMsgType.TEXT:
+                data = json.loads(auth_response.data)
+                if data.get('type') == 'auth_success':
+                    logger.info(f"✅ Tunnel established successfully!")
+                    logger.info(f"   User: {USER_ID}")
+                    logger.info(f"   Remote MCP Endpoint: http://146.190.120.44:8767/mcp")
+                    logger.info(f"   Authorization: Bearer {REMOTE_API_KEY}")
+                    self.reconnect_attempts = 0
+                    return True
+                else:
+                    logger.error(f"Authentication failed: {data.get('error', 'Unknown error')}")
+                    return False
+            else:
+                logger.error("Unexpected response during authentication")
+                return False
+                
+        except asyncio.TimeoutError:
+            logger.error("Authentication timeout")
+            return False
         except Exception as e:
-            logger.error(f"Error handling request: {e}")
-            
-            # Send error response
-            error_response = {
+            logger.error(f"Connection failed: {e}")
+            return False
+    
+    async def forward_request_to_local(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Forward MCP request to local server."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                # Forward to local MCP server
+                url = f"{LOCAL_MCP_SERVER}/mcp"
+                
+                # Add timeout for local request
+                timeout = aiohttp.ClientTimeout(total=30)
+                
+                async with session.post(
+                    url, 
+                    json=request_data,
+                    timeout=timeout
+                ) as resp:
+                    # Check if response has content
+                    if resp.status == 202:
+                        # Notification (no response expected)
+                        return None
+                    
+                    # Parse JSON response
+                    content_type = resp.headers.get('content-type', '')
+                    if 'application/json' in content_type:
+                        response = await resp.json()
+                        return response
+                    else:
+                        text = await resp.text()
+                        logger.error(f"Unexpected content-type: {content_type}, body: {text[:200]}")
+                        return {
+                            "jsonrpc": "2.0",
+                            "error": {
+                                "code": -32603,
+                                "message": f"Invalid response from local server"
+                            },
+                            "id": request_data.get("id")
+                        }
+                    
+        except aiohttp.ClientError as e:
+            logger.error(f"Error forwarding to local MCP server: {e}")
+            return {
                 "jsonrpc": "2.0",
-                "id": jsonrpc_message.get("id") if isinstance(jsonrpc_message, dict) else None,
+                "error": {
+                    "code": -32603,
+                    "message": f"Local MCP server error: {str(e)}"
+                },
+                "id": request_data.get("id")
+            }
+        except Exception as e:
+            logger.error(f"Unexpected error forwarding request: {e}")
+            return {
+                "jsonrpc": "2.0",
                 "error": {
                     "code": -32603,
                     "message": f"Internal error: {str(e)}"
-                }
+                },
+                "id": request_data.get("id")
             }
+    
+    async def handle_message(self, msg_data: Dict[str, Any]):
+        """Handle message from remote server."""
+        msg_type = msg_data.get('type')
+        
+        if msg_type == 'request':
+            # Handle MCP request
+            request_id = msg_data.get('id')
+            request = msg_data.get('request')
             
+            logger.debug(f"Received MCP request: {request.get('method', 'unknown')}")
+            
+            # Forward to local MCP server
+            response = await self.forward_request_to_local(request)
+            
+            # Send response back through tunnel
+            await self.ws.send_json({
+                "type": "response",
+                "id": request_id,
+                "response": response
+            })
+            
+            logger.debug(f"Sent response for request {request_id}")
+            
+        elif msg_type == 'pong':
+            logger.debug("Received pong")
+        else:
+            logger.warning(f"Unknown message type: {msg_type}")
+    
+    async def ping_loop(self):
+        """Send periodic pings to keep connection alive."""
+        while self.running:
             try:
-                await self.websocket.send(json.dumps({
-                    "type": "response",
-                    "request_id": str(jsonrpc_message.get("id")) if isinstance(jsonrpc_message, dict) else None,
-                    "data": error_response
-                }))
-            except:
-                pass
+                await asyncio.sleep(PING_INTERVAL)
+                if self.ws and not self.ws.closed:
+                    await self.ws.send_json({"type": "ping"})
+                    logger.debug("Sent ping")
+            except Exception as e:
+                logger.error(f"Error sending ping: {e}")
     
-    async def _check_local_mcp(self) -> bool:
-        """Check if local MCP server is accessible"""
-        try:
-            async with httpx.AsyncClient(timeout=5.0) as client:
-                response = await client.get(f"{self.local_mcp_url}/health")
-                return response.status_code == 200
-        except:
-            return False
+    async def run(self):
+        """Main run loop."""
+        self.running = True
+        
+        # Check local MCP server first
+        logger.info("🔍 Checking local MCP server...")
+        if not await self.check_local_mcp_server():
+            logger.error("Cannot start tunnel without local MCP server")
+            return
+        
+        while self.running:
+            try:
+                # Connect to remote server
+                if not await self.connect():
+                    if self.reconnect_attempts >= MAX_RECONNECT_ATTEMPTS:
+                        logger.error(f"Max reconnection attempts ({MAX_RECONNECT_ATTEMPTS}) reached")
+                        break
+                    
+                    self.reconnect_attempts += 1
+                    logger.info(f"Reconnecting in {RECONNECT_DELAY} seconds... (attempt {self.reconnect_attempts}/{MAX_RECONNECT_ATTEMPTS})")
+                    await asyncio.sleep(RECONNECT_DELAY)
+                    continue
+                
+                # Start ping task
+                self.ping_task = asyncio.create_task(self.ping_loop())
+                
+                # Handle messages
+                async for msg in self.ws:
+                    if msg.type == aiohttp.WSMsgType.TEXT:
+                        try:
+                            data = json.loads(msg.data)
+                            await self.handle_message(data)
+                        except json.JSONDecodeError:
+                            logger.error(f"Invalid JSON received: {msg.data}")
+                    elif msg.type == aiohttp.WSMsgType.ERROR:
+                        logger.error(f"WebSocket error: {self.ws.exception()}")
+                        break
+                    elif msg.type == aiohttp.WSMsgType.CLOSED:
+                        logger.warning("WebSocket connection closed")
+                        break
+                
+                # Connection lost
+                if self.running:
+                    logger.warning("Connection lost, attempting to reconnect...")
+                    if self.ping_task:
+                        self.ping_task.cancel()
+                    await asyncio.sleep(1)
+                    
+            except KeyboardInterrupt:
+                logger.info("Keyboard interrupt received")
+                self.running = False
+            except Exception as e:
+                logger.error(f"Unexpected error: {e}")
+                if self.running:
+                    await asyncio.sleep(RECONNECT_DELAY)
+        
+        await self.shutdown()
     
-    async def cleanup(self):
-        """Cleanup resources"""
-        logger.info("Cleaning up...")
+    async def shutdown(self):
+        """Clean shutdown."""
+        logger.info("Shutting down tunnel client...")
+        
         self.running = False
         
-        if self.http_client:
-            await self.http_client.aclose()
+        if self.ping_task:
+            self.ping_task.cancel()
         
-        if self.websocket:
-            await self.websocket.close()
+        if self.ws:
+            await self.ws.close()
+        
+        if self.session:
+            await self.session.close()
+        
+        logger.info("Tunnel client stopped")
+
+
+def print_banner():
+    """Print startup banner."""
+    print("\n" + "="*60)
+    print("LocalBrain MCP Tunnel Client")
+    print("="*60)
+    print(f"User ID: {USER_ID}")
+    print(f"Remote Server: {REMOTE_SERVER}")
+    print(f"Local MCP Server: {LOCAL_MCP_SERVER}")
+    print("="*60 + "\n")
 
 
 async def main():
-    """Entry point"""
-    # Load config
-    bridge_url = os.getenv("BRIDGE_URL", "ws://localhost:8767/tunnel/connect")
-    local_mcp_url = os.getenv("LOCAL_MCP_URL", "http://127.0.0.1:8766")
-    user_id = os.getenv("USER_ID")
-    api_key = os.getenv("REMOTE_API_KEY")
-    keepalive = int(os.getenv("KEEPALIVE_INTERVAL", "30"))
+    """Main entry point."""
+    print_banner()
     
-    if not user_id:
-        logger.error("❌ USER_ID not set in .env")
-        logger.error("")
-        logger.error("Generate one with:")
-        logger.error('  python3 -c "import uuid; print(str(uuid.uuid4()))"')
-        logger.error("")
-        sys.exit(1)
-    
-    if not api_key:
-        logger.error("❌ REMOTE_API_KEY not set in .env")
-        logger.error("")
-        logger.error("Generate one with:")
-        logger.error('  python3 -c "import secrets; print(\'lb_\' + secrets.token_urlsafe(32))"')
-        logger.error("")
-        sys.exit(1)
-    
-    logger.info("=" * 60)
-    logger.info("LocalBrain MCP Tunnel Client")
-    logger.info("=" * 60)
-    logger.info("")
-    logger.info("Checking local MCP server...")
-    
-    # Create and run client
-    client = MCPTunnelClient(
-        bridge_url=bridge_url,
-        local_mcp_url=local_mcp_url,
-        user_id=user_id,
-        api_key=api_key,
-        keepalive_interval=keepalive
-    )
-    
+    client = MCPTunnelClient()
+    await client.run()
+
+
+if __name__ == '__main__':
     try:
-        await client.run()
+        asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("\n👋 Shutting down...")
-        await client.cleanup()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+        logger.info("Shutdown complete")
