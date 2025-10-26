@@ -1,274 +1,328 @@
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
-import { Input } from "./ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { ScrollArea } from "./ui/scroll-area";
-import { Badge } from "./ui/badge";
-import { toast } from "sonner";
-import {
-  Plus,
-  Trash2,
-  Pin,
-  Clock,
-  StickyNote,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Card } from "./ui/card";
+import { Brain, StickyNote } from "lucide-react";
 
-interface Note {
-  id: string;
-  title: string;
-  content: string;
-  isPinned: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+interface NotesViewProps {
+  onQueryClick?: (query: string) => void;
 }
 
-export function NotesView() {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: "1",
-      title: "Example Context Note",
-      content: "These are quick notes you can reference in your context. Perfect for temporary information, ideas, or things to remember.",
-      isPinned: true,
-      createdAt: new Date(2025, 9, 20),
-      updatedAt: new Date(2025, 9, 20),
-    },
-  ]);
-  const [newNoteTitle, setNewNoteTitle] = useState("");
-  const [newNoteContent, setNewNoteContent] = useState("");
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+export function NotesView({ onQueryClick }: NotesViewProps) {
+  const [quickNote, setQuickNote] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [isOverDropzone, setIsOverDropzone] = useState(false);
+  const [justSubmitted, setJustSubmitted] = useState(false);
 
-  const handleAddNote = () => {
-    if (!newNoteTitle.trim() && !newNoteContent.trim()) {
-      toast.error("Please add a title or content for your note");
-      return;
-    }
-
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title: newNoteTitle.trim() || "Untitled Note",
-      content: newNoteContent.trim(),
-      isPinned: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  // Reset drag states on ANY mouse interaction to recover from stuck states
+  useEffect(() => {
+    const resetStates = () => {
+      setIsDragging(false);
+      setIsOverDropzone(false);
     };
 
-    setNotes([newNote, ...notes]);
-    setNewNoteTitle("");
-    setNewNoteContent("");
-    toast.success("Note added successfully");
+    const handleMouseEnter = () => {
+      if (isDragging || isOverDropzone) {
+        resetStates();
+      }
+    };
+
+    const handleMouseMove = () => {
+      if (isDragging || isOverDropzone) {
+        resetStates();
+      }
+    };
+
+    const handleClick = () => {
+      if (isDragging || isOverDropzone) {
+        resetStates();
+      }
+    };
+
+    const handleFocus = () => {
+      resetStates();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        resetStates();
+      }
+    };
+
+    // Reset immediately on mount
+    resetStates();
+
+    // Add multiple event listeners to catch stuck states
+    document.addEventListener('mouseenter', handleMouseEnter, true);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('click', handleClick);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('mouseenter', handleMouseEnter, true);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('click', handleClick);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isDragging, isOverDropzone]);
+
+  const handleSubmitNote = () => {
+    if (quickNote.trim()) {
+      // TODO: Connect to ingestion system later
+      // For now, just clear the note after dropping
+      console.log("Note submitted:", quickNote);
+
+      // Force all drag states to false immediately
+      setIsDragging(false);
+      setIsOverDropzone(false);
+
+      // Small delay before showing success to ensure drag states are cleared
+      setTimeout(() => {
+        setJustSubmitted(true);
+
+        // Reset after success animation
+        setTimeout(() => {
+          setQuickNote("");
+          setJustSubmitted(false);
+        }, 600);
+      }, 50);
+    }
   };
 
-  const handleDeleteNote = (id: string) => {
-    setNotes(notes.filter((note) => note.id !== id));
-    toast.success("Note deleted");
+  const handleDragStart = (e: React.DragEvent) => {
+    if (quickNote.trim()) {
+      setIsDragging(true);
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", quickNote);
+
+      // Use the current target as the drag image for smooth visual feedback
+      const draggedElement = e.currentTarget as HTMLElement;
+      e.dataTransfer.setDragImage(draggedElement, draggedElement.offsetWidth / 2, draggedElement.offsetHeight / 2);
+    }
   };
 
-  const handleTogglePin = (id: string) => {
-    setNotes(
-      notes.map((note) =>
-        note.id === id ? { ...note, isPinned: !note.isPinned } : note
-      )
-    );
+  const handleDragEnd = () => {
+    // Always reset both states immediately when drag ends
+    setIsDragging(false);
+    setIsOverDropzone(false);
   };
 
-  const handleUpdateNote = (id: string, title: string, content: string) => {
-    setNotes(
-      notes.map((note) =>
-        note.id === id
-          ? { ...note, title: title || "Untitled Note", content, updatedAt: new Date() }
-          : note
-      )
-    );
-    setEditingNoteId(null);
-    toast.success("Note updated");
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setIsOverDropzone(true);
   };
 
-  const sortedNotes = [...notes].sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
-    return b.updatedAt.getTime() - a.updatedAt.getTime();
-  });
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Check if we're truly leaving the dropzone (not just entering a child)
+    const relatedTarget = e.relatedTarget as Node;
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setIsOverDropzone(false);
+    }
+  };
 
-  const formatDate = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
+    // Immediately reset all drag states
+    setIsDragging(false);
+    setIsOverDropzone(false);
+
+    handleSubmitNote();
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden m-4 rounded-2xl bg-card shadow-2xl border border-border">
-      <div className="border-b border-border p-6 space-y-4 shrink-0 bg-card shadow-sm">
+    <div
+      className="h-full flex flex-col bg-background m-4 rounded-2xl overflow-hidden border border-border shadow-2xl"
+      style={{ opacity: 1, visibility: 'visible' }}
+    >
+      {/* Header */}
+      <div className="border-b border-border px-6 py-5 bg-card shadow-sm">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
             <StickyNote className="h-5 w-5 text-primary" />
           </div>
-          <div>
-            <h2>Context Notes</h2>
-            <p className="text-sm text-muted-foreground">
-              Quick notes to reference in your context
-            </p>
-          </div>
+          <h2 className="text-lg font-semibold">Quick Notes</h2>
         </div>
-
-        {/* New Note Input */}
-        <Card className="shadow-md">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Add New Note</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input
-              placeholder="Note title..."
-              value={newNoteTitle}
-              onChange={(e) => setNewNoteTitle(e.target.value)}
-              className="shadow-sm"
-            />
-            <Textarea
-              placeholder="Note content..."
-              value={newNoteContent}
-              onChange={(e) => setNewNoteContent(e.target.value)}
-              className="min-h-[80px] shadow-sm"
-            />
-            <Button
-              onClick={handleAddNote}
-              className="w-full shadow-sm hover:shadow-md transition-shadow"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Note
-            </Button>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Notes List */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-3">
-            {sortedNotes.length === 0 ? (
-              <div className="text-center py-12">
-                <StickyNote className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-50" />
-                <p className="text-muted-foreground">No notes yet</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Add your first note above
-                </p>
-              </div>
-            ) : (
-              sortedNotes.map((note) => (
-                <Card
-                  key={note.id}
-                  className="hover:border-primary/50 hover:shadow-lg transition-all duration-200 shadow-md"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        {editingNoteId === note.id ? (
-                          <Input
-                            defaultValue={note.title}
-                            className="mb-2 shadow-sm"
-                            id={`title-${note.id}`}
-                          />
-                        ) : (
-                          <CardTitle className="flex items-center gap-2 break-words">
-                            {note.title}
-                            {note.isPinned && (
-                              <Badge variant="secondary" className="text-xs shadow-sm shrink-0">
-                                <Pin className="h-3 w-3 mr-1" />
-                                Pinned
-                              </Badge>
-                            )}
-                          </CardTitle>
-                        )}
-                        <CardDescription className="flex items-center gap-1 mt-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDate(note.updatedAt)}
-                        </CardDescription>
-                      </div>
-                      <div className="flex gap-1 shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleTogglePin(note.id)}
-                          className={`h-8 w-8 hover:bg-accent ${
-                            note.isPinned ? "text-primary" : ""
-                          }`}
-                        >
-                          <Pin className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteNote(note.id)}
-                          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {editingNoteId === note.id ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          defaultValue={note.content}
-                          className="min-h-[100px] shadow-sm"
-                          id={`content-${note.id}`}
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              const titleInput = document.getElementById(
-                                `title-${note.id}`
-                              ) as HTMLInputElement;
-                              const contentInput = document.getElementById(
-                                `content-${note.id}`
-                              ) as HTMLTextAreaElement;
-                              handleUpdateNote(
-                                note.id,
-                                titleInput.value,
-                                contentInput.value
-                              );
-                            }}
-                            className="shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingNoteId(null)}
-                            className="shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="text-sm whitespace-pre-wrap break-words cursor-pointer hover:text-foreground/80 transition-colors"
-                        onClick={() => setEditingNoteId(note.id)}
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-background">
+        {/* Quick Notes Drag & Drop */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 200,
+            damping: 25,
+          }}
+          className="w-full max-w-5xl"
+        >
+          <div className="flex gap-8 items-stretch justify-center">
+            {/* Sticky Note - Source */}
+            <div
+              className={`flex-1 max-w-xl ${
+                quickNote.trim() ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+              }`}
+            >
+              <motion.div
+                key="sticky-note"
+                draggable={quickNote.trim().length > 0}
+                onDragStart={handleDragStart as any}
+                onDragEnd={handleDragEnd as any}
+                initial={{ scale: 1 }}
+                animate={isDragging ? {
+                  scale: 0.98,
+                  rotateZ: 2,
+                } : {
+                  scale: 1,
+                  rotateZ: 0,
+                }}
+                whileHover={quickNote.trim() && !isDragging ? { scale: 1.02, transition: { duration: 0.2 } } : {}}
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 35,
+                  mass: 0.5,
+                }}
+                style={{
+                  opacity: 1,
+                }}
+              >
+              <Card className="p-8 shadow-2xl h-full min-h-[400px] flex flex-col bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-amber-900/20 border-yellow-200 dark:border-yellow-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <StickyNote className="h-6 w-6 text-yellow-600 dark:text-yellow-500" />
+                  <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100">Quick Note</h3>
+                </div>
+                <textarea
+                  value={quickNote}
+                  onChange={(e) => setQuickNote(e.target.value)}
+                  placeholder="Jot down a quick thought, idea, or reminder..."
+                  className="w-full flex-1 p-4 rounded-lg border-0 bg-white/50 dark:bg-black/20 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base placeholder:text-yellow-600/60 dark:placeholder:text-yellow-400/60 text-yellow-900 dark:text-yellow-100 transition-all"
+                />
+                <AnimatePresence>
+                  {quickNote.trim() && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                      className="text-sm text-yellow-700 dark:text-yellow-400 mt-4 text-center italic font-medium"
+                    >
+                      ✨ Drag this note to send it to the agent →
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </Card>
+            </motion.div>
+            </div>
+
+            {/* Dropzone */}
+            <div
+              key="dropzone"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className="flex-1 max-w-xl"
+            >
+              <motion.div
+                key="dropzone-motion"
+                initial={{ scale: 1 }}
+                animate={isOverDropzone ? {
+                  scale: 1.05,
+                } : {
+                  scale: 1,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 30,
+                }}
+              >
+                <Card className={`p-8 h-full min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed bg-gradient-to-br shadow-2xl ${
+                  justSubmitted
+                    ? 'border-green-500 bg-green-100 dark:bg-green-900/30'
+                    : isOverDropzone
+                    ? 'border-yellow-500 bg-yellow-100 dark:bg-yellow-900/30'
+                    : 'border-yellow-300 dark:border-yellow-700 from-yellow-50/50 to-yellow-100/50 dark:from-yellow-900/10 dark:to-amber-900/10'
+                }`}>
+                  <motion.div
+                    animate={{
+                      scale: justSubmitted ? 1.15 : isOverDropzone ? 1.1 : 1,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                    className="flex flex-col items-center"
+                  >
+                    <motion.div
+                      animate={{
+                        scale: justSubmitted ? 1.3 : isOverDropzone ? 1.15 : 1,
+                        rotate: isOverDropzone && !justSubmitted ? [0, -5, 5, -5, 5, 0] : 0,
+                      }}
+                      transition={{
+                        scale: {
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 30,
+                        },
+                        rotate: {
+                          duration: 0.5,
+                          ease: "easeInOut",
+                          repeat: isOverDropzone && !justSubmitted ? Infinity : 0,
+                          type: "tween",
+                        },
+                      }}
+                      className={`p-6 rounded-full mb-6 ${
+                        justSubmitted
+                          ? 'bg-green-500/20'
+                          : 'bg-yellow-500/20'
+                      }`}
+                    >
+                      <Brain className={`h-12 w-12 ${
+                        justSubmitted
+                          ? 'text-green-600 dark:text-green-500'
+                          : 'text-yellow-600 dark:text-yellow-500'
+                      }`} />
+                    </motion.div>
+                    <h3 className="text-xl font-semibold text-yellow-900 dark:text-yellow-100 text-center mb-3">
+                      Send to Agent
+                    </h3>
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={justSubmitted ? 'success' : isOverDropzone ? 'drop' : 'default'}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 30,
+                        }}
+                        className={`text-sm text-center max-w-xs leading-relaxed ${
+                          justSubmitted
+                            ? 'text-green-700 dark:text-green-400 font-semibold'
+                            : 'text-yellow-700 dark:text-yellow-400'
+                        }`}
                       >
-                        {note.content || (
-                          <span className="text-muted-foreground italic">
-                            Click to add content...
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
+                        {justSubmitted ? '✅ Note sent!' : isOverDropzone ? '✨ Drop to send!' : 'Drop your note here to process it with AI'}
+                      </motion.p>
+                    </AnimatePresence>
+                  </motion.div>
                 </Card>
-              ))
-            )}
+              </motion.div>
+            </div>
           </div>
-        </ScrollArea>
+        </motion.div>
       </div>
     </div>
   );
