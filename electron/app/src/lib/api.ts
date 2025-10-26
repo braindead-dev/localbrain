@@ -459,6 +459,22 @@ class ApiClient {
     return response.json();
   }
 
+  /**
+   * Ingest browser history data
+   */
+  async browserIngest(items: any[]): Promise<{ success: boolean; items_processed: number; items_ingested: number; errors: any[] }> {
+    const response = await fetch(`${this.baseUrl}/browser/ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Browser history ingest failed');
+    }
+    return response.json();
+  }
+
 }
 
 // Export singleton instance

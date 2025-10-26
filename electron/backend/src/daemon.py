@@ -41,6 +41,7 @@ from slack_synthesizer import SlackAnswerSynthesizer
 from bulk_ingest import BulkIngestionPipeline
 from utils.file_ops import read_file
 from config import load_config, update_config, get_vault_path
+from connectors.browser.ingest import ingest_browser_data
 
 # Setup logging
 logging.basicConfig(
@@ -368,6 +369,59 @@ async def handle_ingest(request: Request):
     
     except Exception as e:
         logger.exception("Error handling ingest request")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.post("/browser/ingest")
+async def handle_browser_ingest(request: Request):
+    """
+    Ingest data from the browser connector.
+    
+    Follows the same pattern as Gmail and Calendar connectors:
+    - Accepts raw JSON data from browser
+    - Preprocesses into structured format (text + metadata)
+    - Uses AgenticIngestionPipeline for intelligent ingestion
+    
+    Body:
+        {
+            "items": [
+                {
+                    "title": "Page Title",
+                    "url": "https://example.com",
+                    "content": "Page content...",
+                    "timestamp": "2025-01-26T10:00:00Z",  // optional
+                    "metadata": {...}  // optional additional metadata
+                }
+            ]
+        }
+    
+    Response:
+        {
+            "success": true,
+            "items_processed": 10,
+            "items_ingested": 10,
+            "errors": []
+        }
+    """
+    try:
+        body = await request.json()
+        items = body.get('items', [])
+        
+        if not items:
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Missing required parameter: items'}
+            )
+        
+        result = ingest_browser_data(items, VAULT_PATH)
+        
+        return JSONResponse(content=result)
+            
+    except Exception as e:
+        logger.exception("Error handling browser ingest request")
         return JSONResponse(
             status_code=500,
             content={'error': str(e)}

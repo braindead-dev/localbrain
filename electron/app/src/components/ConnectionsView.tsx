@@ -41,6 +41,7 @@ const iconMap: Record<string, any> = {
   imessage: MessageSquare,
   calendar: Calendar,
   browser: Globe,
+  browser_history: Globe,
 };
 
 export function ConnectionsView() {
@@ -52,6 +53,7 @@ export function ConnectionsView() {
   const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Load connectors on mount
   useEffect(() => {
@@ -94,7 +96,19 @@ export function ConnectionsView() {
           authenticated: false,
         };
 
-        setConnectors([...connectorsWithStatus, dummyIMessageConnector]);
+        const dummyBrowserHistoryConnector: Connector = {
+          id: "browser_history",
+          name: "Browser History",
+          description: "Connect to browser history to sync your browsing.",
+          version: "1.0.0",
+          auth_type: "file",
+          requires_config: true,
+          capabilities: ["history"],
+          connected: false,
+          authenticated: false,
+        };
+
+        setConnectors([...connectorsWithStatus, dummyIMessageConnector, dummyBrowserHistoryConnector]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load connectors");
@@ -128,7 +142,7 @@ export function ConnectionsView() {
         return;
       }
 
-      if (connector.id === 'imessage' || connector.id === 'browser') {
+      if (connector.id === 'imessage' || connector.id === 'browser_history') {
         setSelectedConnector(connector);
         setShowFileDialog(true);
       } else if (connector.auth_type === 'oauth') {
