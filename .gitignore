@@ -35,3 +35,4 @@ electron/backend/longmemeval_test/progress.log
 /longmemeval_test/test-vault
 
 venv
+/electron/dist
