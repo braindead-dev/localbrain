@@ -23,6 +23,7 @@ electron/backend/src/core/mcp/__pycache__
 *.pyc
 /electron/dist/win-unpacked
 *.pyc
+.claude
 .DS_Store
 electron/.DS_Store
 electron/backend/.DS_Store
