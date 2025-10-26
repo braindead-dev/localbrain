@@ -647,6 +647,47 @@ async def handle_ask(request: Request):
         )
 
 
+def _should_respond_to_message(
+    question: str,
+    contexts: list,
+    slack_context: dict,
+    triggered_topics: list = None
+) -> tuple[bool, str]:
+    """
+    Determine if the user would be interested in responding to this message.
+
+    Args:
+        question: The question asked
+        contexts: Retrieved contexts from knowledge base
+        slack_context: Slack context (channel, server, asker)
+        triggered_topics: Topics that hit the mention threshold (3+ mentions)
+
+    Returns:
+        (should_respond: bool, reason: str)
+    """
+    # Always respond to DMs (channel_name starts with 'D')
+    channel = slack_context.get('channel_name', '')
+    if channel.startswith('D'):
+        return True, "dm_always_respond"
+
+    # If topic was mentioned 3+ times, definitely respond
+    if triggered_topics and len(triggered_topics) > 0:
+        topics_str = ",".join(triggered_topics)
+        return True, f"trending_topic:{topics_str}"
+
+    # If we found relevant contexts with good scores, user likely has knowledge about this
+    if contexts and len(contexts) > 0:
+        # Check if any context has a good relevance score
+        top_score = max(ctx.get('score', 0) for ctx in contexts)
+        if top_score > 0.7:  # High relevance threshold
+            return True, f"high_relevance:{top_score:.2f}"
+        elif top_score > 0.5:  # Medium relevance
+            return True, f"medium_relevance:{top_score:.2f}"
+
+    # If no good contexts found, user probably doesn't have relevant info
+    return False, "no_relevant_knowledge"
+
+
 @app.post("/protocol/slack/answer")
 async def handle_slack_answer(request: Request):
     """
@@ -671,6 +712,8 @@ async def handle_slack_answer(request: Request):
     Response:
         {
             "success": true,
+            "should_respond": true,
+            "reason": "high_relevance:0.85",
             "question": "...",
             "answer": "Natural language answer (no citations)",
             "conversation_length": N
@@ -683,6 +726,8 @@ async def handle_slack_answer(request: Request):
         body = await request.json()
         question = body.get('question', '')
         slack_context = body.get('slack_context', {})
+        channel_history = body.get('channel_history', [])
+        triggered_topics = body.get('triggered_topics', [])
         clear_history = body.get('clear_history', False)
 
         if not question:
@@ -721,17 +766,38 @@ async def handle_slack_answer(request: Request):
         contexts = search_result.get('contexts', [])
         logger.info(f"📚 Found {len(contexts)} contexts")
 
-        # 2. Synthesize Slack-appropriate answer (poses as user)
+        # 2. Determine if user would be interested in responding to this
+        should_respond, reason = _should_respond_to_message(
+            question,
+            contexts,
+            slack_context,
+            triggered_topics=triggered_topics
+        )
+
+        if not should_respond:
+            logger.info(f"⏭️  Skipping response: {reason}")
+            return JSONResponse(content={
+                'success': True,
+                'should_respond': False,
+                'reason': reason,
+                'question': question,
+                'answer': ''
+            })
+
+        # 3. Synthesize Slack-appropriate answer (poses as user)
+        # Use channel history if available, otherwise use conversation_history
+        history_for_context = channel_history if channel_history else conversation_history
+
         synthesizer = SlackAnswerSynthesizer()
         answer = synthesizer.synthesize(
             question=question,
             contexts=contexts,
             slack_context=slack_context,
-            conversation_history=conversation_history
+            conversation_history=history_for_context
         )
         logger.info("✅ Slack answer synthesis complete")
 
-        # 3. Update conversation history
+        # 4. Update conversation history
         conversation_history.append({"role": "user", "content": question})
         conversation_history.append({"role": "assistant", "content": answer})
 
@@ -739,9 +805,11 @@ async def handle_slack_answer(request: Request):
         if len(conversation_history) > MAX_CONVERSATION_HISTORY:
             conversation_history = conversation_history[-MAX_CONVERSATION_HISTORY:]
 
-        # 4. Return response
+        # 5. Return response
         return JSONResponse(content={
             'success': True,
+            'should_respond': True,
+            'reason': 'user_interested',
             'question': question,
             'answer': answer,
             'conversation_length': len(conversation_history)

@@ -122,3 +122,79 @@ The server responded with: {'ok': False, 'error': 'missing_scope', 'needed': 'ch
 2025-10-26 04:12:37,018 - __main__ - INFO -    User: U09KVU3VAKZ
 2025-10-26 04:12:37,018 - __main__ - INFO -    Text preview: added an integration to this channel: <https://cal...
 2025-10-26 04:12:37,018 - __main__ - INFO - Ignoring bot message
+2025-10-26 04:32:53,327 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 04:32:53,387 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 04:32:53,387 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 04:32:53,387 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 04:34:11,636 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 04:34:11,691 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 04:34:11,691 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 04:34:11,691 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 04:34:11,711 - __main__ - INFO - HTTP client closed
+2025-10-26 04:35:39,373 - __main__ - INFO - HTTP client closed
+2025-10-26 04:35:54,815 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 04:35:54,884 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 04:35:54,884 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 04:35:54,884 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 04:38:45,157 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:38:45,158 - __main__ - INFO - 📬 Event callback type: message
+2025-10-26 04:38:45,159 - __main__ - INFO -    Channel: D09NLU3M1A9
+2025-10-26 04:38:45,159 - __main__ - INFO -    User: U09KVU3VAKZ
+2025-10-26 04:38:45,159 - __main__ - INFO -    Text preview: hows it going?...
+2025-10-26 04:38:45,159 - __main__ - INFO - Received DM message from user U09KVU3VAKZ (trigger: DM)
+2025-10-26 04:38:45,159 - __main__ - INFO - Queued DM message for processing: hows it going?...
+2025-10-26 04:38:45,160 - __main__ - INFO - Processing message from user U09KVU3VAKZ: hows it going?
+2025-10-26 04:38:45,160 - __main__ - INFO - Asking daemon: hows it going?
+2025-10-26 04:38:48,511 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 04:38:48,512 - __main__ - INFO - Daemon responded: I'm not sure - I don't have information about that in my notes....
+2025-10-26 04:38:48,512 - __main__ - INFO - Sending message to Slack channel D09NLU3M1A9
+2025-10-26 04:38:48,784 - __main__ - INFO - Message sent successfully
+2025-10-26 04:38:48,784 - __main__ - INFO - Message processed successfully
+2025-10-26 04:38:49,826 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:38:49,826 - __main__ - INFO - 📬 Event callback type: message
+2025-10-26 04:38:49,826 - __main__ - INFO -    Channel: D09NLU3M1A9
+2025-10-26 04:38:49,826 - __main__ - INFO -    User: U09NMP94PQW
+2025-10-26 04:38:49,826 - __main__ - INFO -    Text preview: I'm not sure - I don't have information about that...
+2025-10-26 04:38:49,826 - __main__ - INFO - Ignoring bot message
+2025-10-26 04:47:45,689 - __main__ - INFO - HTTP client closed
+2025-10-26 04:47:51,610 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 04:47:51,650 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 04:47:51,650 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 04:47:51,650 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 04:48:27,220 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:48:27,222 - __main__ - INFO - 📬 Event callback type: message
+2025-10-26 04:48:27,222 - __main__ - INFO -    Channel: D09NHD3K1C3
+2025-10-26 04:48:27,222 - __main__ - INFO -    User: USLACKBOT
+2025-10-26 04:48:27,222 - __main__ - INFO -    Text preview: <@U09KVU3VAKZ> added you to <#C09LM21JWBA|>....
+2025-10-26 04:48:27,222 - __main__ - INFO - Received DM message from user USLACKBOT (trigger: DM)
+2025-10-26 04:48:27,223 - __main__ - INFO - Queued DM message for processing: <@U09KVU3VAKZ> added you to <#C09LM21JWBA|>....
+2025-10-26 04:48:27,223 - __main__ - INFO - Processing message from user USLACKBOT: <@U09KVU3VAKZ> added you to <#C09LM21JWBA|>.
+2025-10-26 04:48:27,224 - __main__ - INFO - Asking daemon: <@U09KVU3VAKZ> added you to <#C09LM21JWBA|>.
+2025-10-26 04:48:28,807 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8765/protocol/slack/answer "HTTP/1.1 200 OK"
+2025-10-26 04:48:28,808 - __main__ - INFO - Daemon responded: I'm not sure - I don't have information about that in my notes....
+2025-10-26 04:48:28,808 - __main__ - INFO - Sending message to Slack channel D09NHD3K1C3
+2025-10-26 04:48:29,307 - __main__ - INFO - Message sent successfully
+2025-10-26 04:48:29,308 - __main__ - INFO - Message processed successfully
+2025-10-26 04:48:30,774 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 04:48:30,774 - __main__ - INFO - 📬 Event callback type: message
+2025-10-26 04:48:30,774 - __main__ - INFO -    Channel: D09NHD3K1C3
+2025-10-26 04:48:30,775 - __main__ - INFO -    User: U09NMP94PQW
+2025-10-26 04:48:30,775 - __main__ - INFO -    Text preview: I'm not sure - I don't have information about that...
+2025-10-26 04:48:30,775 - __main__ - INFO - Ignoring bot message
+2025-10-26 05:02:03,276 - __main__ - INFO - HTTP client closed
+2025-10-26 05:02:10,307 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 05:02:10,346 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 05:02:10,346 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 05:02:10,346 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 05:02:58,503 - __main__ - INFO - 📨 Received Slack event type: event_callback
+2025-10-26 05:02:58,503 - __main__ - INFO - 📬 Event callback type: message
+2025-10-26 05:02:58,503 - __main__ - INFO -    Channel: C09J8E6RHDX
+2025-10-26 05:02:58,503 - __main__ - INFO -    User: N/A
+2025-10-26 05:02:58,503 - __main__ - INFO -    Text preview: ...
+2025-10-26 05:02:58,503 - __main__ - INFO - Ignoring message subtype: message_changed
+2025-10-26 05:07:19,698 - __main__ - INFO - HTTP client closed
+2025-10-26 05:08:10,554 - __main__ - INFO - Bot user ID: U09NMP94PQW
+2025-10-26 05:08:10,595 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 05:08:10,595 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 05:08:10,595 - __main__ - INFO - Monitoring all channels where bot is added
+2025-10-26 05:08:14,048 - __main__ - INFO - HTTP client closed
