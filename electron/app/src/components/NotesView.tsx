@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Card } from "./ui/card";
 import { Brain, StickyNote } from "lucide-react";
+import { api } from "../lib/api";
 
 interface NotesViewProps {
   onQueryClick?: (query: string) => void;
@@ -67,26 +68,37 @@ export function NotesView({ onQueryClick }: NotesViewProps) {
     };
   }, [isDragging, isOverDropzone]);
 
-  const handleSubmitNote = () => {
+  const handleSubmitNote = async () => {
     if (quickNote.trim()) {
-      // TODO: Connect to ingestion system later
-      // For now, just clear the note after dropping
-      console.log("Note submitted:", quickNote);
-
       // Force all drag states to false immediately
       setIsDragging(false);
       setIsOverDropzone(false);
 
-      // Small delay before showing success to ensure drag states are cleared
-      setTimeout(() => {
-        setJustSubmitted(true);
+      try {
+        // Ingest the note into the vault
+        await api.ingest(
+          quickNote.trim(),
+          'QuickNote',
+          new Date().toISOString()
+        );
 
-        // Reset after success animation
+        // Small delay before showing success to ensure drag states are cleared
+        setTimeout(() => {
+          setJustSubmitted(true);
+
+          // Reset after success animation
+          setTimeout(() => {
+            setQuickNote("");
+            setJustSubmitted(false);
+          }, 600);
+        }, 50);
+      } catch (error) {
+        console.error("Failed to submit note:", error);
+        // Still clear the note even on error (user can see console for debugging)
         setTimeout(() => {
           setQuickNote("");
-          setJustSubmitted(false);
         }, 600);
-      }, 50);
+      }
     }
   };
 
