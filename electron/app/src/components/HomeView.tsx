@@ -6,7 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
-import { FolderOpen, Brain, Folder, X, Search, StickyNote, Lightbulb, CheckCircle2, AlertCircle, Activity, Database, HardDrive, ChevronLeft, ChevronRight, Zap, Shield, Boxes, Sparkles, Check, XCircle, Loader2 } from "lucide-react";
+import { FolderOpen, Brain, Folder, X, Search, StickyNote, Lightbulb, CheckCircle2, AlertCircle, Activity, Database, HardDrive, ChevronLeft, ChevronRight, Zap, Shield, Boxes, Sparkles, Check, XCircle } from "lucide-react";
 import { api } from "../lib/api";
 
 interface HomeViewProps {
@@ -36,9 +36,6 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hasSeenCarousel, setHasSeenCarousel] = useState(true);
   const [showCarousel, setShowCarousel] = useState(false);
-  const [daemonConnected, setDaemonConnected] = useState<boolean | null>(null);
-  const [mcpConnected, setMcpConnected] = useState<boolean | null>(null);
-  const [mcpEnabled, setMcpEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -63,56 +60,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
     };
 
     loadConfig();
-
-    // Check daemon and MCP health periodically
-    const interval = setInterval(() => {
-      checkDaemonHealth();
-      if (mcpEnabled) checkMcpHealth();
-    }, 5000);
-    checkDaemonHealth();
-    if (mcpEnabled) checkMcpHealth();
-
-    return () => clearInterval(interval);
   }, [onSetupVisibilityChange]);
-
-  const checkDaemonHealth = async () => {
-    try {
-      await api.health();
-      setDaemonConnected(true);
-    } catch (error) {
-      setDaemonConnected(false);
-    }
-  };
-
-  const checkMcpHealth = async () => {
-    try {
-      const response = await fetch('http://localhost:8766/health');
-      if (response.ok) {
-        setMcpConnected(true);
-      } else {
-        setMcpConnected(false);
-      }
-    } catch (error) {
-      setMcpConnected(false);
-    }
-  };
-
-  const toggleMcp = async () => {
-    try {
-      if (!mcpEnabled) {
-        // Start MCP
-        await fetch('http://localhost:8765/mcp/start', { method: 'POST' });
-        setMcpEnabled(true);
-      } else {
-        // Stop MCP
-        await fetch('http://localhost:8765/mcp/stop', { method: 'POST' });
-        setMcpEnabled(false);
-        setMcpConnected(false);
-      }
-    } catch (error) {
-      console.error('Failed to toggle MCP:', error);
-    }
-  };
 
   const handleSelectVault = () => {
     setShowPathDialog(true);
@@ -231,42 +179,6 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
               <Brain className="h-8 w-8 text-primary" />
             </div>
             <h1>Welcome to LocalBrain</h1>
-          </div>
-          <div className="absolute right-0 flex items-center gap-4">
-            {/* Daemon Status */}
-            {daemonConnected === null ? (
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            ) : daemonConnected ? (
-              <div className="flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400">
-                <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                <span>Daemon</span>
-              </div>
-            ) : null}
-
-            {/* MCP Status & Toggle */}
-            {daemonConnected && (
-              <button
-                onClick={toggleMcp}
-                className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity"
-              >
-                {mcpConnected ? (
-                  <>
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                    <span className="text-green-600 dark:text-green-400">MCP Active</span>
-                  </>
-                ) : mcpEnabled ? (
-                  <>
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    <span className="text-muted-foreground">Starting...</span>
-                  </>
-                ) : (
-                  <>
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
-                    <span className="text-muted-foreground">MCP Off (click to enable)</span>
-                  </>
-                )}
-              </button>
-            )}
           </div>
         </div>
       </div>

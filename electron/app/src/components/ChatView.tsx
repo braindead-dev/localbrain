@@ -147,8 +147,8 @@ export function ChatView({ autoQuery, onQueryProcessed, onFileOpen }: ChatViewPr
 
   const handleClearConversation = async () => {
     try {
-      // Clear conversation history on backend
-      await api.ask("", true);  // Empty query with clear_history flag
+      // Clear conversation history on backend with a dummy query
+      await api.ask("clear", true);  // Dummy query with clear_history flag
 
       // Reset messages to initial state
       setMessages(initialMessages);
@@ -161,7 +161,12 @@ export function ChatView({ autoQuery, onQueryProcessed, onFileOpen }: ChatViewPr
       toast.success("Conversation history cleared");
     } catch (error: any) {
       console.error('Clear conversation error:', error);
-      toast.error("Failed to clear conversation");
+      // Even if backend fails, still clear frontend state
+      setMessages(initialMessages);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('localBrainChatHistory');
+      }
+      toast.success("Conversation history cleared (frontend only)");
     }
   };
 
