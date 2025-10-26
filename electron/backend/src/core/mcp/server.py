@@ -17,7 +17,7 @@ from loguru import logger
 from .models import (
     MCPResponse,
     SearchRequest, OpenRequest,
-    SummarizeRequest, ListRequest
+    IngestRequest, ListRequest
 )
 from .tools import MCPTools
 from .auth import MCPAuthManager, MCPClientAuth
@@ -181,16 +181,16 @@ class MCPServer:
                 request_id=request_id
             )
 
-        @self.app.post("/mcp/summarize", response_model=MCPResponse)
-        async def summarize_endpoint(
-            request: SummarizeRequest,
+        @self.app.post("/mcp/ingest", response_model=MCPResponse)
+        async def ingest_endpoint(
+            request: IngestRequest,
             client: MCPClientAuth = Depends(self._get_current_client),
             request_id: Optional[str] = None
         ):
-            """Summarization tool endpoint."""
+            """Ingest tool endpoint."""
             return await self._execute_tool(
                 client=client,
-                tool="summarize",
+                tool="ingest",
                 request=request,
                 request_id=request_id
             )

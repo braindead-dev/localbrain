@@ -93,31 +93,25 @@ class LocalBrainMCPServer:
                     }
                 ),
                 types.Tool(
-                    name="summarize",
-                    description="Generate a summary of a file or content. Useful for getting quick overviews.",
+                    name="ingest",
+                    description="Ingest new content into the vault. Use to add new information to your knowledge base.",
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "file_path": {
-                                "type": "string",
-                                "description": "Path to file to summarize"
-                            },
                             "content": {
                                 "type": "string",
-                                "description": "Raw content to summarize (if not using file_path)"
+                                "description": "Content to ingest"
                             },
-                            "max_length": {
-                                "type": "number",
-                                "description": "Maximum summary length in words",
-                                "default": 200
+                            "source_metadata": {
+                                "type": "object",
+                                "description": "Optional metadata about the source"
                             },
-                            "style": {
+                            "filename": {
                                 "type": "string",
-                                "description": "Summary style: concise, detailed, or bullets",
-                                "enum": ["concise", "detailed", "bullets"],
-                                "default": "concise"
+                                "description": "Optional filename for the ingested content"
                             }
-                        }
+                        },
+                        "required": ["content"]
                     }
                 ),
                 types.Tool(
@@ -153,7 +147,7 @@ class LocalBrainMCPServer:
                 endpoint_map = {
                     "search": "/mcp/search",
                     "open": "/mcp/open",
-                    "summarize": "/mcp/summarize",
+                    "ingest": "/mcp/ingest",
                     "list": "/mcp/list"
                 }
 

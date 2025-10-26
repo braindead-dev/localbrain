@@ -195,7 +195,75 @@ class ApiClient {
   }
 
   // ============================================================================
-  // Gmail Connector APIs
+  // Generic Connector APIs (New Plugin System)
+  // ============================================================================
+
+  /**
+   * List all available connectors
+   */
+  async listConnectors(): Promise<{ success: boolean; connectors: Array<any> }> {
+    const response = await fetch(`${this.baseUrl}/connectors`);
+    if (!response.ok) throw new Error('Failed to list connectors');
+    return response.json();
+  }
+
+  /**
+   * Get connector status
+   */
+  async connectorStatus(connectorId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/status`);
+    if (!response.ok) throw new Error(`Failed to get ${connectorId} status`);
+    return response.json();
+  }
+
+  /**
+   * Authenticate connector
+   */
+  async connectorAuth(connectorId: string, credentials: any): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) throw new Error(`Failed to authenticate ${connectorId}`);
+    return response.json();
+  }
+
+  /**
+   * Sync connector
+   */
+  async connectorSync(connectorId: string, autoIngest: boolean = true, limit?: number): Promise<any> {
+    let url = `${this.baseUrl}/connectors/${connectorId}/sync?auto_ingest=${autoIngest}`;
+    if (limit) url += `&limit=${limit}`;
+    const response = await fetch(url, { method: 'POST' });
+    if (!response.ok) throw new Error(`Failed to sync ${connectorId}`);
+    return response.json();
+  }
+
+  /**
+   * Revoke connector access
+   */
+  async connectorRevoke(connectorId: string): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/auth/revoke`, {
+      method: 'POST',
+    });
+    if (!response.ok) throw new Error(`Failed to revoke ${connectorId}`);
+    return response.json();
+  }
+
+  /**
+   * Sync all connectors
+   */
+  async syncAllConnectors(autoIngest: boolean = true): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/connectors/sync-all?auto_ingest=${autoIngest}`, {
+      method: 'POST',
+    });
+    if (!response.ok) throw new Error('Failed to sync all connectors');
+    return response.json();
+  }
+
+  // ============================================================================
+  // Gmail Connector APIs (Legacy - use generic connector APIs above)
   // ============================================================================
 
   /**

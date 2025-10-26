@@ -70,31 +70,15 @@ class OpenRequest(BaseModel):
         return v
 
 
-class SummarizeRequest(BaseModel):
+class IngestRequest(BaseModel):
     """
-    Request model for summarization tool.
+    Request model for ingest tool.
 
-    Generate summaries of files or search results.
+    Ingest new content into the vault.
     """
-    file_path: Optional[str] = Field(None, description="Path to file to summarize")
-    content: Optional[str] = Field(None, description="Raw content to summarize")
-    max_length: int = Field(200, ge=50, le=1000, description="Maximum summary length in words")
-    style: str = Field("concise", description="Summary style: concise, detailed, bullets")
-
-    @validator('style')
-    def validate_style(cls, v):
-        """Ensure style is valid."""
-        valid_styles = ["concise", "detailed", "bullets"]
-        if v not in valid_styles:
-            raise ValueError(f"Invalid style: {v}. Must be one of {valid_styles}")
-        return v
-
-    @validator('content')
-    def validate_input(cls, v, values):
-        """Ensure either file_path or content is provided."""
-        if not values.get('file_path') and not v:
-            raise ValueError("Either file_path or content must be provided")
-        return v
+    content: str = Field(..., description="Content to ingest")
+    source_metadata: Optional[Dict[str, Any]] = Field(None, description="Metadata about the source")
+    filename: Optional[str] = Field(None, description="Optional filename for the ingested content")
 
 
 class ListRequest(BaseModel):
@@ -160,12 +144,11 @@ class OpenResponse(BaseModel):
     metadata: Optional[FileMetadata]
 
 
-class SummarizeResponse(BaseModel):
-    """Response model for summarize tool."""
-    summary: str
-    word_count: int
-    source: str
-    style: str
+class IngestResponse(BaseModel):
+    """Response model for ingest tool."""
+    success: bool
+    message: str
+    file_path: Optional[str] = None
 
 
 class ListItem(BaseModel):

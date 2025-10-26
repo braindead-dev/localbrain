@@ -17,8 +17,8 @@ Model Context Protocol is Anthropic's standard for connecting AI assistants to e
 **With LocalBrain MCP, Claude can:**
 - Search your vault using natural language
 - Read specific files on request
+- Ingest new content into your vault
 - List directory contents
-- Generate summaries of documents
 
 ---
 
@@ -114,6 +114,16 @@ Input: {"file_path": "career/resume.md"}
 Output: [complete file contents]
 ```
 
+### ingest
+Add new content to the vault.
+
+**Example:**
+```
+Tool: ingest
+Input: {"content": "# New Note\nMy thoughts on...", "filename": "thoughts.md"}
+Output: {"success": true, "file_path": "..."}
+```
+
 ### list
 Browse directory structure.
 
@@ -122,16 +132,6 @@ Browse directory structure.
 Tool: list
 Input: {"path": "projects", "recursive": false}
 Output: [list of files and directories]
-```
-
-### summarize
-Generate summary of a document.
-
-**Example:**
-```
-Tool: summarize
-Input: {"file_path": "research/paper-notes.md", "style": "concise"}
-Output: [brief summary]
 ```
 
 ---
@@ -279,8 +279,8 @@ bash package.sh
 **Typical Response Times:**
 - Search: 2-4 seconds (agentic)
 - Open: <50ms
+- Ingest: 1-3 seconds (with ingestion pipeline)
 - List: <50ms
-- Summarize: 100-500ms
 
 **Why Search is Slower:**
 - Makes 2-4 Claude API calls
@@ -293,7 +293,7 @@ bash package.sh
 ## Limitations
 
 ### Current
-- ❌ No write operations (read-only)
+- ❌ No file editing (can ingest new, not edit existing)
 - ❌ No real-time updates
 - ❌ Single vault per instance
 - ❌ No collaborative features

@@ -13,8 +13,8 @@ from loguru import logger
 
 from .models import (
     SearchRequest, OpenRequest,
-    SummarizeRequest, ListRequest,
-    SearchResponse, OpenResponse, SummarizeResponse, ListResponse,
+    IngestRequest, ListRequest,
+    SearchResponse, OpenResponse, IngestResponse, ListResponse,
     SearchResult, FileMetadata, ListItem
 )
 
@@ -98,9 +98,8 @@ class MCPTools:
             logger.error(f"Daemon request failed: {e}")
             raise RuntimeError(f"Failed to connect to daemon: {e}")
 
-    # search_agentic REMOVED - it was duplicate bullshit
-    # Daemon only has ONE search endpoint: /protocol/search
-    # MCP should only have ONE search tool that forwards to it
+    # Note: No summarize tool - was fake logic in MCP layer.
+    # If needed in future, implement properly in daemon.
 
     # ========================================================================
     # TOOL: open
@@ -156,84 +155,42 @@ class MCPTools:
             raise RuntimeError(f"Failed to connect to daemon: {e}")
 
     # ========================================================================
-    # TOOL: summarize
+    # TOOL: ingest
     # ========================================================================
 
-    async def summarize(self, request: SummarizeRequest) -> SummarizeResponse:
+    async def ingest(self, request: IngestRequest) -> IngestResponse:
         """
-        Generate summary of file or content.
-
-        Note: Daemon doesn't have a summarize endpoint yet, so this provides
-        a simple extractive summary directly.
+        Ingest new content into the vault - proxies to daemon /protocol/ingest.
 
         Args:
-            request: SummarizeRequest with file path or content
+            request: IngestRequest with content and metadata
 
         Returns:
-            SummarizeResponse with summary
+            IngestResponse with success status
         """
-        logger.info(f"MCP proxy summarize: {request.file_path or 'content'}")
+        logger.info(f"MCP proxy ingest: {len(request.content)} chars")
 
-        # Get content
-        if request.file_path:
-            # Fetch file from daemon
-            try:
-                response = await self.client.get(
-                    f"{self.daemon_url}/file/{request.file_path}"
-                )
-                response.raise_for_status()
-                data = response.json()
-                content = data['content']
-                source = request.file_path
-            except httpx.HTTPError as e:
-                logger.error(f"Failed to fetch file for summarization: {e}")
-                raise RuntimeError(f"Failed to fetch file: {e}")
-        else:
-            content = request.content
-            source = "provided_content"
+        try:
+            response = await self.client.post(
+                f"{self.daemon_url}/protocol/ingest",
+                json={
+                    "context": request.content,
+                    "source_metadata": request.source_metadata or {},
+                    "filename": request.filename
+                }
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        # Generate simple extractive summary
-        summary = self._simple_summarize(content, request.max_length, request.style)
-        word_count = len(summary.split())
+            return IngestResponse(
+                success=data.get('success', False),
+                message=data.get('message', 'Ingestion complete'),
+                file_path=data.get('file_path')
+            )
 
-        logger.info(f"MCP summarize: {source} -> {word_count} words")
-
-        return SummarizeResponse(
-            summary=summary,
-            word_count=word_count,
-            source=source,
-            style=request.style
-        )
-
-    def _simple_summarize(self, content: str, max_length: int, style: str) -> str:
-        """Simple extractive summarization."""
-        words = content.split()
-
-        if len(words) <= max_length:
-            return content
-
-        if style == "bullets":
-            # Extract first sentence of each paragraph
-            paragraphs = content.split('\n\n')
-            bullets = []
-            for para in paragraphs[:5]:  # Max 5 bullets
-                sentences = para.split('.')
-                if sentences[0].strip():
-                    bullets.append(f"- {sentences[0].strip()}")
-            return '\n'.join(bullets)
-        else:
-            # Extract first N words
-            summary_words = words[:max_length]
-            summary = ' '.join(summary_words)
-
-            # Try to end at sentence boundary
-            last_period = summary.rfind('.')
-            if last_period > len(summary) * 0.7:
-                summary = summary[:last_period + 1]
-            else:
-                summary += "..."
-
-            return summary
+        except httpx.HTTPError as e:
+            logger.error(f"Daemon request failed: {e}")
+            raise RuntimeError(f"Failed to ingest content: {e}")
 
     # ========================================================================
     # TOOL: list
