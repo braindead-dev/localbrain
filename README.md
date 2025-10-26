@@ -1,4 +1,4 @@
-# 🧠 LocalBrain
+# LocalBrain
 
 > **The personalization layer for the next generation of AI apps**  
 > Provide AI apps with context about your life, on autopilot.
