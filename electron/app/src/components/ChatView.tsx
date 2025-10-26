@@ -19,7 +19,7 @@ const initialMessages: Message[] = [
   {
     id: "1",
     role: "assistant",
-    content: "Hi! I'm LocalBrain, your personal knowledge assistant. I can help you search through all your connected data sources and find the information you need. What would you like to know?",
+    content: "Hi! I'm LocalBrain. I can search through your vault using natural language. Ask me anything about your notes, emails, messages, or any content you've ingested.",
     timestamp: new Date(),
   },
 ];

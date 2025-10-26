@@ -32,38 +32,29 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [daemonConnected, setDaemonConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // Load config from backend
+    const loadConfig = async () => {
+      try {
+        const config = await api.getConfig();
+        if (config.vault_path) {
+          setVaultPath(config.vault_path);
+        } else {
+          // No vault configured - show setup
+          setShowSetup(true);
+          onSetupVisibilityChange(true);
+        }
+      } catch (error) {
+        console.error("Failed to load config:", error);
+      }
+    };
+    
+    loadConfig();
+    
     // Check daemon health periodically
     const interval = setInterval(checkDaemonHealth, 5000);
     checkDaemonHealth();
     
-    // Check if vault location is already set
-    const savedPath = localStorage.getItem("localBrainVaultPath");
-    const carouselSeen = localStorage.getItem("localBrainCarouselSeen");
-    const welcomeCompleted = localStorage.getItem("localBrainWelcomeCompleted");
-
-    setVaultPath(savedPath);
-    setHasSeenCarousel(carouselSeen === "true");
-    
     return () => clearInterval(interval);
-
-    // If welcome widget was completed before, mark all steps as completed
-    if (welcomeCompleted === "true") {
-      setCompletedSteps([1, 2, 3]);
-    }
-
-    if (!savedPath) {
-      if (!carouselSeen) {
-        // First time user - show carousel
-        setShowCarousel(true);
-        setShowSetup(false);
-        onSetupVisibilityChange(true);
-      } else {
-        // Returning user without vault - show setup directly
-        setShowSetup(true);
-        setIsFirstTime(true);
-        onSetupVisibilityChange(true);
-      }
-    }
   }, [onSetupVisibilityChange]);
 
   const checkDaemonHealth = async () => {
@@ -100,15 +91,30 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
     }
   };
 
-  const handleConfirmPath = () => {
+  const handleConfirmPath = async () => {
     if (pathInput && pathInput.trim()) {
       const trimmedPath = pathInput.trim();
-      localStorage.setItem("localBrainVaultPath", trimmedPath);
-      setVaultPath(trimmedPath);
-      setShowSetup(false);
-      setShowPathDialog(false);
-      setPathInput("");
-      onSetupVisibilityChange(false);
+      
+      try {
+        // Update backend config
+        const response = await api.updateConfig({ vault_path: trimmedPath });
+        
+        if (response.success) {
+          setVaultPath(trimmedPath);
+          setShowSetup(false);
+          setShowPathDialog(false);
+          setPathInput("");
+          onSetupVisibilityChange(false);
+          
+          // Show restart message if needed
+          if (response.restart_required) {
+            alert("Vault path updated! Please restart the application for changes to take effect.");
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update vault path:", error);
+        alert("Failed to update vault path. Make sure the backend is running.");
+      }
     }
   };
 
