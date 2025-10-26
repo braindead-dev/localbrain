@@ -9,7 +9,8 @@
       "Bash(taskkill:*)",
       "Bash(chmod:*)",
       "Read(///**)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__gemini-cli__ask-gemini"
     ],
     "deny": [],
     "ask": []
