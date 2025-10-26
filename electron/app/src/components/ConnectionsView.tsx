@@ -38,8 +38,10 @@ interface Connector {
 const iconMap: Record<string, any> = {
   gmail: Mail,
   discord: MessageSquare,
+  imessage: MessageSquare,
   calendar: Calendar,
   browser: Globe,
+  browser_history: Globe,
 };
 
 export function ConnectionsView() {
@@ -49,8 +51,9 @@ export function ConnectionsView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
+  const [showFileDialog, setShowFileDialog] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
-  const [connectPath, setConnectPath] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Load connectors on mount
   useEffect(() => {
@@ -80,7 +83,32 @@ export function ConnectionsView() {
             }
           })
         );
-        setConnectors(connectorsWithStatus);
+        // Add a dummy iMessage connector for demonstration
+        const dummyIMessageConnector: Connector = {
+          id: "imessage",
+          name: "iMessage",
+          description: "Connect to iMessage to sync your conversations.",
+          version: "1.0.0",
+          auth_type: "file",
+          requires_config: true,
+          capabilities: ["chat"],
+          connected: false,
+          authenticated: false,
+        };
+
+        const dummyBrowserHistoryConnector: Connector = {
+          id: "browser_history",
+          name: "Browser History",
+          description: "Connect to browser history to sync your browsing.",
+          version: "1.0.0",
+          auth_type: "file",
+          requires_config: true,
+          capabilities: ["history"],
+          connected: false,
+          authenticated: false,
+        };
+
+        setConnectors([...connectorsWithStatus, dummyIMessageConnector, dummyBrowserHistoryConnector]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load connectors");
@@ -114,8 +142,10 @@ export function ConnectionsView() {
         return;
       }
 
-      // For OAuth connectors (gmail, calendar), start OAuth flow
-      if (connector.auth_type === 'oauth') {
+      if (connector.id === 'imessage' || connector.id === 'browser_history') {
+        setSelectedConnector(connector);
+        setShowFileDialog(true);
+      } else if (connector.auth_type === 'oauth') {
         console.log(`🔵 Starting OAuth flow for ${connector.id}...`);
         const authResult = await api.connectorAuthStart(connector.id);
         if (authResult.success && authResult.auth_url) {
@@ -145,9 +175,8 @@ export function ConnectionsView() {
           }, 3000); // Wait 3 seconds for OAuth to complete
         }
       } else {
-        // For other connectors (browser), show dialog
+        // For other connectors, show dialog
         setSelectedConnector(connector);
-        setConnectPath("");
         setShowConnectDialog(true);
       }
     } catch (err) {
@@ -183,22 +212,7 @@ export function ConnectionsView() {
             await loadConnectors();
           }, 3000);
         }
-      } else {
-        // Path-based auth (Browser connector)
-        const credentials = connectPath.trim() 
-          ? { history_path: connectPath.trim() }
-          : {}; // Empty will trigger auto-detection
-        
-        const result = await api.connectorAuth(selectedConnector.id, credentials);
-        
-        if (result.success) {
-          toast.success(`Connected to ${selectedConnector.name}!`);
-          setShowConnectDialog(false);
-          await loadConnectors();
-        } else {
-          toast.error(result.message || "Authentication failed");
-        }
-      }
+      } 
     } catch (err) {
       console.error("Connection error:", err);
       toast.error(err instanceof Error ? err.message : "Connection failed");
@@ -215,26 +229,36 @@ export function ConnectionsView() {
     return <Icon className="h-5 w-5" />;
   };
   return (
-    <div className="flex flex-col h-full">
+    <div className={`h-full flex flex-col bg-background m-4 rounded-2xl overflow-hidden border border-border shadow-2xl ${showFileDialog ? 'blur-sm' : ''}`}>
       {/* Header */}
-      <div className="border-b border-border p-4 bg-card shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
-              <Plug className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h2>Connectors</h2>
-              <p className="text-sm text-muted-foreground">
-                Manage data source integrations
-              </p>
-            </div>
+      <div className="border-b border-border px-6 py-5 bg-card shadow-sm space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
+            <Plug className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2>Connectors</h2>
+            <p className="text-sm text-muted-foreground">
+              Manage data source integrations
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 pl-14">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search connectors..."
+              className="pl-10 shadow-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
           <Button
             variant="outline"
             size="sm"
             onClick={loadConnectors}
             disabled={loading}
+            className="ml-2"
           >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -243,20 +267,11 @@ export function ConnectionsView() {
             )}
           </Button>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search connectors..."
-            className="pl-10 shadow-sm"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
       </div>
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-4">
+        <div className="px-6 py-8 space-y-4">
           {error && (
             <div className="p-4 border border-destructive bg-destructive/10 rounded-lg text-destructive">
               {error}
@@ -276,96 +291,126 @@ export function ConnectionsView() {
               </p>
             </div>
           ) : (
-            filteredConnectors.map((connector) => (
-              <Card key={connector.id} className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* Icon */}
-                  <div className="p-3 bg-primary/10 rounded-lg flex-shrink-0">
-                    {getIcon(connector.id)}
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredConnectors.map((connector) => (
+                <Card key={connector.id} className="p-4 flex flex-col">
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className="p-3 bg-primary/10 rounded-lg flex-shrink-0">
+                      {getIcon(connector.id)}
+                    </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{connector.name}</h3>
-                          {connector.connected ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {connector.description}
-                        </p>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium">{connector.name}</h3>
+                        {connector.connected ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </div>
-                      <Badge variant="outline" className="flex-shrink-0">
-                        v{connector.version}
+                      <Badge variant="outline" className="text-xs mb-2">
+                          v{connector.version}
                       </Badge>
-                    </div>
-
-                    {/* Metadata */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {connector.auth_type}
-                      </Badge>
-                      {connector.capabilities.map((cap) => (
-                        <Badge key={cap} variant="outline" className="text-xs">
-                          {cap}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Last Sync */}
-                    {connector.last_sync && (
-                      <p className="text-xs text-muted-foreground mb-3">
-                        Last synced: {new Date(connector.last_sync).toLocaleString()}
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {connector.description}
                       </p>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      {connector.connected && connector.authenticated ? (
-                        <>
-                          <Button
-                            size="sm"
-                            onClick={() => handleSync(connector.id)}
-                            disabled={syncing === connector.id}
-                          >
-                            {syncing === connector.id ? (
-                              <>
-                                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                                Syncing...
-                              </>
-                            ) : (
-                              "Sync Now"
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDisconnect(connector.id)}
-                          >
-                            Disconnect
-                          </Button>
-                        </>
-                      ) : (
-                        <Button 
-                          size="sm"
-                          onClick={() => handleConnect(connector)}
-                        >
-                          Connect
-                        </Button>
-                      )}
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <Badge variant="secondary" className="text-xs">
+                      {connector.auth_type}
+                    </Badge>
+                    {connector.capabilities.map((cap) => (
+                      <Badge key={cap} variant="outline" className="text-xs">
+                        {cap}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Last Sync */}
+                  {connector.last_sync && (
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Last synced: {new Date(connector.last_sync).toLocaleString()}
+                    </p>
+                  )}
+
+                  {/* Spacer to push actions to the bottom */}
+                  <div className="flex-grow" />
+
+                  {/* Actions */}
+                  <div className="flex gap-2 mt-auto">
+                    {connector.connected && connector.authenticated ? (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSync(connector.id)}
+                          disabled={syncing === connector.id}
+                          className="w-full"
+                        >
+                          {syncing === connector.id ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                              Syncing...
+                            </>
+                          ) : (
+                            "Sync Now"
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDisconnect(connector.id)}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        size="sm"
+                        onClick={() => handleConnect(connector)}
+                        className="w-full"
+                      >
+                        Connect
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       </ScrollArea>
+
+      {/* File Dialog */}
+      <Dialog open={showFileDialog} onOpenChange={setShowFileDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select File</DialogTitle>
+            <DialogDescription>
+              Please select the appropriate file for {selectedConnector?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              This is a placeholder for a file dialog. In a real application, you would use a file input to select the file.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowFileDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={() => setShowFileDialog(false)}>
+              Select
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Connect Dialog */}
       <Dialog open={showConnectDialog} onOpenChange={setShowConnectDialog}>
@@ -377,10 +422,6 @@ export function ConnectionsView() {
                 <>
                   Click Connect to authorize {selectedConnector?.name} access via OAuth
                 </>
-              ) : selectedConnector?.id === 'browser' ? (
-                <>
-                  Leave blank to auto-detect Chrome, or enter custom browser history path
-                </>
               ) : (
                 <>Configure connection settings for {selectedConnector?.name}</>
               )}
@@ -388,25 +429,11 @@ export function ConnectionsView() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {selectedConnector?.auth_type === 'oauth' ? (
+            {selectedConnector?.auth_type === 'oauth' && (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
                   You will be redirected to {selectedConnector?.name} to authorize access.
                   After authorization, you'll be redirected back to LocalBrain.
-                </p>
-              </div>
-            ) : selectedConnector?.id === 'browser' && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Browser History Path (optional)
-                </label>
-                <Input
-                  placeholder="Leave blank for auto-detect, or enter path..."
-                  value={connectPath}
-                  onChange={(e) => setConnectPath(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Example: ~/Library/Application Support/Google/Chrome/Default/History
                 </p>
               </div>
             )}

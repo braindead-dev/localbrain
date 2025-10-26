@@ -23,7 +23,14 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [isFirstTime, setIsFirstTime] = useState(true);
   const [showPathDialog, setShowPathDialog] = useState(false);
   const [pathInput, setPathInput] = useState("");
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [completedSteps, setCompletedSteps] = useState<number[]>(() => {
+    // Initialize from localStorage to prevent flash
+    if (typeof window !== 'undefined') {
+      const welcomeCompleted = localStorage.getItem("localBrainWelcomeCompleted");
+      return welcomeCompleted === "true" ? [1, 2, 3] : [];
+    }
+    return [];
+  });
   const [dismissedWidgets, setDismissedWidgets] = useState<string[]>([]);
   const [expandedSection, setExpandedSection] = useState<'connectors' | 'ingestion' | 'vault' | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -32,6 +39,11 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [daemonConnected, setDaemonConnected] = useState<boolean | null>(null);
   const [mcpConnected, setMcpConnected] = useState<boolean | null>(null);
   const [mcpEnabled, setMcpEnabled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     // Load config from backend
@@ -49,9 +61,9 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
         console.error("Failed to load config:", error);
       }
     };
-    
+
     loadConfig();
-    
+
     // Check daemon and MCP health periodically
     const interval = setInterval(() => {
       checkDaemonHealth();
@@ -59,7 +71,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
     }, 5000);
     checkDaemonHealth();
     if (mcpEnabled) checkMcpHealth();
-    
+
     return () => clearInterval(interval);
   }, [onSetupVisibilityChange]);
 
@@ -229,12 +241,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
                 <div className="h-2 w-2 rounded-full bg-yellow-500" />
                 <span>Daemon</span>
               </div>
-            ) : (
-              <div className="flex items-center gap-1.5 text-xs text-destructive">
-                <XCircle className="h-4 w-4" />
-                <span>Offline</span>
-              </div>
-            )}
+            ) : null}
 
             {/* MCP Status & Toggle */}
             {daemonConnected && (
@@ -271,7 +278,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
             <div className="max-w-7xl mx-auto space-y-6">
               {/* Quick Start Guide */}
               <AnimatePresence>
-                {!allStepsCompleted && (
+                {isMounted && !allStepsCompleted && (
                   <motion.div
                     initial={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0, marginBottom: 0 }}
@@ -393,7 +400,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
 
               {/* System Status and Activity Feed - Side by Side */}
               <AnimatePresence>
-                {allStepsCompleted && (
+                {isMounted && allStepsCompleted && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
