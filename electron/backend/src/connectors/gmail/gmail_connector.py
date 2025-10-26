@@ -130,7 +130,12 @@ class GmailConnector(BaseConnector):
     
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
         """Fetch new emails since last sync."""
+        print(f"\n📧 [Gmail] Starting fetch_updates...")
+        print(f"   - since: {since}")
+        print(f"   - limit: {limit}")
+        
         if not self.is_authenticated():
+            print("❌ [Gmail] Not authenticated, cannot fetch updates")
             return []
         
         try:
@@ -139,9 +144,11 @@ class GmailConnector(BaseConnector):
                 # Calculate minutes since the timestamp
                 now = datetime.now()
                 minutes_diff = int((now - since).total_seconds() / 60)
+                print(f"   - Fetching emails from last {minutes_diff} minutes (since last sync)")
                 result = self._sync_emails(max_results=limit or 100, minutes=max(minutes_diff, 1))
             else:
                 # Default to last 7 days (1 week) on first sync
+                print(f"   - First sync: fetching emails from last 7 days")
                 result = self._sync_emails(max_results=limit or 100, minutes=10080)  # 7 days = 7 * 24 * 60 = 10080 minutes
             
             # Convert to ConnectorData format
@@ -154,10 +161,23 @@ class GmailConnector(BaseConnector):
                     metadata=email_data['metadata']
                 ))
             
+            print(f"✅ [Gmail] Fetched {len(connector_data)} emails")
+            if len(connector_data) > 0:
+                print(f"   📬 Email subjects:")
+                for i, email in enumerate(connector_data[:5], 1):  # Show first 5
+                    subject = email.metadata.get('quote', 'No subject')
+                    print(f"      {i}. {subject[:60]}...")
+                if len(connector_data) > 5:
+                    print(f"      ... and {len(connector_data) - 5} more")
+            else:
+                print(f"   ℹ️  No new emails found")
+            
             return connector_data
             
         except Exception as e:
-            print(f"Error fetching Gmail updates: {e}")
+            print(f"❌ [Gmail] Error fetching updates: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def _parse_email_timestamp(self, timestamp_str: str) -> datetime:
@@ -184,7 +204,14 @@ class GmailConnector(BaseConnector):
         - Uses proper citations and formatting
         - Follows vault structure (personal/, career/, etc.)
         """
-        if not self.vault_path or not items:
+        print(f"\n🔄 [Gmail Ingestion] Starting agentic ingestion for {len(items)} emails...")
+        
+        if not self.vault_path:
+            print(f"❌ [Gmail Ingestion] No vault path configured, skipping ingestion")
+            return 0
+        
+        if not items:
+            print(f"ℹ️  [Gmail Ingestion] No items to ingest")
             return 0
         
         try:
@@ -193,12 +220,18 @@ class GmailConnector(BaseConnector):
             sys.path.insert(0, str(Path(__file__).parent.parent.parent))
             from agentic_ingest import AgenticIngestionPipeline
             
+            print(f"   - Vault path: {self.vault_path}")
+            print(f"   - Initializing agentic ingestion pipeline...")
+            
             # Initialize pipeline
             pipeline = AgenticIngestionPipeline(self.vault_path)
             
             ingested_count = 0
-            for item in items:
+            for i, item in enumerate(items, 1):
                 try:
+                    subject = item.metadata.get('quote', 'No subject')
+                    print(f"\n   📝 [{i}/{len(items)}] Ingesting: {subject[:60]}...")
+                    
                     # Prepare source metadata for the pipeline
                     source_metadata = {
                         'platform': 'Gmail',
@@ -206,6 +239,8 @@ class GmailConnector(BaseConnector):
                         'url': item.metadata.get('url'),
                         'quote': item.metadata.get('quote', item.content[:200] + '...' if len(item.content) > 200 else item.content)
                     }
+                    
+                    print(f"      - Analyzing content and determining vault location...")
                     
                     # Use the agentic pipeline to ingest
                     result = pipeline.ingest(
@@ -215,18 +250,26 @@ class GmailConnector(BaseConnector):
                     
                     if result.get('success', False):
                         ingested_count += 1
-                        print(f"✅ Ingested Gmail email: {item.metadata.get('quote', 'Email')[:50]}...")
+                        file_path = result.get('file_path', 'unknown')
+                        print(f"      ✅ Successfully ingested to: {file_path}")
                     else:
-                        print(f"⚠️  Failed to ingest Gmail email: {result.get('errors', ['Unknown error'])}")
+                        errors = result.get('errors', ['Unknown error'])
+                        print(f"      ⚠️  Failed to ingest: {errors}")
                         
                 except Exception as e:
-                    print(f"⚠️  Error ingesting Gmail item: {e}")
+                    print(f"      ❌ Error ingesting item: {e}")
+                    import traceback
+                    traceback.print_exc()
                     continue
             
+            print(f"\n✅ [Gmail Ingestion] Completed: {ingested_count}/{len(items)} emails successfully ingested")
             return ingested_count
             
         except Exception as e:
-            print(f"⚠️  Agentic ingestion failed, falling back to simple ingestion: {e}")
+            print(f"❌ [Gmail Ingestion] Agentic ingestion failed: {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"   - Falling back to simple ingestion...")
             # Fallback to simple ingestion if agentic pipeline fails
             return self._ingest_data(items)
     
@@ -235,18 +278,38 @@ class GmailConnector(BaseConnector):
         Override BaseConnector sync to handle Gmail-specific time windows.
         Gmail often wants to fetch emails from a specific time window rather than incremental sync.
         """
+        print(f"\n" + "="*60)
+        print(f"🔄 [Gmail Sync] Starting sync...")
+        print(f"   - auto_ingest: {auto_ingest}")
+        print(f"   - limit: {limit}")
+        print(f"   - vault_path: {self.vault_path}")
+        print("="*60)
+        
         try:
             # Always fetch updates (Gmail doesn't follow strict incremental sync)
             items = self.fetch_updates(limit=limit)
             
             # Optionally ingest using Agentic Ingestion Pipeline
             ingested_count = 0
-            if auto_ingest and self.vault_path:
-                ingested_count = self._ingest_data_agentic(items)
+            if auto_ingest:
+                if self.vault_path:
+                    print(f"\n🔄 [Gmail Sync] Auto-ingest enabled, starting ingestion...")
+                    ingested_count = self._ingest_data_agentic(items)
+                else:
+                    print(f"⚠️  [Gmail Sync] Auto-ingest enabled but no vault path configured")
+            else:
+                print(f"ℹ️  [Gmail Sync] Auto-ingest disabled, skipping ingestion")
             
             # Update last sync timestamp
             now = datetime.now()
             self._save_last_sync(now)
+            
+            print(f"\n" + "="*60)
+            print(f"✅ [Gmail Sync] Completed successfully")
+            print(f"   - Emails fetched: {len(items)}")
+            print(f"   - Emails ingested: {ingested_count}")
+            print(f"   - Last sync: {now.isoformat()}")
+            print("="*60 + "\n")
             
             return SyncResult(
                 success=True,
@@ -256,6 +319,11 @@ class GmailConnector(BaseConnector):
             )
             
         except Exception as e:
+            print(f"\n❌ [Gmail Sync] Failed: {e}")
+            import traceback
+            traceback.print_exc()
+            print("="*60 + "\n")
+            
             return SyncResult(
                 success=False,
                 errors=[str(e)]
