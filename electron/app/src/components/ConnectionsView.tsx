@@ -102,6 +102,23 @@ export function ConnectionsView() {
     }
   };
 
+  const handleConnect = async (connectorId: string) => {
+    try {
+      // Start OAuth flow for the connector
+      const authResult = await api.connectorAuthStart(connectorId);
+      if (authResult.success && authResult.auth_url) {
+        // Open OAuth URL in new window
+        window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
+        // Reload connectors after a short delay to check for new connections
+        setTimeout(() => {
+          loadConnectors();
+        }, 2000);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start connection");
+    }
+  };
+
   const handleDisconnect = async (connectorId: string) => {
     try {
       await api.connectorRevoke(connectorId);
@@ -288,8 +305,9 @@ export function ConnectionsView() {
                         </>
                       ) : (
                         <Button 
-                          size="sm"
-                          onClick={() => handleConnect(connector)}
+                          size="sm" 
+                          onClick={() => handleConnect(connector.id)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Connect
                         </Button>

@@ -213,6 +213,20 @@ class ApiClient {
   }
 
   /**
+   * Start OAuth flow for connector
+   */
+  async connectorAuthStart(connectorId: string): Promise<{ auth_url: string; success: boolean }> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/auth/start`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `Failed to start ${connectorId} auth`);
+    }
+    return response.json();
+  }
+
+  /**
    * Authenticate connector
    */
   async connectorAuth(connectorId: string, credentials: any): Promise<{ success: boolean; message?: string; error?: string }> {
