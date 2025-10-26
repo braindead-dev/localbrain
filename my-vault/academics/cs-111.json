@@ -118,5 +118,17 @@
     "timestamp": "2025-10-24T03:47:12+00:00",
     "url": null,
     "quote": "Quiz 2 will be due next Wednesday. The quiz will take place in the CS department's test center in Winston Chung Hall 132."
+  },
+  "21": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-23T06:07:59+00:00",
+    "url": null,
+    "quote": "Your Quiz 1 B for CS111, Fall 2025 has been graded!"
+  },
+  "22": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-23T06:07:17+00:00",
+    "url": null,
+    "quote": "Your Quiz 1 B for CS111, Fall 2025 has been graded!"
   }
 }
