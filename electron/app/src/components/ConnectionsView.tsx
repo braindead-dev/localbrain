@@ -85,7 +85,20 @@ export function ConnectionsView() {
           })
         );
 
-        setConnectors(connectorsWithStatus);
+        // Add dummy Browser History connector
+        const dummyBrowserHistoryConnector: Connector = {
+          id: "browser_history",
+          name: "Browser History",
+          description: "Connect to browser history to sync your browsing.",
+          version: "1.0.0",
+          auth_type: "file",
+          requires_config: true,
+          capabilities: ["history"],
+          connected: false,
+          authenticated: false,
+        };
+
+        setConnectors([...connectorsWithStatus, dummyBrowserHistoryConnector]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load connectors");
