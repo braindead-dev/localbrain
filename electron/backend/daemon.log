@@ -1,0 +1,1470 @@
+/Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/electron/backend/src/daemon.py:150: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - ============================================================
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - LocalBrain Background Daemon Starting...
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - ============================================================
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - Vault: /Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/my-vault
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - Port: 8765
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - Protocol: localbrain://
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - 
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - Available endpoints:
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /protocol/ingest - Ingest content
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /protocol/search - Natural language search
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /file/<path>      - Get file contents
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /list/<path>      - List directory
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - 
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - Gmail Connector:
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /connectors/gmail/auth/start    - Start OAuth
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /connectors/gmail/auth/callback - OAuth callback
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /connectors/gmail/auth/revoke   - Disconnect Gmail
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /connectors/gmail/status        - Connection status
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /connectors/gmail/sync          - Sync & ingest emails
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /connectors/gmail/emails/recent - Fetch recent emails
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - 
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO - Google Calendar Connector:
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /connectors/calendar/auth/start      - Start OAuth
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /connectors/calendar/auth/callback   - OAuth callback
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /connectors/calendar/auth/revoke     - Disconnect Calendar
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   GET  /connectors/calendar/status          - Connection status
+2025-10-25 17:57:40,740 - localbrain-daemon - INFO -   POST /connectors/calendar/sync            - Sync & ingest events
+2025-10-25 17:57:40,741 - localbrain-daemon - INFO -   GET  /connectors/calendar/events/upcoming - Fetch upcoming events
+2025-10-25 17:57:40,741 - localbrain-daemon - INFO - 
+2025-10-25 17:57:40,741 - localbrain-daemon - INFO - 
+2025-10-25 17:57:40,741 - localbrain-daemon - INFO - Service running. Press Ctrl+C to stop.
+2025-10-25 17:57:40,741 - localbrain-daemon - INFO - ============================================================
+INFO:     Started server process [54922]
+INFO:     Waiting for application startup.
+2025-10-25 17:57:40,751 - localbrain-daemon - INFO - 📅 Auto-sync task started (runs every 10 minutes)
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8765 (Press CTRL+C to quit)
+2025-10-25 17:57:54,000 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-10-25 17:57:57,778 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+✅ Discovered connector: Google Calendar (calendar)
+✅ Discovered connector: Gmail (gmail)
+🤖 Initialized agentic ingestion pipeline
+📂 Vault: /Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/my-vault
+🧠 Model: claude-haiku-4-5-20251001
+✨ Features: fuzzy matching, validation, retry (95% success)
+
+📥 Ingesting content...
+   Context preview: Subject: New messages from Sumin [Cal Hacks], Corey Mostero [Cal Hacks], and more in Cal Hacks 12.0
+...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: projects/LocalBrain.md (secondary)
+     Content: ## Data Sources Tested
+
+- Slack: Cal Hacks 12.0 workspace no...
+     Reason: Document Slack as tested data connector source
+
+📝 Processing: projects/LocalBrain.md
+   Appending to file...
+   ✅ Updated: LocalBrain.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Sumin [Cal Hacks], Corey Mostero...
+INFO:     127.0.0.1:59950 - "POST /connectors/gmail/sync?limit=1&ingest=true HTTP/1.1" 200 OK
+2025-10-25 17:58:40,752 - localbrain-daemon - INFO - 🔄 Auto-sync: Checking all connectors...
+2025-10-25 17:58:47,138 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:58:50,404 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:58:53,902 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:58:57,500 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:01,371 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:04,514 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:09,050 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:11,643 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:15,094 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+🤖 Initialized agentic ingestion pipeline
+📂 Vault: /Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/my-vault
+🧠 Model: claude-haiku-4-5-20251001
+✨ Features: fuzzy matching, validation, retry (95% success)
+
+📥 Ingesting content...
+   Context preview: Subject: New messages from Sumin [Cal Hacks], Corey Mostero [Cal Hacks], and more in Cal Hacks 12.0
+...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: projects/LocalBrain.md (secondary)
+     Content: ## Data Sources Tested
+
+- Slack: Cal Hacks 12.0 workspace no...
+     Reason: Document Slack as tested data connector source
+
+📝 Processing: projects/LocalBrain.md
+   Appending to file...
+   ✅ Updated: LocalBrain.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Sumin [Cal Hacks], Corey Mostero...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Morgan Fung [Cal Hacks], Nicole Lee [Cal Hacks], and more in Cal Hacks 12...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/About Me.md (secondary)
+     Content: Attended Cal Hacks 12.0 (October 25, 2025) [1]...
+     Reason: Document hackathon attendance as relevant event
+
+📝 Processing: personal/About Me.md
+   Appending to file...
+   ✅ Updated: About Me.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Morgan Fung [Cal Hacks], Nicole ...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Corey Mostero [Cal Hacks], Nathan Rhee [Cal Hacks], and more in Cal Hacks...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: projects/LocalBrain.md (secondary)
+     Content: ## Data Sources Tracked
+
+- Gmail
+- Slack (Cal Hacks 12.0 wor...
+     Reason: Document Slack as active data source being ingested
+
+📝 Processing: projects/LocalBrain.md
+   Appending to file...
+   ✅ Updated: LocalBrain.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Corey Mostero [Cal Hacks], Natha...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Maitree Anand Meher and Dylan [Cal Hacks] in Cal Hacks 12.0
+From: Slack <...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - CREATE: personal/Events.md (secondary)
+     Content: ## Cal Hacks 12.0
+
+**Event:** Cal Hacks 12.0 hackathon with ...
+     Reason: New hackathon event with specific workshop details
+
+📝 Processing: personal/Events.md
+   Creating new file...
+   ✅ Created: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Maitree Anand Meher and Dylan [C...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Pranav Prabhuram [Cal Hacks], Valerie [Cal Hacks], and more in Cal Hacks ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Ripple workshop at 3:15 PM in Doe breakout 3 [1]
+- Food di...
+     Reason: Add specific workshop and activity details from Cal Hacks 12.0 announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Pranav Prabhuram [Cal Hacks], Va...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Pranav Prabhuram [Cal Hacks] and Dylan [Cal Hacks] in Cal Hacks 12.0
+From...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Ripple workshop at 3:15 PM in Doe brea...
+     Replace: - Ripple workshop at 3:15 PM in Doe brea...
+     Reason: Confirm Ripple workshop time/location with new source, update yoga location from Bancroft to breakout 4
+
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [3])
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Pranav Prabhuram [Cal Hacks] and...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Dylan [Cal Hacks], Charlie [Cal Hacks], and more in Cal Hacks 12.0
+From: ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 2 edit plan(s):
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Creao AI workshop with code export cap...
+     Replace: - Creao AI Networking & Yoga Session 3–5...
+     Reason: N/A
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Ripple workshop at 3:15 PM in Doe brea...
+     Replace: - Ripple workshop at 3:15 PM in Doe brea...
+     Reason: N/A
+
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [4])
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [5])
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Dylan [Cal Hacks], Charlie [Cal ...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Morgan Fung [Cal Hacks] and Dylan [Cal Hacks] in Cal Hacks 12.0
+From: Sla...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Creao AI Networking & Yoga Session 3–5...
+     Replace: - Creao AI Networking & Yoga Session 3–5...
+     Reason: Confirm existing event details with new Slack source
+
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [6])
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Morgan Fung [Cal Hacks] and Dyla...
+📥 Ingesting content...
+   Context preview: Subject: New messages from sampoder [cal hacks] and Morgan Fung [Cal Hacks] in Cal Hacks 12.0
+From: ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Lunch service: Seconds starting for lunch with loads avail...
+     Reason: Add specific workshop and food details from Cal Hacks 12.0 announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from sampoder [cal hacks] and Morgan ...
+📥 Ingesting content...
+   Context preview: Subject: Thanks for riding with Waymo
+From: Waymo Receipts <noreply@waymo.com>
+To: pranavbalaji9276@...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+2025-10-25 17:59:18,494 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:22,668 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:26,471 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:31,270 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:36,278 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:39,787 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:42,142 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:44,305 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:45,911 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:48,858 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 17:59:54,124 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (secondary)
+     Content: - Waymo ride from Palace of Fine Arts to Heyma Yemeni Coffee...
+     Reason: Document activity on October 25, 2025 event day
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: Thanks for riding with Waymo...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Dylan [Cal Hacks], Shreya [Cal Hacks], and more in Cal Hacks 12.0
+From: S...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Postman Coffee Chat 12 PM: 1:1 coffee chat with recruiter ...
+     Reason: Adding new Cal Hacks 12.0 activities from Slack announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Dylan [Cal Hacks], Shreya [Cal H...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Aarav Matalia, emily.sungsimon, and more in Cal Hacks 12.0
+From: Slack <n...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Postman Coffee Chat 12 PM at 2nd floor mezzanine: 1:1 Coff...
+     Reason: Add new sponsor events from Cal Hacks 12.0 on October 25
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Aarav Matalia, emily.sungsimon, ...
+📥 Ingesting content...
+   Context preview: Subject: “fa software engineer intern”: Lensa - Software Developer Intern posted on 10/24/25
+From: L...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: career/Job Search.md (primary)
+     Content: ## Job Alerts
+
+### LinkedIn Job Alert - Software Engineer In...
+     Reason: Add new job alert findings to track internship opportunities
+
+📝 Processing: career/Job Search.md
+   Appending to file...
+   ✅ Updated: Job Search.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: “fa software engineer intern”: Lensa - Software De...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Morgan Fung [Cal Hacks], Kiana [Cal Hacks], and more in Cal Hacks 12.0
+Fr...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: 
+- Meter Core AI Team Building: Autonomous Networking sessio...
+     Reason: Adding new activities and sponsor sessions from Cal Hacks 12.0 event announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Morgan Fung [Cal Hacks], Kiana [...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Morgan Fung [Cal Hacks] and Kiana [Cal Hacks] in Cal Hacks 12.0
+From: Sla...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Meter Core AI Team Building: Autonomous Networking recruit...
+     Reason: Adding new Cal Hacks 12.0 activities and recruiting opportunity from Slack announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Morgan Fung [Cal Hacks] and Kian...
+📥 Ingesting content...
+   Context preview: Subject: AWS Went Down — and Took the Internet With It
+From: Built In <support@builtin.com>
+To: pran...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 0 edit plan(s):
+
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+💡 No edits needed - content appears to be duplicate or already exists
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: AWS Went Down — and Took the Internet With It...
+📥 Ingesting content...
+   Context preview: Subject: job offer
+From: Pranav Balaji <pranavbalaji9276@gmail.com>
+To: Pranav Balaji <pranavbalaji9...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/About Me.md (secondary)
+     Content: Received full-time Software Engineer offer at NVIDIA [1]....
+     Reason: Add NVIDIA offer to career section for context
+
+📝 Processing: personal/About Me.md
+   Appending to file...
+   ✅ Updated: About Me.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: job offer...
+📥 Ingesting content...
+   Context preview: Subject: hello
+From: Pranav Balaji <pranavbalaji9276@gmail.com>
+To: Pranav Balaji <pranavbalaji9276@...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 0 edit plan(s):
+
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+💡 No edits needed - content appears to be duplicate or already exists
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: hello...
+📥 Ingesting content...
+   Context preview: Subject: Thank you for applying to Uber Freight
+From: no-reply@uberfreight.com
+To: pranavbalaji9276@...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: career/Job Search.md (primary)
+     Content: ### Uber Freight - Software Engineer
+- **Applied:** October ...
+     Reason: New application to track in active job search
+
+📝 Processing: career/Job Search.md
+   Appending to file...
+   ✅ Updated: Job Search.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: Thank you for applying to Uber Freight...
+📥 Ingesting content...
+   Context preview: Subject: “software engineering intern”: Lensa - Software Developer Intern and more
+From: LinkedIn Jo...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: career/Job Search.md (primary)
+     Content: ## Job Alerts
+
+### LinkedIn Job Alert - Software Engineering...
+     Reason: Add new job alert findings to active job search tracking
+
+📝 Processing: career/Job Search.md
+   Appending to file...
+   ✅ Updated: Job Search.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: “software engineering intern”: Lensa - Software De...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Dylan [Cal Hacks] and Flora [Cal Hacks] in Cal Hacks 12.0
+From: Slack <no...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+2025-10-25 17:59:57,874 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:03,766 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:08,172 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:13,689 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:17,435 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:20,514 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:23,599 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:29,378 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:32,897 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:35,768 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - AppLovin Coffee Chats upstairs in AppLovin Lounge: recruit...
+     Reason: Add new coffee chat events from Cal Hacks 12.0 on October 25th
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Dylan [Cal Hacks] and Flora [Cal...
+📥 Ingesting content...
+   Context preview: Subject: “software engineering intern”: Lensa - Software Developer Intern and more
+From: LinkedIn Jo...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: career/Job Search.md (primary)
+     Content: 
+## Job Alerts - October 25, 2025
+
+### Lensa - Software Deve...
+     Reason: Add new job opportunities from LinkedIn alert to active applications tracking
+
+📝 Processing: career/Job Search.md
+   Appending to file...
+   ✅ Updated: Job Search.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: “software engineering intern”: Lensa - Software De...
+📥 Ingesting content...
+   Context preview: Subject: HRConnect-Password Expiry Warning
+From: hrconnect@info.staples.com
+To: pranavbalaji9276@gma...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - CREATE: personal/Administrative.md (primary)
+     Content: # Administrative Tasks
+
+## Staples HRConnect Password Reset
+...
+     Reason: New administrative task requiring action - create dedicated file for tracking
+
+📝 Processing: personal/Administrative.md
+   Creating new file...
+   ✅ Created: Administrative.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: HRConnect-Password Expiry Warning...
+📥 Ingesting content...
+   Context preview: Subject: Good food. Free food. Quick!
+From: Uber <uber@uber.com>
+To: pranavbalaji9276@gmail.com
+Date...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - CREATE: personal/Promotions and Offers.md (primary)
+     Content: # Promotions and Offers
+
+## Uber Eats - $25 Off First 2 Orde...
+     Reason: New promotional offer with specific discount code and terms
+
+📝 Processing: personal/Promotions and Offers.md
+   Creating new file...
+   ✅ Created: Promotions and Offers.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: Good food. Free food. Quick!...
+📥 Ingesting content...
+   Context preview: Subject: New messages from sampoder [cal hacks] and Neha Gopal [Cal Hacks] in Cal Hacks 12.0
+From: S...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Cold plunge activity: leaving from check-in at https://map...
+     Reason: Adding new Cal Hacks 12.0 activities mentioned in Slack announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from sampoder [cal hacks] and Neha Go...
+📥 Ingesting content...
+   Context preview: Subject: sid.songirkar@icloud.com has invited you to join sid_songirkar on Chroma
+From: Chroma <hell...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Administrative.md (secondary)
+     Content: ## Chroma Team Invitation
+
+**Status:** Pending
+
+**From:** si...
+     Reason: New administrative task requiring action
+
+📝 Processing: personal/Administrative.md
+   Appending to file...
+   ✅ Updated: Administrative.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: sid.songirkar@icloud.com has invited you to join s...
+📥 Ingesting content...
+   Context preview: Subject: You made it!
+From: Tinder <tinder@mail.tinder.com>
+To: pranavbalaji9276@gmail.com
+Date: Sat...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - CREATE: personal/Accounts and Logins.md (primary)
+     Content: ## Tinder
+
+**Status:** Account created [1]
+
+**Confirmation:*...
+     Reason: New account creation - no existing Tinder record in vault
+
+📝 Processing: personal/Accounts and Logins.md
+   Creating new file...
+   ✅ Created: Accounts and Logins.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: You made it!...
+📥 Ingesting content...
+   Context preview: Subject: Secure Your Tinder Account – Verify Email Address
+From: Tinder <noreply@gotinder.com>
+To: p...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 2 edit plan(s):
+   - UPDATE_CITATION: personal/Accounts and Logins.md (primary)
+     Search: **Confirmation:** Received verification ...
+     Replace: **Confirmation:** Received verification ...
+     Reason: N/A
+   - APPEND: personal/Accounts and Logins.md (primary)
+     Content: 
+**Verification Email:** Sent from noreply@gotinder.com on O...
+     Reason: Add verification email details and link from Tinder
+
+📝 Processing: personal/Accounts and Logins.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Accounts and Logins.md (added [2])
+📝 Processing: personal/Accounts and Logins.md
+   Appending to file...
+   ✅ Updated: Accounts and Logins.md
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: Secure Your Tinder Account – Verify Email Address...
+📥 Ingesting content...
+   Context preview: Subject: sampoder [cal hacks] mentioned you in #announcements
+From: Slack <notification@slack.com>
+T...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Ice cream social and cold plunge activity: ice cream with ...
+     Reason: Add new Cal Hacks 12.0 activities from Slack announcement
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: sampoder [cal hacks] mentioned you in #announcemen...
+📥 Ingesting content...
+   Context preview: Subject: sampoder [cal hacks] mentioned you in #announcements
+From: Slack <notification@slack.com>
+T...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (secondary)
+     Content: - Ice cream social with seconds available [1]...
+     Reason: Add social activity detail to Cal Hacks 12.0 event
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: sampoder [cal hacks] mentioned you in #announcemen...
+📥 Ingesting content...
+   Context preview: Subject: DCU Alert: Suspicious Login Attempt Detected
+From: DCU <no-reply@notification-alerts.dcu.or...
+2025-10-25 18:00:40,236 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:43,228 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:47,252 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:51,962 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:00:56,377 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:02,507 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:06,645 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:10,700 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:13,797 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:16,954 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Accounts and Logins.md (primary)
+     Content: ## DCU (Digital Federal Credit Union)
+
+**Status:** Active ac...
+     Reason: New security alert for DCU account requires documentation
+
+📝 Processing: personal/Accounts and Logins.md
+   Appending to file...
+   ✅ Updated: Accounts and Logins.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: DCU Alert: Suspicious Login Attempt Detected...
+📥 Ingesting content...
+   Context preview: Subject: New messages from sampoder [cal hacks] and Morgan Fung [Cal Hacks] in Cal Hacks 12.0
+From: ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Showers available until midnight, 5 minutes max per shower...
+     Reason: Add new Cal Hacks 12.0 event details from Slack announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from sampoder [cal hacks] and Morgan ...
+📥 Ingesting content...
+   Context preview: Subject: 2 min tour of Chroma Cloud
+From: Jeff Huber <jeff@hey.trychroma.com>
+To: pranavbalaji9276@g...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Accounts and Logins.md (primary)
+     Content: ## Chroma Cloud
+
+**Status:** Invited [1]
+
+**Email:** Receive...
+     Reason: New product account invitation with login and resource links
+
+📝 Processing: personal/Accounts and Logins.md
+   Appending to file...
+   ✅ Updated: Accounts and Logins.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: 2 min tour of Chroma Cloud...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Jay [Cal Hacks], Shreya [Cal Hacks], and more in Cal Hacks 12.0
+From: Sla...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Cal Hacks x Clash Royale Tournament 7:30 PM on Mezzanine: ...
+     Reason: Add new Cal Hacks 12.0 activities announced for October 25, 2025
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Jay [Cal Hacks], Shreya [Cal Hac...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Maya Roseboro, Mihir [CAL HACKS], and more in Cal Hacks 12.0
+From: Slack ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: 
+## Attendee Notes
+
+**Food Allergies:** Participant Maya Ros...
+     Reason: Adding event logistics and attendee information from Cal Hacks 12.0 Slack discussion
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Maya Roseboro, Mihir [CAL HACKS]...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Maya Roseboro, Mihir [CAL HACKS], and more in Cal Hacks 12.0
+From: Slack ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: 
+## Cal Hacks 12.0 - October 24-25 Updates
+
+**Wifi Issues:**...
+     Reason: Add new event details and logistics from Cal Hacks 12.0 Slack updates
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Maya Roseboro, Mihir [CAL HACKS]...
+📥 Ingesting content...
+   Context preview: Subject: Welcome to Linear
+From: Linear <notifications@linear.app>
+To: pranavbalaji9276@gmail.com
+Da...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Accounts and Logins.md (primary)
+     Content: ## Linear
+
+**Status:** Account created [1]
+
+**Confirmation:*...
+     Reason: New account signup confirmation to track
+
+📝 Processing: personal/Accounts and Logins.md
+   Appending to file...
+   ✅ Updated: Accounts and Logins.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: Welcome to Linear...
+📥 Ingesting content...
+   Context preview: Subject: braindead-dev invited you to braindead-dev/localbrain
+From: Henry <noreply@github.com>
+To: ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 2 edit plan(s):
+   - APPEND: personal/About Me.md (secondary)
+     Content: **GitHub:** braindead-dev/localbrain repository collaborator...
+     Reason: Add GitHub project collaboration to About Me section
+   - CREATE: career/Projects.md (primary)
+     Content: ## LocalBrain
+
+**Status:** Collaborator invited [1]
+
+**Repos...
+     Reason: Create new Projects file to track LocalBrain collaboration
+
+📝 Processing: personal/About Me.md
+   Appending to file...
+   ✅ Updated: About Me.md
+📝 Processing: career/Projects.md
+   Creating new file...
+   ✅ Created: Projects.md
+
+📚 Adding citations...
+   ✅ Added citation to 2 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: braindead-dev invited you to braindead-dev/localbr...
+📥 Ingesting content...
+   Context preview: Subject: New login to Linear
+From: Linear <security@updates.linear.app>
+To: pranavbalaji9276@gmail.c...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Accounts and Logins.md (primary)
+     Content: ## Linear
+
+**Status:** Active account [1]
+
+**Recent Login:**...
+     Reason: New account login activity to document
+
+📝 Processing: personal/Accounts and Logins.md
+   Appending to file...
+   ✅ Updated: Accounts and Logins.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New login to Linear...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Jay [Cal Hacks] and sampoder [cal hacks] in Cal Hacks 12.0
+From: Slack <n...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: **Food Service:** Food won't be ready until 7 PM; attendees ...
+     Reason: Adding new logistical updates from Cal Hacks 12.0 event announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Jay [Cal Hacks] and sampoder [ca...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Flora [Cal Hacks] and Jay [Cal Hacks] in Cal Hacks 12.0
+From: Slack <noti...
+2025-10-25 18:01:21,150 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:25,547 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:25,551 - localbrain-daemon - INFO - ✅ gmail: 42 fetched, 42 ingested
+2025-10-25 18:01:30,357 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:35,172 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:39,335 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:42,210 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:46,151 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:50,021 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:54,166 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: 
+**Opening Ceremony Events (6:30 PM):** [1]
+- Anthropic Work...
+     Reason: Add new opening ceremony events and food timing details from Cal Hacks 12.0 announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Flora [Cal Hacks] and Jay [Cal H...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Nicole Lee [Cal Hacks], Shreya [Cal Hacks], and more in Cal Hacks 12.0
+Fr...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: 
+**Schedule Updates (October 24, 2025):** [1]
+- Last bus dep...
+     Reason: Add new schedule updates and evening event details from Cal Hacks announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Nicole Lee [Cal Hacks], Shreya [...
+🤖 Initialized agentic ingestion pipeline
+📂 Vault: /Users/pranavbalaji/Documents/Personal CS Projects/Berkley Hackathon/localbrain/my-vault
+🧠 Model: claude-haiku-4-5-20251001
+✨ Features: fuzzy matching, validation, retry (95% success)
+
+📥 Ingesting content...
+   Context preview: Subject: New messages from Sumin [Cal Hacks], Corey Mostero [Cal Hacks], and more in Cal Hacks 12.0
+...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Photo Booth on Second Floor: Fun wigs and props available ...
+     Reason: Adding new Cal Hacks 12.0 activities from October 25 announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Sumin [Cal Hacks], Corey Mostero...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Morgan Fung [Cal Hacks], Nicole Lee [Cal Hacks], and more in Cal Hacks 12...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Promise Recruiter Visit: Meet Promise to learn about AI an...
+     Reason: Add new Cal Hacks 12.0 activities from Slack announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Morgan Fung [Cal Hacks], Nicole ...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Corey Mostero [Cal Hacks], Nathan Rhee [Cal Hacks], and more in Cal Hacks...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 2 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Heavybit Networking Event (BREAKOUT 4): Lego stress toys, ...
+     Reason: Add new Cal Hacks 12.0 events from October 25 announcements
+   - APPEND: personal/Events.md (primary)
+     Content: - Check-ins temporarily on hold; reopening announcement pend...
+     Reason: Add check-in status update from Cal Hacks organizers
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 2 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Corey Mostero [Cal Hacks], Natha...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Maitree Anand Meher and Dylan [Cal Hacks] in Cal Hacks 12.0
+From: Slack <...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Creao AI Networking & Yoga Session 3–5...
+     Replace: - Creao AI Networking & Yoga Session 3–5...
+     Reason: Slack message confirms yoga mats are kept after session
+
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [28])
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Maitree Anand Meher and Dylan [C...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Pranav Prabhuram [Cal Hacks], Valerie [Cal Hacks], and more in Cal Hacks ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Ripple Workshop 3:15 PM at Breakout 3 (Doe): technical wor...
+     Reason: Adding specific workshop and activity times/locations from Cal Hacks 12.0 announcements
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Pranav Prabhuram [Cal Hacks], Va...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Pranav Prabhuram [Cal Hacks] and Dylan [Cal Hacks] in Cal Hacks 12.0
+From...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: **Activities:**
+- Creao AI Networking & ...
+     Replace: **Activities:**
+- Creao AI Networking & ...
+     Reason: Add new workshop activities announced in Cal Hacks Slack channel
+
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [30])
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Pranav Prabhuram [Cal Hacks] and...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Dylan [Cal Hacks], Charlie [Cal Hacks], and more in Cal Hacks 12.0
+From: ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 3 edit plan(s):
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Creao AI Networking & Yoga Session 3–5...
+     Replace: - Creao AI Networking & Yoga Session 3–5...
+     Reason: Confirm existing event details with new Slack source
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - BitRobot Hardware Speakers Event 3–5 P...
+     Replace: - BitRobot Hardware Speakers Event 3–5 P...
+     Reason: Confirm existing event details with new Slack source
+   - UPDATE_CITATION: personal/Events.md (primary)
+     Search: - Ripple workshop at 3:15 PM in breakout...
+     Replace: - Ripple workshop at 3:15 PM in breakout...
+     Reason: Confirm existing event details with new Slack source
+
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [31])
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...2025-10-25 18:01:55,979 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:01:58,932 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2025-10-25 18:02:03,603 - httpx - INFO - HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+
+   ✅ Updated citation in: Events.md (added [32])
+📝 Processing: personal/Events.md
+   Updating citation on existing fact...
+   ✅ Updated citation in: Events.md (added [33])
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Dylan [Cal Hacks], Charlie [Cal ...
+📥 Ingesting content...
+   Context preview: Subject: New messages from Morgan Fung [Cal Hacks] and Dylan [Cal Hacks] in Cal Hacks 12.0
+From: Sla...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 0 edit plan(s):
+
+
+📚 Adding citations...
+   ✅ Added citation to 0 file(s)
+
+💡 No edits needed - content appears to be duplicate or already exists
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from Morgan Fung [Cal Hacks] and Dyla...
+📥 Ingesting content...
+   Context preview: Subject: New messages from sampoder [cal hacks] and Morgan Fung [Cal Hacks] in Cal Hacks 12.0
+From: ...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - APPEND: personal/Events.md (primary)
+     Content: - Conway workshop in Breakout 3 (Doe) with chips and snacks ...
+     Reason: New workshop and meal information from Cal Hacks 12.0 event
+
+📝 Processing: personal/Events.md
+   Appending to file...
+   ✅ Updated: Events.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: New messages from sampoder [cal hacks] and Morgan ...
+📥 Ingesting content...
+   Context preview: Subject: Thanks for riding with Waymo
+From: Waymo Receipts <noreply@waymo.com>
+To: pranavbalaji9276@...
+
+============================================================
+🔄 Attempt 1/3
+============================================================
+
+🎯 Analyzing content...
+   Created 1 edit plan(s):
+   - CREATE: personal/Transportation.md (primary)
+     Content: # Transportation
+
+## Waymo Rides
+
+### October 25, 2025 Ride
+...
+     Reason: New file to track transportation activity and Waymo usage
+
+📝 Processing: personal/Transportation.md
+   Creating new file...
+   ✅ Created: Transportation.md
+
+📚 Adding citations...
+   ✅ Added citation to 1 file(s)
+
+✅ SUCCESS on attempt 1
+✅ Ingested Gmail email: Thanks for riding with Waymo...
+INFO:      - "POST /connectors/gmail/sync?max_results=10&minutes=10&ingest=true HTTP/1.1" 200 OK
+INFO:      - "GET /connectors/gmail/status HTTP/1.1" 200 OK
+INFO:      - "GET /connectors/calendar/status HTTP/1.1" 200 OK
+INFO:      - "GET /connectors/calendar/status HTTP/1.1" 200 OK
+INFO:      - "GET /connectors/gmail/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60410 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60416 - "GET /connectors/gmail/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60418 - "GET /connectors/calendar/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60508 - "GET /connectors/gmail/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60509 - "GET /connectors/calendar/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60683 - "GET /connectors/gmail/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61255 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61276 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61286 - "GET /health HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [54922]

@@ -37,6 +37,40 @@ Exploring local-first software architectures and privacy-preserving ML technique
 - Compensation: $155,000 base salary, $25,000 sign-on bonus, $180,000 RSUs (4-year vest) [2]
 - Deadline to accept: October 31, 2025 [2]
 
+
+Attended Cal Hacks 12.0 (October 25, 2025) [8]
+
+
+Received full-time Software Engineer offer at NVIDIA [9].
+
+
+**GitHub:** braindead-dev/localbrain repository collaborator [10]
+
+
+**GitHub:** braindead-dev/localbrain repository collaborator [8]
+
+
+
+## Projects
+
+### LocalBrain
+
+**Status:** Invited to collaborate on braindead-dev/localbrain repository [9]
+
+**Repository:** https://github.com/braindead-dev/localbrain [9]
+
+**Invitation Details:** Collaboration invitation from @braindead-dev [9]
+
+**Deadline:** Invitation expires in 7 days from October 24, 2025 [9]
+
+
+## Projects
+
+### LocalBrain
+**Status:** Invited to collaborate on braindead-dev/localbrain repository [10]
+**Repository:** https://github.com/braindead-dev/localbrain [10]
+**Invitation Expires:** 7 days from October 24, 2025 [10]
+
 ## Related
 
 - [[Career Goals]]

@@ -115,7 +115,6 @@ export function ConnectionsView() {
     const Icon = iconMap[connectorId] || Plug;
     return <Icon className="h-5 w-5" />;
   };
-
   return (
     <div className="flex flex-col h-full">
       {/* Header */}

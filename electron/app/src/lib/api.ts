@@ -68,28 +68,24 @@ export interface GmailSyncResult {
   error?: string;
 }
 
-export interface DiscordStatus {
+export interface CalendarStatus {
   connected: boolean;
-  username?: string;
-  user_id?: string;
-  lastSync?: string;
-  messageCount?: number;
-  totalProcessed?: number;
+  email?: string;
+  calendar_count?: number;
   error?: string;
 }
 
-export interface DiscordSyncResult {
+export interface CalendarSyncResult {
   success: boolean;
-  messages_fetched?: number;
-  count?: number;
-  messages: string[];
+  count: number;
+  events: string[];
   ingested_count?: number;
   failed_count?: number;
-  ingested_messages?: string[];
-  failed_messages?: Array<{ content: string; error: string }>;
-  time_window?: string;
+  ingested_titles?: string[];
+  failed_events?: Array<{ title: string; error: string }>;
   error?: string;
 }
+
 
 class ApiClient {
   private baseUrl: string;
@@ -289,7 +285,13 @@ class ApiClient {
       const error = await response.json();
       return { connected: false, error: error.error };
     }
-    return response.json();
+    const data = await response.json();
+    // Extract status from nested structure
+    return {
+      connected: data.status?.connected || false,
+      email: data.status?.metadata?.email,
+      error: data.status?.last_error
+    };
   }
 
   /**
@@ -335,83 +337,81 @@ class ApiClient {
   }
 
   // ============================================================================
-  // Discord Connector APIs
+  // Google Calendar Connector APIs
   // ============================================================================
 
   /**
-   * Save Discord user token
+   * Start Google Calendar OAuth flow
    */
-  async discordSaveToken(token: string): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${this.baseUrl}/connectors/discord/auth/save-token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to save Discord token');
-    }
-    return response.json();
-  }
-
-  /**
-   * Get Discord connection status
-   */
-  async discordStatus(): Promise<DiscordStatus> {
-    const response = await fetch(`${this.baseUrl}/connectors/discord/status`);
-    if (!response.ok) {
-      const error = await response.json();
-      return { connected: false, error: error.error };
-    }
-    return response.json();
-  }
-
-  /**
-   * Revoke Discord access
-   */
-  async discordRevoke(): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${this.baseUrl}/connectors/discord/auth/revoke`, {
+  async calendarAuthStart(): Promise<{ auth_url: string; success: boolean }> {
+    const response = await fetch(`${this.baseUrl}/connectors/calendar/auth/start`, {
       method: 'POST',
     });
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to revoke Discord');
+      throw new Error(error.error || 'Failed to start Calendar auth');
     }
     return response.json();
   }
 
   /**
-   * Sync Discord DMs and optionally ingest
+   * Get Google Calendar connection status
    */
-  async discordSync(maxMessages: number = 100, hours: number = 24, ingest: boolean = false): Promise<DiscordSyncResult> {
-    const url = `${this.baseUrl}/connectors/discord/sync?max_messages=${maxMessages}&hours=${hours}&ingest=${ingest}`;
-    const response = await fetch(url, {
+  async calendarStatus(): Promise<CalendarStatus> {
+    const response = await fetch(`${this.baseUrl}/connectors/calendar/status`);
+    if (!response.ok) {
+      const error = await response.json();
+      return { connected: false, error: error.error || 'Failed to get status' };
+    }
+    const data = await response.json();
+    // Extract status from nested structure
+    return {
+      connected: data.status?.connected || false,
+      email: data.status?.metadata?.email,
+      error: data.status?.last_error
+    };
+  }
+
+  /**
+   * Revoke Google Calendar access
+   */
+  async calendarRevoke(): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${this.baseUrl}/connectors/calendar/auth/revoke`, {
       method: 'POST',
     });
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to sync Discord');
+      throw new Error(error.error || 'Failed to revoke Calendar');
     }
     return response.json();
   }
 
   /**
-   * Fetch recent DMs (without syncing/ingesting)
+   * Sync Google Calendar and optionally ingest events
    */
-  async discordRecentDMs(hours?: number, days?: number, maxMessages: number = 50): Promise<DiscordSyncResult> {
-    let url = `${this.baseUrl}/connectors/discord/dms/recent?max_messages=${maxMessages}`;
-    if (hours !== undefined) {
-      url += `&hours=${hours}`;
-    } else if (days !== undefined) {
-      url += `&days=${days}`;
+  async calendarSync(maxResults: number = 100, days: number = 7, ingest: boolean = false): Promise<CalendarSyncResult> {
+    const url = `${this.baseUrl}/connectors/calendar/sync?max_results=${maxResults}&days=${days}&ingest=${ingest}`;
+    const response = await fetch(url, { method: 'POST' });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to sync Calendar');
     }
+    return response.json();
+  }
+
+  /**
+   * Fetch upcoming calendar events (without syncing/ingesting)
+   */
+  async calendarUpcomingEvents(days: number = 14, maxResults: number = 50): Promise<CalendarSyncResult> {
+    const url = `${this.baseUrl}/connectors/calendar/events/upcoming?days=${days}&max_results=${maxResults}`;
     const response = await fetch(url);
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch DMs');
+      throw new Error(error.error || 'Failed to fetch events');
     }
     return response.json();
   }
+
 }
 
 // Export singleton instance

@@ -26,6 +26,14 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import html2text
 
+from connectors.base_connector import (
+    BaseConnector,
+    ConnectorMetadata,
+    ConnectorStatus,
+    ConnectorData,
+    SyncResult
+)
+
 
 # OAuth 2.0 scopes
 SCOPES = [
@@ -37,38 +45,273 @@ SCOPES = [
 REDIRECT_URI = 'http://localhost:8765/connectors/gmail/auth/callback'
 
 
-class GmailConnector:
+class GmailConnector(BaseConnector):
     """
     Gmail connector for authenticating and fetching emails.
     
     Handles OAuth flow, token management, email retrieval, and text conversion.
     """
     
-    def __init__(self, credentials_dir: Optional[Path] = None, vault_path: Optional[Path] = None):
+    def __init__(self, vault_path: Optional[Path] = None, config_dir: Optional[Path] = None):
         """
         Initialize Gmail connector.
         
         Args:
-            credentials_dir: Directory to store OAuth credentials (default: ~/.localbrain/credentials)
             vault_path: Path to LocalBrain vault for ingestion
+            config_dir: Directory to store connector config (default: ~/.localbrain/connectors/gmail)
         """
-        if credentials_dir is None:
-            credentials_dir = Path.home() / '.localbrain' / 'credentials'
+        # Initialize base connector
+        super().__init__(vault_path=vault_path, config_dir=config_dir)
         
-        self.credentials_dir = Path(credentials_dir)
+        # Set up credentials directory (separate from config)
+        self.credentials_dir = Path.home() / '.localbrain' / 'credentials'
         self.credentials_dir.mkdir(parents=True, exist_ok=True)
         
         # File paths
         self.client_secrets_file = self.credentials_dir / 'gmail_client_secret.json'
         self.token_file = self.credentials_dir / 'gmail_token.json'
-        self.config_file = self.credentials_dir / 'gmail_config.json'
+        self.gmail_config_file = self.credentials_dir / 'gmail_config.json'  # Legacy config
         self.flow_state_file = self.credentials_dir / 'flow_state.json'
-        
-        # Vault path for ingestion
-        self.vault_path = vault_path
         
         # Gmail service (initialized on first use)
         self._service = None
+    
+    # ========================================================================
+    # BaseConnector Required Methods
+    # ========================================================================
+    
+    def get_metadata(self) -> ConnectorMetadata:
+        """Return Gmail connector metadata."""
+        return ConnectorMetadata(
+            id="gmail",
+            name="Gmail",
+            description="Sync emails from Gmail inbox",
+            version="1.0.0",
+            author="LocalBrain Team",
+            auth_type="oauth",
+            requires_config=True,
+            sync_interval_minutes=10,
+            capabilities=["read"]
+        )
+    
+    def has_updates(self, since: Optional[datetime] = None) -> bool:
+        """Check if there are new emails available."""
+        if not self.is_authenticated():
+            return False
+        
+        try:
+            # Use Gmail API to check for new messages
+            service = self._get_service()
+            
+            # Build query based on timestamp
+            if since:
+                # Convert to Unix timestamp for Gmail API
+                timestamp = int(since.timestamp())
+                query = f'after:{timestamp} in:inbox category:primary -in:spam -in:trash'
+            else:
+                # Check for any emails in last 24 hours
+                yesterday = datetime.now() - timedelta(days=1)
+                timestamp = int(yesterday.timestamp())
+                query = f'after:{timestamp} in:inbox category:primary -in:spam -in:trash'
+            
+            # Just check if any messages exist
+            results = service.users().messages().list(
+                userId='me',
+                q=query,
+                maxResults=1
+            ).execute()
+            
+            messages = results.get('messages', [])
+            return len(messages) > 0
+            
+        except Exception as e:
+            print(f"Error checking for Gmail updates: {e}")
+            return False
+    
+    def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
+        """Fetch new emails since last sync."""
+        if not self.is_authenticated():
+            return []
+        
+        try:
+            # Use existing _sync_emails method but adapt the return format
+            if since:
+                # Calculate minutes since the timestamp
+                now = datetime.now()
+                minutes_diff = int((now - since).total_seconds() / 60)
+                result = self._sync_emails(max_results=limit or 100, minutes=max(minutes_diff, 1))
+            else:
+                # Default to last 24 hours for broader coverage
+                result = self._sync_emails(max_results=limit or 100, minutes=1440)
+            
+            # Convert to ConnectorData format
+            connector_data = []
+            for email_data in result.get('emails', []):
+                connector_data.append(ConnectorData(
+                    content=email_data['text'],
+                    source_id=email_data['metadata']['source'].split('/')[-1],  # Extract Gmail ID
+                    timestamp=self._parse_email_timestamp(email_data['metadata']['timestamp']),
+                    metadata=email_data['metadata']
+                ))
+            
+            return connector_data
+            
+        except Exception as e:
+            print(f"Error fetching Gmail updates: {e}")
+            return []
+    
+    def _parse_email_timestamp(self, timestamp_str: str) -> datetime:
+        """Parse email timestamp from various formats."""
+        try:
+            # Try RFC 2822 format first (e.g., "Sat, 25 Oct 2025 23:58:53 +0000")
+            from email.utils import parsedate_to_datetime
+            return parsedate_to_datetime(timestamp_str)
+        except:
+            try:
+                # Try ISO format
+                return datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+            except:
+                # Fallback to current time
+                return datetime.now()
+    
+    def _ingest_data_agentic(self, items: List[ConnectorData]) -> int:
+        """
+        Ingest Gmail data using the Agentic Ingestion Pipeline.
+        
+        This uses the sophisticated ingestion system that:
+        - Analyzes content intelligently
+        - Routes to appropriate existing files
+        - Uses proper citations and formatting
+        - Follows vault structure (personal/, career/, etc.)
+        """
+        if not self.vault_path or not items:
+            return 0
+        
+        try:
+            # Import the agentic ingestion pipeline
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+            from agentic_ingest import AgenticIngestionPipeline
+            
+            # Initialize pipeline
+            pipeline = AgenticIngestionPipeline(self.vault_path)
+            
+            ingested_count = 0
+            for item in items:
+                try:
+                    # Prepare source metadata for the pipeline
+                    source_metadata = {
+                        'platform': 'Gmail',
+                        'timestamp': item.timestamp.isoformat() if item.timestamp else datetime.now().isoformat(),
+                        'url': item.metadata.get('url'),
+                        'quote': item.metadata.get('quote', item.content[:200] + '...' if len(item.content) > 200 else item.content)
+                    }
+                    
+                    # Use the agentic pipeline to ingest
+                    result = pipeline.ingest(
+                        context=item.content,
+                        source_metadata=source_metadata
+                    )
+                    
+                    if result.get('success', False):
+                        ingested_count += 1
+                        print(f"✅ Ingested Gmail email: {item.metadata.get('quote', 'Email')[:50]}...")
+                    else:
+                        print(f"⚠️  Failed to ingest Gmail email: {result.get('errors', ['Unknown error'])}")
+                        
+                except Exception as e:
+                    print(f"⚠️  Error ingesting Gmail item: {e}")
+                    continue
+            
+            return ingested_count
+            
+        except Exception as e:
+            print(f"⚠️  Agentic ingestion failed, falling back to simple ingestion: {e}")
+            # Fallback to simple ingestion if agentic pipeline fails
+            return self._ingest_data(items)
+    
+    def sync(self, auto_ingest: bool = False, limit: Optional[int] = None) -> SyncResult:
+        """
+        Override BaseConnector sync to handle Gmail-specific time windows.
+        Gmail often wants to fetch emails from a specific time window rather than incremental sync.
+        """
+        try:
+            # Always fetch updates (Gmail doesn't follow strict incremental sync)
+            items = self.fetch_updates(limit=limit)
+            
+            # Optionally ingest using Agentic Ingestion Pipeline
+            ingested_count = 0
+            if auto_ingest and self.vault_path:
+                ingested_count = self._ingest_data_agentic(items)
+            
+            # Update last sync timestamp
+            now = datetime.now()
+            self._save_last_sync(now)
+            
+            return SyncResult(
+                success=True,
+                items_fetched=len(items),
+                items_ingested=ingested_count,
+                last_sync_timestamp=now
+            )
+            
+        except Exception as e:
+            return SyncResult(
+                success=False,
+                errors=[str(e)]
+            )
+    
+    def get_status(self) -> ConnectorStatus:
+        """Get current Gmail connector status."""
+        try:
+            if not self.is_authenticated():
+                return ConnectorStatus(
+                    connected=False,
+                    authenticated=False,
+                    last_error="Not authenticated"
+                )
+            
+            # Get status from existing method
+            status_data = self._get_status_data()
+            
+            return ConnectorStatus(
+                connected=status_data.get('connected', False),
+                authenticated=True,
+                last_sync=self._get_last_sync(),
+                total_items_synced=status_data.get('totalProcessed', 0),
+                config_valid=True,
+                metadata={
+                    'email': status_data.get('email'),
+                    'emailCount': status_data.get('emailCount', 0),
+                    'connectedAt': status_data.get('connectedAt')
+                }
+            )
+            
+        except Exception as e:
+            return ConnectorStatus(
+                connected=False,
+                authenticated=False,
+                last_error=str(e)
+            )
+    
+    def authenticate(self, credentials: Dict) -> tuple[bool, Optional[str]]:
+        """Handle OAuth authentication."""
+        try:
+            if 'authorization_response' in credentials:
+                # Handle OAuth callback
+                result = self.handle_callback(credentials['authorization_response'])
+                return True, None
+            else:
+                return False, "Invalid credentials format"
+        except Exception as e:
+            return False, str(e)
+    
+    def revoke_access(self) -> bool:
+        """Revoke Gmail access."""
+        try:
+            return self._revoke_gmail_access()
+        except Exception:
+            return False
     
     # ========================================================================
     # Authentication Methods
@@ -139,8 +382,10 @@ class GmailConnector:
         
         # Initialize config
         config = self._load_config()
+        is_first_connection = config.get('email') is None
         config['email'] = profile['emailAddress']
         config['connected_at'] = datetime.now().isoformat()
+        config['is_first_connection'] = is_first_connection
         self._save_config(config)
         
         # Clean up flow state file
@@ -152,7 +397,7 @@ class GmailConnector:
             'connected': True
         }
     
-    def revoke_access(self) -> bool:
+    def _revoke_gmail_access(self) -> bool:
         """
         Revoke OAuth access and delete local tokens.
         
@@ -193,6 +438,11 @@ class GmailConnector:
         creds = self.get_credentials()
         return creds is not None and creds.valid
     
+    def needs_initial_sync(self) -> bool:
+        """Check if initial sync (2 years of emails) is needed."""
+        config = self._load_config()
+        return config.get('is_first_connection', False) and not config.get('initial_sync_completed', False)
+    
     def get_credentials(self) -> Optional[Credentials]:
         """
         Get stored credentials, refreshing if needed.
@@ -225,7 +475,60 @@ class GmailConnector:
     # Email Fetching Methods
     # ========================================================================
     
-    def sync(self, max_results: int = 100, minutes: int = 10) -> Dict:
+    def initial_sync(self, max_results: int = 1000) -> Dict:
+        """
+        Initial sync to fetch emails from the past 2 years.
+        
+        Args:
+            max_results: Maximum number of emails to fetch (default: 1000)
+            
+        Returns:
+            Dict with sync statistics
+        """
+        if not self.is_authenticated():
+            raise Exception("Not authenticated. Please connect Gmail first.")
+        
+        # Calculate timestamp for 2 years ago
+        two_years_ago = datetime.now() - timedelta(days=730)  # 2 years = 730 days
+        
+        # Build query - fetch emails from last 2 years in primary inbox
+        query = f'after:{two_years_ago.strftime("%Y/%m/%d")} in:inbox category:primary -in:spam -in:trash'
+        
+        # Fetch emails
+        emails = self._fetch_emails(query, max_results)
+        
+        # Convert to text format
+        processed_emails = []
+        for email in emails:
+            try:
+                email_data = self._email_to_structured_data(email)
+                processed_emails.append(email_data)
+            except Exception as e:
+                print(f"Error processing email {email.get('id')}: {e}")
+                continue
+        
+        # Update config with initial sync completion
+        config = self._load_config()
+        config['initial_sync_completed'] = True
+        config['initial_sync_date'] = datetime.now().isoformat()
+        config['initial_sync_count'] = len(processed_emails)
+        config['is_first_connection'] = False  # Clear first connection flag
+        config['last_sync'] = datetime.now().isoformat()
+        config['email_count'] = len(processed_emails)
+        config['total_emails_processed'] = config.get('total_emails_processed', 0) + len(processed_emails)
+        self._save_config(config)
+        
+        return {
+            'success': True,
+            'emails_fetched': len(emails),
+            'emails_processed': len(processed_emails),
+            'time_window_days': 730,
+            'query_date': two_years_ago.isoformat(),
+            'initial_sync': True,
+            'emails': processed_emails
+        }
+
+    def _sync_emails(self, max_results: int = 100, minutes: int = 10) -> Dict:
         """
         Sync emails from the last N minutes.
         
@@ -238,6 +541,11 @@ class GmailConnector:
         """
         if not self.is_authenticated():
             raise Exception("Not authenticated. Please connect Gmail first.")
+        
+        # Check if initial sync is needed (first connection)
+        if self.needs_initial_sync():
+            print("🔄 Gmail: Running initial sync (2 years of emails)...")
+            return self.initial_sync(max_results=1000)  # Use larger limit for initial sync
         
         # Calculate timestamp for N minutes ago
         time_ago = datetime.now() - timedelta(minutes=minutes)
@@ -309,9 +617,9 @@ class GmailConnector:
         
         return processed_emails
     
-    def get_status(self) -> Dict:
+    def _get_status_data(self) -> Dict:
         """
-        Get Gmail connector status.
+        Get Gmail connector status data.
         
         Returns:
             Status dict with connection info and stats
@@ -552,16 +860,16 @@ Gmail URL: {gmail_url}
         )
     
     def _load_config(self) -> Dict:
-        """Load connector configuration."""
-        if self.config_file.exists():
-            with open(self.config_file, 'r') as f:
+        """Load connector configuration (legacy Gmail config)."""
+        if self.gmail_config_file.exists():
+            with open(self.gmail_config_file, 'r') as f:
                 return json.load(f)
         return {}
     
     def _save_config(self, config: Dict):
-        """Save connector configuration."""
-        self.config_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.config_file, 'w') as f:
+        """Save connector configuration (legacy Gmail config)."""
+        self.gmail_config_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.gmail_config_file, 'w') as f:
             json.dump(config, f, indent=2)
     
     def _get_client_config(self) -> Dict:

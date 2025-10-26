@@ -8,7 +8,7 @@ All routes follow the pattern: /connectors/{connector_id}/{action}
 """
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from typing import Optional
 from pathlib import Path
 
@@ -94,6 +94,86 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
     # Authentication
     # ========================================================================
     
+    @router.post("/{connector_id}/auth/start")
+    async def start_auth_flow(connector_id: str):
+        """Start OAuth authentication flow for a connector."""
+        try:
+            connector = manager.get_connector(connector_id)
+            
+            if not connector:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Connector {connector_id} not found"
+                )
+            
+            # Check if connector has OAuth start method
+            if hasattr(connector, 'start_auth_flow'):
+                auth_url = connector.start_auth_flow()
+                return {"success": True, "auth_url": auth_url}
+            else:
+                return JSONResponse(
+                    status_code=400,
+                    content={"success": False, "error": f"Connector {connector_id} does not support OAuth"}
+                )
+                
+        except Exception as e:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "error": str(e)}
+            )
+    
+    @router.get("/{connector_id}/auth/callback")
+    async def handle_auth_callback(connector_id: str, request: Request):
+        """Handle OAuth callback for a connector."""
+        try:
+            connector = manager.get_connector(connector_id)
+            
+            if not connector:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Connector {connector_id} not found"
+                )
+            
+            # Get the full callback URL
+            callback_url = str(request.url)
+            
+            # Check if connector has OAuth callback method
+            if hasattr(connector, 'handle_callback'):
+                result = connector.handle_callback(callback_url)
+                
+                # Return success page
+                html_content = f"""
+                <html>
+                <head><title>LocalBrain - {connector_id.title()} Connected</title></head>
+                <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                    <h1>✅ {connector_id.title()} Connected Successfully!</h1>
+                    <p>You can now close this window and return to LocalBrain.</p>
+                    <script>
+                        setTimeout(() => window.close(), 3000);
+                    </script>
+                </body>
+                </html>
+                """
+                return HTMLResponse(content=html_content)
+            else:
+                return JSONResponse(
+                    status_code=400,
+                    content={"success": False, "error": f"Connector {connector_id} does not support OAuth callbacks"}
+                )
+                
+        except Exception as e:
+            error_html = f"""
+            <html>
+            <head><title>LocalBrain - Authentication Error</title></head>
+            <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
+                <h1>❌ Authentication Failed</h1>
+                <p>Error: {str(e)}</p>
+                <p>Please try again or check your configuration.</p>
+            </body>
+            </html>
+            """
+            return HTMLResponse(content=error_html, status_code=500)
+    
     @router.post("/{connector_id}/auth")
     async def authenticate_connector(connector_id: str, request: Request):
         """
@@ -150,7 +230,13 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
     async def sync_connector(
         connector_id: str,
         auto_ingest: bool = True,
-        limit: Optional[int] = None
+        limit: Optional[int] = None,
+        # Gmail-specific parameters
+        max_results: Optional[int] = None,
+        minutes: Optional[int] = None,
+        ingest: Optional[bool] = None,
+        # Calendar-specific parameters  
+        days: Optional[int] = None,
     ):
         """
         Trigger sync for a specific connector.
@@ -158,12 +244,28 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
         Query parameters:
         - auto_ingest: Whether to automatically ingest fetched data (default: true)
         - limit: Maximum number of items to sync (optional)
+        
+        Connector-specific parameters:
+        Gmail: max_results, minutes, ingest
+        Calendar: max_results, days, ingest
         """
         try:
+            connector = manager.get_connector(connector_id)
+            
+            if not connector:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Connector {connector_id} not found"
+                )
+            
+            # Use ingest parameter if provided, otherwise use auto_ingest
+            should_ingest = ingest if ingest is not None else auto_ingest
+            
+            # Use generic sync for all connectors (BaseConnector handles ingestion)
             result = manager.sync_connector(
                 connector_id=connector_id,
-                auto_ingest=auto_ingest,
-                limit=limit
+                auto_ingest=should_ingest,
+                limit=limit or max_results
             )
             
             if not result:
