@@ -79,6 +79,21 @@ except Exception as e:
 # HTTP client for daemon requests
 http_client = httpx.AsyncClient(timeout=30.0)
 
+# Channel conversation history (last 25 messages per channel)
+channel_histories = {}
+MAX_CHANNEL_HISTORY = 25
+
+# Topic mention tracking per channel
+topic_mentions = {}
+MENTION_THRESHOLD = 3  # Respond when topic mentioned this many times
+
+# Keywords to track for topic mentions
+TRACKED_KEYWORDS = [
+    "internship", "intern", "job", "interview", "offer", "salary",
+    "startup", "company", "career", "work", "resume", "application",
+    "coding", "project", "hackathon", "school", "class", "professor"
+]
+
 
 def verify_slack_signature(request_body: bytes, timestamp: str, signature: str) -> bool:
     """
@@ -111,6 +126,55 @@ def verify_slack_signature(request_body: bytes, timestamp: str, signature: str) 
     return hmac.compare_digest(expected_signature, signature)
 
 
+def add_to_channel_history(channel: str, user: str, text: str, ts: str):
+    """Add message to channel history."""
+    if channel not in channel_histories:
+        channel_histories[channel] = []
+
+    channel_histories[channel].append({
+        "user": user,
+        "text": text,
+        "ts": ts
+    })
+
+    # Keep only last MAX_CHANNEL_HISTORY messages
+    if len(channel_histories[channel]) > MAX_CHANNEL_HISTORY:
+        channel_histories[channel] = channel_histories[channel][-MAX_CHANNEL_HISTORY:]
+
+
+def extract_and_track_topics(channel: str, text: str) -> list:
+    """
+    Extract topics from text and track mentions per channel.
+    Returns list of topics that hit the mention threshold.
+    """
+    if channel not in topic_mentions:
+        topic_mentions[channel] = {}
+
+    text_lower = text.lower()
+    triggered_topics = []
+
+    for keyword in TRACKED_KEYWORDS:
+        if keyword in text_lower:
+            # Increment mention count
+            topic_mentions[channel][keyword] = topic_mentions[channel].get(keyword, 0) + 1
+
+            # Check if threshold reached
+            if topic_mentions[channel][keyword] >= MENTION_THRESHOLD:
+                triggered_topics.append(keyword)
+                logger.info(f"🔥 Topic '{keyword}' mentioned {topic_mentions[channel][keyword]} times in {channel}")
+
+    return triggered_topics
+
+
+def reset_topic_mentions(channel: str, topics: list):
+    """Reset mention counters for topics we responded to."""
+    if channel in topic_mentions:
+        for topic in topics:
+            if topic in topic_mentions[channel]:
+                topic_mentions[channel][topic] = 0
+                logger.info(f"🔄 Reset mention counter for '{topic}' in {channel}")
+
+
 def should_respond_to_message(text: str, is_dm: bool) -> tuple[bool, str]:
     """
     Determine if bot should respond based on message content.
@@ -130,7 +194,7 @@ def should_respond_to_message(text: str, is_dm: bool) -> tuple[bool, str]:
     text_lower = text.lower()
 
     # Bot name variations
-    bot_names = ["localbrain", "local brain", "lb"]
+    bot_names = ["Henry", "henry", "local brain", "lb", "Wang"]
     for name in bot_names:
         if name in text_lower:
             return True, f"bot_name:{name}"
@@ -151,41 +215,67 @@ def should_respond_to_message(text: str, is_dm: bool) -> tuple[bool, str]:
     return False, "no_trigger"
 
 
-async def ask_daemon(question: str, slack_context: dict) -> str:
+async def ask_daemon(question: str, slack_context: dict, channel_history: list = None, triggered_topics: list = None) -> dict:
     """
-    Send question to LocalBrain daemon and get answer.
+    Send question to LocalBrain daemon and get response.
 
     Args:
         question: The user's question
         slack_context: Dict with server_name, channel_name, asker_name, thread_id
+        channel_history: Last 25 messages from this channel
+        triggered_topics: Topics that hit the mention threshold
 
     Returns:
-        Answer string from daemon
+        Dict with should_respond (bool), answer (str), reason (str optional)
     """
     try:
-        logger.info(f"Asking daemon: {question}")
+        logger.info(f"💭 Asking daemon: {question[:80]}...")
+
+        payload = {
+            "question": question,
+            "slack_context": slack_context,
+            "channel_history": channel_history or [],
+            "triggered_topics": triggered_topics or []
+        }
 
         response = await http_client.post(
             f"{DAEMON_URL}/protocol/slack/answer",
-            json={
-                "question": question,
-                "slack_context": slack_context
-            }
+            json=payload
         )
 
         response.raise_for_status()
         result = response.json()
 
+        # Check if daemon says we should respond
+        should_respond = result.get("should_respond", True)  # Default to True for backwards compatibility
         answer = result.get("answer", "I couldn't generate an answer.")
-        logger.info(f"Daemon responded: {answer[:100]}...")
-        return answer
+        reason = result.get("reason", "")
+
+        if should_respond:
+            logger.info(f"✅ Daemon says respond: {answer[:100]}...")
+        else:
+            logger.info(f"⏭️  Daemon says skip (reason: {reason})")
+
+        return {
+            "should_respond": should_respond,
+            "answer": answer,
+            "reason": reason
+        }
 
     except httpx.HTTPError as e:
         logger.error(f"Error calling daemon: {e}")
-        return "Sorry, I'm having trouble accessing my knowledge base right now."
+        return {
+            "should_respond": True,  # On error, still try to respond
+            "answer": "Sorry, I'm having trouble accessing my knowledge base right now.",
+            "reason": "daemon_error"
+        }
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-        return "Sorry, something went wrong while processing your question."
+        return {
+            "should_respond": True,
+            "answer": "Sorry, something went wrong while processing your question.",
+            "reason": "unexpected_error"
+        }
 
 
 async def send_slack_message(channel: str, text: str, thread_ts: Optional[str] = None):
@@ -238,7 +328,16 @@ async def process_message(
     try:
         logger.info(f"Processing message from user {user}: {text}")
 
-        # Build Slack context for daemon
+        # 1. Add message to channel history
+        add_to_channel_history(channel, user, text, thread_ts or "")
+
+        # 2. Extract and track topics
+        triggered_topics = extract_and_track_topics(channel, text)
+
+        # 3. Get channel history
+        channel_history = channel_histories.get(channel, [])
+
+        # 4. Build Slack context for daemon
         slack_context = {
             "server_name": team_id or "Slack Workspace",
             "channel_name": channel,
@@ -246,17 +345,28 @@ async def process_message(
             "thread_id": thread_ts or ""
         }
 
-        # Get answer from daemon
-        answer = await ask_daemon(text, slack_context)
-
-        # Send response back to Slack
-        await send_slack_message(
-            channel=channel,
-            text=answer,
-            thread_ts=thread_ts
+        # 5. Get decision and answer from daemon (with context!)
+        daemon_response = await ask_daemon(
+            text,
+            slack_context,
+            channel_history=channel_history,
+            triggered_topics=triggered_topics
         )
 
-        logger.info("Message processed successfully")
+        # 6. Only respond if daemon says so
+        if daemon_response["should_respond"]:
+            await send_slack_message(
+                channel=channel,
+                text=daemon_response["answer"],
+                thread_ts=thread_ts
+            )
+            logger.info("✅ Message processed and sent")
+
+            # Reset topic counters for topics we responded to
+            if triggered_topics:
+                reset_topic_mentions(channel, triggered_topics)
+        else:
+            logger.info(f"⏭️  Skipping response (reason: {daemon_response['reason']})")
 
     except Exception as e:
         logger.error(f"Error processing message: {e}")
@@ -371,17 +481,9 @@ async def slack_events(request: Request, background_tasks: BackgroundTasks):
                 logger.info(f"Ignoring message from channel {channel} (not monitoring)")
                 return JSONResponse({"status": "ok"})
 
-            # Check if we should respond based on message content
-            should_respond, trigger_reason = should_respond_to_message(text, is_dm)
-
-            if not should_respond:
-                message_type = "DM" if is_dm else "channel"
-                logger.info(f"⏭️  Ignoring {message_type} message (no trigger keywords): {text[:50]}...")
-                return JSONResponse({"status": "ok"})
-
-            # Log message type and trigger reason
+            # Send ALL messages to daemon - daemon decides whether to respond
             message_type = "DM" if is_dm else "channel"
-            logger.info(f"Received {message_type} message from user {user} (trigger: {trigger_reason})")
+            logger.info(f"📨 Received {message_type} message from user {user}: {text[:80]}...")
 
             # Process message in background to avoid timeout
             background_tasks.add_task(

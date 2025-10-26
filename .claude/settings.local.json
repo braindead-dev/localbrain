@@ -17,7 +17,8 @@
       "Bash(npx next lint:*)",
       "Bash(cat:*)",
       "Read(//private/tmp/**)",
-      "Bash(ps:*)"
+      "Bash(ps:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []
