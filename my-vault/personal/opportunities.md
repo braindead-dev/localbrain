@@ -12,9 +12,9 @@
 - **Event Page**: https://events.ycombinator.com/ycxcalhackschallenge25[1]
 
 ### Submission Requirements
-- Must follow the YC prompt[1]
-- Request for Startups (RFS) link provided as reference for AI themes of interest to YC[1]
-- Project does not need to directly align with a previous YC company[1][2]
+- Must follow the YC prompt[1][2][3][4]
+- Request for Startups (RFS) link provided as reference for AI themes of interest to YC[1][2][3][4]
+- Project does not need to directly align with a previous YC company[1][2][4]
 - Can submit something completely new[1]
 
 ### Contact
@@ -1187,6 +1187,112 @@ RippleMatch is an AI-powered job and internship matching platform that connects 
 
 - Can frame submission as "YC company 2.0" or a completely new idea[2]
 - Prompt serves as a guide, not a strict requirement[2]
+
+
+
+## Garmin Engineering Internships & Full-Time Roles
+
+### Event Details
+- **Event**: STEM Career & Internship Fair[50]
+- **Date**: Wednesday, October 22, 2025[50]
+- **Time**: 11:00 AM – 3:00 PM PDT[50]
+- **Location**: HUB 302[50]
+- **Employer**: Garmin[50]
+- **Total Employers Attending**: 36[50]
+
+### Positions Available
+- Engineering Internships[50]
+- Full-Time Engineering Opportunities[50]
+
+### Hiring Locations
+AZ, CA, CO, CT, KS, ME, MI, MN, MO, NC, OK, and OR[50]
+
+### Company Overview
+Garmin develops state-of-the-art technology across aviation, automotive, marine, fitness, and outdoor recreation industries[50]. Company values collaboration, sustainability, and innovation[50].
+
+### Registration
+Register for the STEM Career & Internship Fair via Handshake[50]
+
+
+
+## Garmin Engineering Internships & Full-Time Roles
+
+### Event Details
+- **Event**: 2025 UCR STEM Career & Internship Fair[51]
+- **Date**: Wednesday, October 22, 2025[51]
+- **Time**: 11:00 AM – 3:00 PM PDT[51]
+- **Location**: HUB 302[51]
+- **Employer**: Garmin[51]
+- **Total Employers Attending**: 36[51]
+
+### Positions Available
+- Engineering Internships[51]
+- Full-Time Engineering Opportunities[51]
+
+### Hiring Locations
+AZ, CA, CO, CT, KS, ME, MI, MN, MO, NC, OK, and OR[51]
+
+### Company Overview
+Garmin develops state-of-the-art technology across aviation, automotive, marine, fitness, and outdoor recreation industries[51]. Company values collaboration, sustainability, and innovation[51].
+
+### Registration
+Register for the STEM Career & Internship Fair via Handshake[51]
+
+
+
+## Garmin Engineering Internships & Full-Time Roles
+
+### Event Details
+- **Event**: 2025 UCR Science, Technology, Engineering and Math (STEM) Career & Internship Fair[52]
+- **Date**: Wednesday, October 22, 2025[52]
+- **Time**: 11:00 AM – 3:00 PM PDT[52]
+- **Location**: HUB 302[52]
+- **Employer**: Garmin[52]
+- **Total Employers Attending**: 36[52]
+
+### Positions Available
+- Engineering Internships[52]
+- Full-Time Engineering Opportunities[52]
+
+### Hiring Locations
+AZ, CA, CO, CT, KS, ME, MI, MN, MO, NC, OK, and OR[52]
+
+### Company Overview
+Garmin develops state-of-the-art technology that enhances performance, safety, and exploration across industries including aviation, automotive, marine, fitness, and outdoor recreation[52]. Company tagline: "Engineered on the inside for life on the outside."[52]
+
+### Registration
+Register for the STEM Career & Internship Fair via Handshake[52]
+
+
+## Bright Data - $50 Account Bonus
+
+### Offer Details
+- **Bonus Amount**: $50 added to account[53]
+- **Email**: sales@brightdata.com[53]
+- **Date Received**: October 21, 2025[53]
+- **Account Login**: hwang585@ucr.edu[53]
+- **Company**: Bright Data Inc., 106 W 32nd St, New York, NY 10001[53]
+- **Support**: info@brightdata.com[53]
+
+
+## Bright Data - $50 Account Bonus
+
+### Offer Details
+- **Bonus Amount**: $50 added to account[54]
+- **Email**: sales@brightdata.com[54]
+- **Date Received**: October 21, 2025[54]
+- **Account Login**: hwang585@ucr.edu[54]
+- **Action**: Claim bonus via account portal[54]
+
+
+## Bright Data - $50 Account Bonus
+
+### Offer Details
+- **Bonus Amount**: $50 added to account[55]
+- **Email**: sales@brightdata.com[55]
+- **Date Received**: October 21, 2025[55]
+- **Login Email**: hwang585@ucr.edu[55]
+- **Status**: Bonus available to claim[55]
 
 ## Related Offers
 - **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com[7]

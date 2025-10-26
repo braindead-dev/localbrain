@@ -155,5 +155,14 @@ OpenRouter is a universal API for accessing, scaling and monitoring language mod
 - **Description**: National exhibit using backpacks and personal stories to raise awareness, spark conversation, share resources, and promote suicide prevention and mental health support[11]
 - **Open To**: All students, staff, faculty, and community[11]
 
+
+## UCR Library - Rivera Library
+
+### Library Services
+- **Location**: Rivera Library[12]
+- **Item Returned**: USB Charger (Ugreen - CD289)[12]
+- **Return Date**: October 20, 2025[12]
+- **Fine**: $0.00[12]
+
 ## Related
 
