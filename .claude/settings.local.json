@@ -10,7 +10,11 @@
       "Bash(chmod:*)",
       "Read(///**)",
       "Bash(curl:*)",
-      "mcp__gemini-cli__ask-gemini"
+      "mcp__gemini-cli__ask-gemini",
+      "Bash(npx tsc:*)",
+      "Bash(python3:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx next lint:*)"
     ],
     "deny": [],
     "ask": []

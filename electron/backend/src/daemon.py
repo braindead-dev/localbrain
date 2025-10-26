@@ -18,7 +18,7 @@ import asyncio
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, unquote
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -35,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from agentic_ingest import AgenticIngestionPipeline
 from agentic_search import Search
+from agentic_synthesis import AnswerSynthesizer
 from bulk_ingest import BulkIngestionPipeline
 from utils.file_ops import read_file
 from config import load_config, update_config, get_vault_path
@@ -57,6 +58,10 @@ PORT = CONFIG.get('port', 8765)
 
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
+
+# Conversation history storage (simple in-memory, last 25 messages)
+conversation_history: List[Dict] = []
+MAX_CONVERSATION_HISTORY = 25
 
 # Include connector plugin routes
 from connectors.connector_api import create_connector_router
@@ -368,13 +373,13 @@ async def handle_bulk_ingest(request: Request):
 async def handle_search(request: Request):
     """
     Handle localbrain://search protocol requests.
-    
+
     Natural language search - input any question, get relevant context + answer.
     Uses agentic retrieval (ripgrep + LLM with tools) under the hood.
-    
+
     Expected format:
         localbrain://search?q=What was my Meta offer?
-    
+
     Query parameters:
         - q (required): Natural language search query
     """
@@ -382,19 +387,19 @@ async def handle_search(request: Request):
         # Parse request body
         body = await request.json()
         query = body.get('q', body.get('query', ''))  # Support both q and query
-        
+
         if not query:
             return JSONResponse(
                 status_code=400,
                 content={'error': 'Missing required parameter: q'}
             )
-        
+
         logger.info(f"🔍 Search: {query}")
-        
+
         # Run search
         searcher = Search(VAULT_PATH)
         result = searcher.search(query)
-        
+
         if result.get('success'):
             logger.info(f"✅ Search complete: {result.get('total_results', 0)} contexts found")
             return JSONResponse(content={
@@ -413,9 +418,107 @@ async def handle_search(request: Request):
                     'query': query
                 }
             )
-    
+
     except Exception as e:
         logger.exception("Error handling search")
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(e)}
+        )
+
+
+@app.post("/protocol/ask")
+async def handle_ask(request: Request):
+    """
+    Handle conversational queries with answer synthesis.
+
+    Like /protocol/search but returns a synthesized natural language answer
+    instead of just raw contexts. Supports multi-turn conversations.
+
+    Expected format:
+        localbrain://ask?q=What was my Meta offer?
+
+    Query parameters:
+        - q (required): Natural language query
+        - clear_history (optional): Clear conversation history before processing
+
+    Response:
+        {
+            "success": true,
+            "query": "...",
+            "answer": "Natural language answer",
+            "contexts": [...],
+            "total_results": N,
+            "conversation_length": N
+        }
+    """
+    global conversation_history
+
+    try:
+        # Parse request body
+        body = await request.json()
+        query = body.get('q', body.get('query', ''))
+        clear_history = body.get('clear_history', False)
+
+        if not query:
+            return JSONResponse(
+                status_code=400,
+                content={'error': 'Missing required parameter: q'}
+            )
+
+        # Clear history if requested
+        if clear_history:
+            conversation_history = []
+            logger.info("🗑️  Conversation history cleared")
+
+        logger.info(f"🧠 Ask: {query}")
+
+        # 1. Run agentic search to get contexts
+        searcher = Search(VAULT_PATH)
+        search_result = searcher.search(query)
+
+        if not search_result.get('success'):
+            return JSONResponse(
+                status_code=500,
+                content={
+                    'success': False,
+                    'error': search_result.get('error', 'Search failed'),
+                    'query': query
+                }
+            )
+
+        contexts = search_result.get('contexts', [])
+        logger.info(f"📚 Found {len(contexts)} contexts")
+
+        # 2. Synthesize conversational answer
+        synthesizer = AnswerSynthesizer()
+        answer = synthesizer.synthesize(
+            query=query,
+            contexts=contexts,
+            conversation_history=conversation_history
+        )
+        logger.info("✅ Answer synthesis complete")
+
+        # 3. Update conversation history
+        conversation_history.append({"role": "user", "content": query})
+        conversation_history.append({"role": "assistant", "content": answer})
+
+        # Trim to last 25 messages
+        if len(conversation_history) > MAX_CONVERSATION_HISTORY:
+            conversation_history = conversation_history[-MAX_CONVERSATION_HISTORY:]
+
+        # 4. Return response
+        return JSONResponse(content={
+            'success': True,
+            'query': query,
+            'answer': answer,
+            'contexts': contexts,
+            'total_results': len(contexts),
+            'conversation_length': len(conversation_history)
+        })
+
+    except Exception as e:
+        logger.exception("Error handling ask request")
         return JSONResponse(
             status_code=500,
             content={'error': str(e)}
@@ -620,7 +723,8 @@ def main():
     logger.info("")
     logger.info("Available endpoints:")
     logger.info("  POST /protocol/ingest - Ingest content")
-    logger.info("  POST /protocol/search - Natural language search")
+    logger.info("  POST /protocol/search - Natural language search (raw contexts)")
+    logger.info("  POST /protocol/ask    - Conversational search (synthesized answers)")
     logger.info("  GET  /file/<path>      - Get file contents")
     logger.info("  GET  /list/<path>      - List directory")
     logger.info("")

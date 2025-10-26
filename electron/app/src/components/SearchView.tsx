@@ -120,14 +120,7 @@ export function SearchView() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <h3 className="font-medium truncate">{result.file}</h3>
-                    {result.timestamp && (
-                      <div className="flex items-center gap-1 text-muted-foreground flex-shrink-0 ml-2">
-                        <Calendar className="h-3 w-3" />
-                        <span className="text-xs">
-                          {new Date(result.timestamp).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
+                    {/* timestamp removed as it's not in SearchContext interface */}
                   </div>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">
                     {result.text}

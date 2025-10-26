@@ -16,15 +16,32 @@ function TreeNode({
   item,
   depth = 0,
   onFileDoubleClick,
-  onLoadChildren
+  onLoadChildren,
+  highlightedPath
 }: {
   item: TreeItem;
   depth?: number;
   onFileDoubleClick?: (item: TreeItem) => void;
   onLoadChildren?: (item: TreeItem) => Promise<void>;
+  highlightedPath?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if this item or any of its children contain the highlighted path
+  const isHighlighted = item.path === highlightedPath;
+  const containsHighlighted = highlightedPath?.startsWith(item.path + '/') || false;
+
+  // Auto-expand if this folder contains the highlighted path
+  useEffect(() => {
+    if (item.type === "folder" && containsHighlighted && !isOpen) {
+      setIsOpen(true);
+      if (!item.loaded && onLoadChildren) {
+        setIsLoading(true);
+        onLoadChildren(item).finally(() => setIsLoading(false));
+      }
+    }
+  }, [highlightedPath, containsHighlighted]);
 
   const handleClick = async () => {
     if (item.type === "folder") {
@@ -49,7 +66,9 @@ function TreeNode({
   return (
     <div>
       <div
-        className="flex items-center gap-2 px-2 py-1.5 hover:bg-accent hover:shadow-sm cursor-pointer rounded-sm transition-all duration-150 active:scale-[0.98]"
+        className={`flex items-center gap-2 px-2 py-1.5 hover:bg-accent hover:shadow-sm cursor-pointer rounded-sm transition-all duration-150 active:scale-[0.98] ${
+          isHighlighted ? 'bg-primary/20 border-l-2 border-primary' : ''
+        }`}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
@@ -73,12 +92,13 @@ function TreeNode({
       {item.type === "folder" && isOpen && item.children && (
         <div>
           {item.children.map((child) => (
-            <TreeNode 
-              key={child.id} 
-              item={child} 
-              depth={depth + 1} 
+            <TreeNode
+              key={child.id}
+              item={child}
+              depth={depth + 1}
               onFileDoubleClick={onFileDoubleClick}
               onLoadChildren={onLoadChildren}
+              highlightedPath={highlightedPath}
             />
           ))}
         </div>
@@ -89,9 +109,10 @@ function TreeNode({
 
 interface FileTreeProps {
   onFileDoubleClick?: (item: TreeItem) => void;
+  highlightedFilePath?: string;
 }
 
-export function FileTree({ onFileDoubleClick }: FileTreeProps) {
+export function FileTree({ onFileDoubleClick, highlightedFilePath }: FileTreeProps) {
   const [files, setFiles] = useState<TreeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -207,11 +228,12 @@ export function FileTree({ onFileDoubleClick }: FileTreeProps) {
     <ScrollArea className="h-full">
       <div className="p-2">
         {files.map((item) => (
-          <TreeNode 
-            key={item.id} 
-            item={item} 
+          <TreeNode
+            key={item.id}
+            item={item}
             onFileDoubleClick={onFileDoubleClick}
             onLoadChildren={handleLoadChildren}
+            highlightedPath={highlightedFilePath}
           />
         ))}
       </div>

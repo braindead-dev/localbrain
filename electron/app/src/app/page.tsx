@@ -116,6 +116,7 @@ function AppContent() {
   const [isRearrangeMode, setIsRearrangeMode] = useState(false);
   const [openedFile, setOpenedFile] = useState<TreeItem | null>(null);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
+  const [highlightedFilePath, setHighlightedFilePath] = useState<string | null>(null);
 
   // Initialize dark mode from localStorage or default to true
   useEffect(() => {
@@ -193,6 +194,12 @@ function AppContent() {
   const handleQueryClick = (query: string) => {
     setAutoQuery(query);
     setActiveTab("ask");
+  };
+
+  const handleFileOpenFromChat = (filePath: string) => {
+    // Open the vault sidebar and highlight the file
+    setSidebarOpen(true);
+    setHighlightedFilePath(filePath);
   };
 
   return (
@@ -319,19 +326,15 @@ function AppContent() {
               <ChatView
                 autoQuery={autoQuery}
                 onQueryProcessed={() => setAutoQuery(null)}
+                onFileOpen={handleFileOpenFromChat}
               />
             )}
             {activeTab === "connections" && (
-              <ConnectionsView
-                highlightedConnection={selectedConnection}
-                onConnectionViewed={() => setSelectedConnection(null)}
-                onIntegrationsChange={setConnectedIntegrations}
-              />
+              <ConnectionsView />
             )}
             {activeTab === "search" && (
               <EditorView
                 initialFilePath={openedFile?.path}
-                initialContent={openedFile ? `# ${openedFile.name}\n\nThis is mock content for ${openedFile.name}.\n\nIn a real implementation, this would load the actual file content.` : ""}
                 showLineNumbers={showLineNumbers}
               />
             )}
@@ -378,7 +381,7 @@ function AppContent() {
                     className="h-9 shadow-sm"
                   />
                 </div>
-                <FileTree onFileDoubleClick={handleFileOpen} />
+                <FileTree onFileDoubleClick={handleFileOpen} highlightedFilePath={highlightedFilePath || undefined} />
               </motion.div>
             )}
           </AnimatePresence>

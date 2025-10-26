@@ -23,6 +23,16 @@ export interface SearchResult {
   error?: string;
 }
 
+export interface AskResult {
+  success: boolean;
+  query: string;
+  answer: string;
+  contexts: SearchContext[];
+  total_results: number;
+  conversation_length: number;
+  error?: string;
+}
+
 export interface FileInfo {
   path: string;
   content: string;
@@ -140,6 +150,23 @@ class ApiClient {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || 'Search failed');
+    }
+    return response.json();
+  }
+
+  /**
+   * Ask a conversational question with synthesized answer
+   * Supports multi-turn conversations with history
+   */
+  async ask(query: string, clearHistory: boolean = false): Promise<AskResult> {
+    const response = await fetch(`${this.baseUrl}/protocol/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: query, clear_history: clearHistory }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Ask failed');
     }
     return response.json();
   }
