@@ -11,10 +11,18 @@ echo "Deploying MCP-Compliant Bridge"
 echo "=========================================="
 echo ""
 
+# Check if server files exist
+if [ ! -f "server/mcp_http_server.py" ]; then
+    echo "❌ Error: server/mcp_http_server.py not found"
+    echo "   Please run this script from the remote-mcp directory"
+    exit 1
+fi
+
 # Upload new server
 echo "📤 Uploading server files..."
 scp server/mcp_http_server.py $SERVER:~/
 scp server/.env.example $SERVER:~/ 2>/dev/null || echo "  (no .env.example)"
+scp server/README.md $SERVER:~/ 2>/dev/null || echo "  (no README.md)"
 
 echo ""
 echo "🔄 Setting up server directory..."

@@ -247,9 +247,9 @@ class MCPServer:
                         "input_schema": OpenRequest.model_json_schema()
                     },
                     {
-                        "name": "summarize",
-                        "description": "Generate file or content summary",
-                        "input_schema": SummarizeRequest.model_json_schema()
+                        "name": "ingest",
+                        "description": "Ingest new content into the vault",
+                        "input_schema": IngestRequest.model_json_schema()
                     },
                     {
                         "name": "list",
@@ -371,8 +371,8 @@ class MCPServer:
                 result = await self.tools.search(request)
             elif tool == "open":
                 result = await self.tools.open(request)
-            elif tool == "summarize":
-                result = await self.tools.summarize(request)
+            elif tool == "ingest":
+                result = await self.tools.ingest(request)
             elif tool == "list":
                 result = await self.tools.list(request)
             else:

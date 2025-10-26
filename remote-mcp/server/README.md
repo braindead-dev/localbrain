@@ -1,67 +1,62 @@
 # MCP Bridge Server
 
-**Deploy this to your remote server (`146.190.120.44`)**
+This server runs on your cloud instance (146.190.120.44) and bridges MCP clients to your local vault.
 
-This is the MCP-compliant bridge that runs 24/7 and accepts connections from MCP clients worldwide.
+## Installation on Server
 
-## What It Does
-
-- Accepts JSON-RPC 2.0 requests from MCP clients (Claude, Cursor, etc.)
-- Forwards requests through WebSocket tunnels to local machines
-- Returns responses via HTTP or SSE streaming
-- Runs continuously as a systemd service
-
-## One-Time Setup
-
-### 1. SSH into Server
+### 1. SSH into your server
 
 ```bash
 ssh mcpuser@146.190.120.44
 ```
 
-### 2. Navigate to Directory
+### 2. Install Python and dependencies
 
 ```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python 3.9+
+sudo apt install python3 python3-pip python3-venv -y
+
+# Create project directory
+mkdir -p ~/localbrain/remote-mcp/server
 cd ~/localbrain/remote-mcp
-```
 
-### 3. Install Dependencies
-
-```bash
+# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
-pip install fastapi uvicorn websockets httpx loguru python-dotenv
+
+# Install dependencies
+pip install aiohttp aiohttp-cors python-dotenv
 ```
 
-### 4. Configure Environment
+### 3. Configure the server
 
 ```bash
-cp server/.env.example server/.env
-nano server/.env
+cd ~/localbrain/remote-mcp/server
+
+# Copy configuration
+cp .env.example .env
+nano .env
+
+# Add your API keys:
+# API_KEY_PRANAV=lb_your_secure_api_key_here
 ```
 
-Set:
-```env
-BRIDGE_HOST=0.0.0.0
-BRIDGE_PORT=8767
-BRIDGE_SECRET=<generate-strong-secret>
-```
+### 4. Setup as systemd service
 
-Generate secret:
-```bash
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-### 5. Create Systemd Service
+Create service file:
 
 ```bash
 sudo nano /etc/systemd/system/mcp-bridge.service
 ```
 
-Paste:
+Add:
+
 ```ini
 [Unit]
-Description=LocalBrain MCP-Compliant Bridge
+Description=LocalBrain MCP Bridge Server
 After=network.target
 
 [Service]
@@ -69,7 +64,7 @@ Type=simple
 User=mcpuser
 WorkingDirectory=/home/mcpuser/localbrain/remote-mcp/server
 Environment="PATH=/home/mcpuser/localbrain/remote-mcp/venv/bin"
-ExecStart=/home/mcpuser/localbrain/remote-mcp/venv/bin/python mcp_http_server.py
+ExecStart=/home/mcpuser/localbrain/remote-mcp/venv/bin/python /home/mcpuser/localbrain/remote-mcp/server/mcp_http_server.py
 Restart=always
 RestartSec=10
 
@@ -77,75 +72,102 @@ RestartSec=10
 WantedBy=multi-user.target
 ```
 
-### 6. Start Service
+Enable and start:
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable mcp-bridge
 sudo systemctl start mcp-bridge
-```
-
-### 7. Verify Running
-
-```bash
 sudo systemctl status mcp-bridge
-curl http://localhost:8767/health
 ```
 
-## Firewall
+### 5. Configure firewall
 
-Port 8767 must be open:
 ```bash
+# Allow port 8767
 sudo ufw allow 8767/tcp
+
+# Check status
 sudo ufw status
 ```
 
 ## Monitoring
 
-**View logs:**
+### View logs
+
 ```bash
 sudo journalctl -u mcp-bridge -f
 ```
 
-**Check status:**
+### Check status
+
 ```bash
 sudo systemctl status mcp-bridge
 ```
 
-**Restart:**
-```bash
-sudo systemctl restart mcp-bridge
-```
-
-## Updating
-
-When you update the code:
-
-```bash
-cd ~/localbrain/remote-mcp/server
-# Upload new mcp_http_server.py (via scp or git pull)
-sudo systemctl restart mcp-bridge
-```
-
-## Testing
+### Test endpoints
 
 ```bash
 # Health check
 curl http://146.190.120.44:8767/health
 
-# Initialize (MCP protocol)
-curl -X POST http://146.190.120.44:8767/mcp \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+# Status
+curl http://146.190.120.44:8767/status
 ```
 
-## Files
+## Updating
 
-- `mcp_http_server.py` - MCP-compliant bridge server
-- `.env` - Configuration (not in git)
-- `README.md` - This file
+To update the server:
 
----
+```bash
+# Stop service
+sudo systemctl stop mcp-bridge
 
-**This runs 24/7 on the server. Client connections come from your local machine (see `../client/`).**
+# Update code
+cd ~/localbrain/remote-mcp/server
+# (upload new mcp_http_server.py)
+
+# Restart service
+sudo systemctl start mcp-bridge
+```
+
+## Security
+
+1. **API Keys**: Store API keys in environment variables, never in code
+2. **Firewall**: Only expose port 8767, block all other unnecessary ports
+3. **Updates**: Keep system and Python packages updated
+4. **Monitoring**: Check logs regularly for suspicious activity
+
+## Troubleshooting
+
+### Service won't start
+
+```bash
+# Check logs
+sudo journalctl -u mcp-bridge -n 50
+
+# Check Python path
+which python3
+
+# Test manually
+cd ~/localbrain/remote-mcp/server
+source ../venv/bin/activate
+python mcp_http_server.py
+```
+
+### Port already in use
+
+```bash
+# Find process using port
+sudo lsof -i :8767
+
+# Kill if needed
+sudo kill -9 <PID>
+```
+
+### Can't connect from client
+
+1. Check firewall: `sudo ufw status`
+2. Check service: `sudo systemctl status mcp-bridge`
+3. Test locally: `curl http://localhost:8767/health`
+4. Check external: `curl http://146.190.120.44:8767/health`
