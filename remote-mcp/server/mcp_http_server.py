@@ -15,13 +15,12 @@ from datetime import datetime
 from typing import Dict, Optional, Any
 from collections import defaultdict
 
-from fastapi import FastAPI, Request, Response, Header, HTTPException, status
+from fastapi import FastAPI, Request, Response, Header, HTTPException, status, WebSocket
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from loguru import logger
 from pydantic import BaseModel, Field
-import websockets
 
 # ============================================================================
 # Models
@@ -221,7 +220,7 @@ class MCPHTTPServer:
             raise HTTPException(status_code=404, detail="Session not found")
         
         @self.app.websocket("/tunnel/connect")
-        async def tunnel_connect(websocket):
+        async def tunnel_connect(websocket: WebSocket):
             """WebSocket endpoint for tunnel clients"""
             await self._handle_tunnel_connection(websocket)
     
@@ -259,10 +258,11 @@ class MCPHTTPServer:
         
         tunnel = self.tunnels[tunnel_id]
         try:
-            await tunnel.websocket.send(json.dumps({
+            await tunnel.websocket.send_json({
                 "type": "request",
                 "data": message
-            }))
+            })
+            logger.info(f"Forwarded request to tunnel {tunnel_id}: {message}")
         except Exception as e:
             logger.error(f"Failed to forward to tunnel {tunnel_id}: {e}")
     
@@ -353,7 +353,7 @@ class MCPHTTPServer:
         except Exception as e:
             logger.error(f"Error in SSE listen stream: {e}")
     
-    async def _handle_tunnel_connection(self, websocket):
+    async def _handle_tunnel_connection(self, websocket: WebSocket):
         """Handle WebSocket tunnel connection from local client"""
         await websocket.accept()
         
@@ -405,7 +405,9 @@ class MCPHTTPServer:
             })
             
             # Handle messages from tunnel
-            async for message in websocket.iter_json():
+            while True:
+                message = await websocket.receive_json()
+                
                 if message.get("type") == "response":
                     # Response from local MCP server
                     request_id = message.get("request_id")

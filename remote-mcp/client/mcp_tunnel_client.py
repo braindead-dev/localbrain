@@ -125,9 +125,11 @@ class MCPTunnelClient:
                 try:
                     message = await self.websocket.recv()
                     data = json.loads(message)
+                    logger.info(f"📨 Received from bridge: {data.get('type')}")
                     
                     if data.get("type") == "request":
                         # Forward JSON-RPC request to local MCP server
+                        logger.info(f"🔄 Forwarding to local MCP: {data.get('data')}")
                         await self._handle_request(data.get("data"))
                     
                     elif data.get("type") == "ping":
@@ -166,22 +168,37 @@ class MCPTunnelClient:
                 # Notification/response only, no result expected
                 return
             else:
-                # Error
+                # Error - extract ID from first request if batch
+                req_id = None
+                if isinstance(jsonrpc_message, list) and len(jsonrpc_message) > 0:
+                    req_id = jsonrpc_message[0].get("id")
+                elif isinstance(jsonrpc_message, dict):
+                    req_id = jsonrpc_message.get("id")
+                    
                 result = {
                     "jsonrpc": "2.0",
-                    "id": jsonrpc_message.get("id") if isinstance(jsonrpc_message, dict) else None,
+                    "id": req_id,
                     "error": {
                         "code": -32000,
                         "message": f"Local MCP server error: {response.status_code}"
                     }
                 }
             
+            # Extract request ID - handle batch vs single
+            req_id = None
+            if isinstance(jsonrpc_message, list) and len(jsonrpc_message) > 0:
+                req_id = jsonrpc_message[0].get("id")
+            elif isinstance(jsonrpc_message, dict):
+                req_id = jsonrpc_message.get("id")
+            
             # Send response back to bridge
-            await self.websocket.send(json.dumps({
+            response_msg = {
                 "type": "response",
-                "request_id": str(jsonrpc_message.get("id")) if isinstance(jsonrpc_message, dict) else None,
+                "request_id": str(req_id) if req_id is not None else None,
                 "data": result
-            }))
+            }
+            logger.info(f"📤 Sending response to bridge: request_id={response_msg['request_id']}")
+            await self.websocket.send(json.dumps(response_msg))
             
         except Exception as e:
             logger.error(f"Error handling request: {e}")
