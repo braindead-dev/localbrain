@@ -102,6 +102,40 @@ export function ConnectionsView() {
     }
   };
 
+  const handleConnect = async (connectorIdOrConnector: string | Connector) => {
+    try {
+      // Handle both string ID and Connector object for backward compatibility
+      const connector = typeof connectorIdOrConnector === 'string' 
+        ? connectors.find(c => c.id === connectorIdOrConnector)
+        : connectorIdOrConnector;
+      
+      if (!connector) {
+        setError("Connector not found");
+        return;
+      }
+
+      // For OAuth connectors (gmail, calendar), start OAuth flow
+      if (connector.auth_type === 'oauth') {
+        const authResult = await api.connectorAuthStart(connector.id);
+        if (authResult.success && authResult.auth_url) {
+          // Open OAuth URL in new window
+          window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
+          // Reload connectors after a short delay to check for new connections
+          setTimeout(() => {
+            loadConnectors();
+          }, 2000);
+        }
+      } else {
+        // For other connectors (browser), show dialog
+        setSelectedConnector(connector);
+        setConnectPath("");
+        setShowConnectDialog(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to start connection");
+    }
+  };
+
   const handleDisconnect = async (connectorId: string) => {
     try {
       await api.connectorRevoke(connectorId);
@@ -109,12 +143,6 @@ export function ConnectionsView() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to disconnect");
     }
-  };
-
-  const handleConnect = (connector: Connector) => {
-    setSelectedConnector(connector);
-    setConnectPath("");
-    setShowConnectDialog(true);
   };
 
   const handleConfirmConnect = async () => {

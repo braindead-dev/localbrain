@@ -214,8 +214,8 @@ class CalendarConnector(BaseConnector):
             
             # Determine time range based on first sync
             if is_first_sync:
-                # First sync: Get 3 months of past data
-                days_to_fetch = 90  # 3 months
+                # First sync: Get 1 week of past data
+                days_to_fetch = 7  # 1 week
                 print(f"📅 First Calendar sync - fetching {days_to_fetch} days of events...")
             else:
                 # Regular sync: Get last 7 days

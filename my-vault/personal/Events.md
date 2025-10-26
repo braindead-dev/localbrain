@@ -5,9 +5,9 @@
 **Event:** Cal Hacks 12.0 hackathon with sponsor workshops [1]
 
 **Activities:**
-- Creao AI Networking & Yoga Session 3–5 PM: networking with resume sharing, followed by yoga session with provided mats to take home [1][2][3][31][1][46]
-- Ripple workshop at 3:15 PM in breakout 3 (Doe) [4][33][1][2][45]
-- Yoga and swag at Breakout 4 (Bancroft) [4][1][2]
+- Creao AI Networking & Yoga Session 3–5 PM: networking with resume sharing, followed by yoga session with provided mats to take home [1][2][3][31][1][46][1]
+- Ripple workshop at 3:15 PM in breakout 3 (Doe) [4][33][1][2][45][1]
+- Yoga and swag at Breakout 4 (Bancroft) [4][1][2][1]
 - BitRobot Hardware Speakers Event 3–5 PM at Theater: insights from robotics researchers at Open AI, The Bot Company, 1x, Dyna [1] Robotics, and Physical Intelligence [1][32]
 
 **Date:** October 25, 2025 [1]
@@ -396,6 +396,30 @@
 **Time:** 11:00 AM - 12:00 PM (PDT) [76]
 
 **Location:** TBD [76]
+
+
+
+- Showers available during event [77]
+- Vegetarian and vegan dinner options at SNACK/DRINK distribution area [77]
+
+
+- Photo booth with wigs and props on second floor [78]
+- Check-ins temporarily on hold [78]
+- HeavyBit Networking Event in Breakout 4 with Lego stress toys, t-shirts, tote bags [78]
+
+
+- Promise recruiter visit 4:20 PM: AI and tech for equitable future, targeting 2026 graduates [79]
+- URM TechTogether Mixer 5–6 PM at Crissy Field: 200 free boba cups, capture the flag game [79]
+- Sunset bike ride from registration area: bring phone and download Lyft [79]
+- Group walks to Crissy Field departing from registration booth by 5:15 PM [79]
+
+
+- Heavybit Networking Event at Breakout 4 on October 25th: Lego stress toys, t-shirts, tote bags [80]
+- Boba tea break in Mixer's area with discussion on startups and venture capital [80]
+- Check-ins temporarily on hold [80]
+
+
+- Merch distribution at food distribution area with QR code verification [84]
 
 ## Related
 

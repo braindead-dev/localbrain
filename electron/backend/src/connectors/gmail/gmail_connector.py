@@ -141,8 +141,8 @@ class GmailConnector(BaseConnector):
                 minutes_diff = int((now - since).total_seconds() / 60)
                 result = self._sync_emails(max_results=limit or 100, minutes=max(minutes_diff, 1))
             else:
-                # Default to last 24 hours for broader coverage
-                result = self._sync_emails(max_results=limit or 100, minutes=1440)
+                # Default to last 7 days (1 week) on first sync
+                result = self._sync_emails(max_results=limit or 100, minutes=10080)  # 7 days = 7 * 24 * 60 = 10080 minutes
             
             # Convert to ConnectorData format
             connector_data = []
@@ -439,7 +439,7 @@ class GmailConnector(BaseConnector):
         return creds is not None and creds.valid
     
     def needs_initial_sync(self) -> bool:
-        """Check if initial sync (2 years of emails) is needed."""
+        """Check if initial sync (2 weeks of emails) is needed."""
         config = self._load_config()
         return config.get('is_first_connection', False) and not config.get('initial_sync_completed', False)
     
@@ -475,12 +475,12 @@ class GmailConnector(BaseConnector):
     # Email Fetching Methods
     # ========================================================================
     
-    def initial_sync(self, max_results: int = 1000) -> Dict:
+    def initial_sync(self, max_results: int = 500) -> Dict:
         """
-        Initial sync to fetch emails from the past 2 years.
+        Initial sync to fetch emails from the past 2 weeks.
         
         Args:
-            max_results: Maximum number of emails to fetch (default: 1000)
+            max_results: Maximum number of emails to fetch (default: 500)
             
         Returns:
             Dict with sync statistics
@@ -488,11 +488,11 @@ class GmailConnector(BaseConnector):
         if not self.is_authenticated():
             raise Exception("Not authenticated. Please connect Gmail first.")
         
-        # Calculate timestamp for 2 years ago
-        two_years_ago = datetime.now() - timedelta(days=730)  # 2 years = 730 days
+        # Calculate timestamp for 2 weeks ago
+        two_weeks_ago = datetime.now() - timedelta(days=14)  # 2 weeks = 14 days
         
-        # Build query - fetch emails from last 2 years in primary inbox
-        query = f'after:{two_years_ago.strftime("%Y/%m/%d")} in:inbox category:primary -in:spam -in:trash'
+        # Build query - fetch emails from last 2 weeks in primary inbox
+        query = f'after:{two_weeks_ago.strftime("%Y/%m/%d")} in:inbox category:primary -in:spam -in:trash'
         
         # Fetch emails
         emails = self._fetch_emails(query, max_results)
@@ -544,8 +544,8 @@ class GmailConnector(BaseConnector):
         
         # Check if initial sync is needed (first connection)
         if self.needs_initial_sync():
-            print("🔄 Gmail: Running initial sync (2 years of emails)...")
-            return self.initial_sync(max_results=1000)  # Use larger limit for initial sync
+            print("🔄 Gmail: Running initial sync (2 weeks of emails)...")
+            return self.initial_sync(max_results=500)  # Use larger limit for initial sync
         
         # Calculate timestamp for N minutes ago
         time_ago = datetime.now() - timedelta(minutes=minutes)
