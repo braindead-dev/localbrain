@@ -16,5 +16,35 @@
     "timestamp": "2025-10-19T07:00:00-07:00",
     "url": null,
     "quote": "Bus to Lafayette Bus Stop, Chicago Bus Station, October 19, 2025, 7:00 AM - 9:45 AM"
+  },
+  "4": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T08:04:47-07:00",
+    "url": null,
+    "quote": "Congrats on your first ride with Waymo! Thanks for covering new ground with us."
+  },
+  "5": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-23T22:44:59-07:00",
+    "url": null,
+    "quote": "Ride complete! Here's your Waymo receipt. Green Tortoise Hostel S... October 23, 2025 at 10:20 PM Total Waymo fare $16.92"
+  },
+  "6": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-23T20:43:03-07:00",
+    "url": null,
+    "quote": "Welcome to Waymo One. Get ready for your first fully autonomous ride."
+  },
+  "7": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-23T22:07:39+00:00",
+    "url": null,
+    "quote": "Your flight to SFO departs in 36 minutes. Thursday, October 23, 2025 ORD Chicago O'Hare 5:44 PM AA 3141 SFO San Francisco 8:17 PM"
+  },
+  "8": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-23T16:32:10+00:00",
+    "url": null,
+    "quote": "Flight 3483 to ORD, Confirmation code: CGNYAU, Thursday, October 23, 2025, IND 4:32 PM to ORD 4:53 PM"
   }
 }

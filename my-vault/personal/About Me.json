@@ -1,0 +1,74 @@
+{
+  "1": {
+    "platform": "UCR Registrar",
+    "timestamp": "2024-09-15T00:00:00Z",
+    "url": "https://registrar.ucr.edu/transcripts",
+    "quote": "Student record for Henry Wang - Computer Science B.S., Expected Graduation: May 2026, Cumulative GPA: 3.8"
+  },
+  "2": {
+    "platform": "LinkedIn",
+    "timestamp": "2024-06-01T00:00:00Z",
+    "url": "https://www.linkedin.com/in/henrywang",
+    "quote": "ML Engineering Intern at Databricks - Model Serving Team"
+  },
+  "3": {
+    "platform": "GitHub",
+    "timestamp": "2024-10-20T00:00:00Z",
+    "url": "https://github.com/henrywang/localbrain",
+    "quote": "LocalBrain: Local-first knowledge management with AI-powered ingestion and semantic search"
+  },
+  "4": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-25T10:30:00Z",
+    "url": null,
+    "quote": "Got an offer from Meta for Software Engineer role. Base salary is $160k with $40k sign-on bonus. Start date is June 1st, 2025."
+  },
+  "5": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-25T10:30:00Z",
+    "url": null,
+    "quote": "Meta offer: Software Engineer, $160k base, $40k sign-on, start June 1st 2025, content streaming infrastructure"
+  },
+  "6": {
+    "platform": "Gmail",
+    "timestamp": "2024-10-25T10:30:00Z",
+    "url": null,
+    "quote": "Got an offer from Meta for Software Engineer role. Base salary is $160k with $40k sign-on bonus. Start date is June 1st, 2025."
+  },
+  "7": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-25T11:28:24-07:00",
+    "url": null,
+    "quote": "I got a job offer at nvida"
+  },
+  "8": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T18:58:46-07:00",
+    "url": null,
+    "quote": "@braindead-dev has invited you to collaborate on the braindead-dev/localbrain repository"
+  },
+  "9": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T18:58:46-07:00",
+    "url": null,
+    "quote": "@braindead-dev has invited you to collaborate on the braindead-dev/localbrain repository"
+  },
+  "10": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T18:58:46-07:00",
+    "url": null,
+    "quote": "@braindead-dev has invited you to collaborate on the braindead-dev/localbrain repository"
+  },
+  "11": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T18:58:46-07:00",
+    "url": null,
+    "quote": "@braindead-dev has invited you to collaborate on the braindead-dev/localbrain repository"
+  },
+  "12": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T22:48:40+00:00",
+    "url": null,
+    "quote": "Thanks for filling out this form: a37 at CalHacks 2025"
+  }
+}
