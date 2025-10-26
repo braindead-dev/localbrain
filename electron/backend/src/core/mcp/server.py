@@ -23,6 +23,7 @@ from .tools import MCPTools
 from .auth import MCPAuthManager, MCPClientAuth
 from .audit import AuditLogger
 from .config import MCPConfig
+from .jsonrpc_handler import JSONRPCHandler
 
 
 class MCPServer:
@@ -93,6 +94,10 @@ class MCPServer:
             timeout=self.config.server.timeout_seconds
         )
         logger.info(f"MCP tools proxy initialized, forwarding to daemon: {daemon_url}")
+
+        # Initialize JSON-RPC handler for MCP protocol compliance
+        self.jsonrpc_handler = JSONRPCHandler(self.app, self.tools)
+        logger.info("JSON-RPC 2.0 handler initialized at /mcp endpoint")
 
         logger.info(f"MCP server ready on {self.config.server.host}:{self.config.server.port}")
 
