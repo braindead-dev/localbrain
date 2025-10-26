@@ -421,5 +421,28 @@
 
 - Merch distribution at food distribution area with QR code verification [84]
 
+
+## ECE 2002
+
+**Event:** ECE 2002 class (recurring) [85]
+
+**Schedule:** Mondays 5:30 AM - 6:20 AM PST [85]
+
+**Location:** FRNY G140 [85]
+
+**Calendar:** https://www.google.com/calendar/event?eid=MzQ3bGpzZHAyanZkamhkZThibmprYTRjNWhfMjAyNTEwMjBUMTIzMDAwWiBwcmFuYXZiYWxhamk5Mjc2QG0 [85]
+
+
+
+## ECE 463 Class
+
+**Event:** ECE 463 recurring class session [86]
+
+**Date/Time:** October 20, 2025, 11:30 AM - 12:20 PM (PDT) [86]
+
+**Location:** 150 N University St, West Lafayette, IN 47907 [86]
+
+**Recurrence:** Recurring event [86]
+
 ## Related
 
