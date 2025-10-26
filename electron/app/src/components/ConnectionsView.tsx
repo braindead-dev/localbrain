@@ -84,32 +84,8 @@ export function ConnectionsView() {
             }
           })
         );
-        // Add a dummy iMessage connector for demonstration
-        const dummyIMessageConnector: Connector = {
-          id: "imessage",
-          name: "iMessage",
-          description: "Connect to iMessage to sync your conversations.",
-          version: "1.0.0",
-          auth_type: "file",
-          requires_config: true,
-          capabilities: ["chat"],
-          connected: false,
-          authenticated: false,
-        };
 
-        const dummyBrowserHistoryConnector: Connector = {
-          id: "browser_history",
-          name: "Browser History",
-          description: "Connect to browser history to sync your browsing.",
-          version: "1.0.0",
-          auth_type: "file",
-          requires_config: true,
-          capabilities: ["history"],
-          connected: false,
-          authenticated: false,
-        };
-
-        setConnectors([...connectorsWithStatus, dummyIMessageConnector, dummyBrowserHistoryConnector]);
+        setConnectors(connectorsWithStatus);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load connectors");
@@ -257,9 +233,9 @@ export function ConnectionsView() {
     return <Icon className="h-5 w-5" />;
   };
   return (
-    <div className={`h-full flex flex-col bg-background m-4 rounded-2xl overflow-hidden border border-border shadow-2xl ${showFileDialog ? 'blur-sm' : ''}`}>
+    <div className={`h-full flex flex-col bg-background m-4 rounded-2xl border border-border shadow-2xl ${showFileDialog ? 'blur-sm' : ''}`}>
       {/* Header */}
-      <div className="border-b border-border px-6 py-5 bg-card shadow-sm space-y-3">
+      <div className="border-b border-border px-6 py-5 bg-card shadow-sm space-y-3 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
             <Plug className="h-5 w-5 text-primary" />
@@ -298,7 +274,7 @@ export function ConnectionsView() {
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-auto">
         <div className="px-6 py-8 space-y-4">
           {error && (
             <div className="p-4 border border-destructive bg-destructive/10 rounded-lg text-destructive">
@@ -410,7 +386,7 @@ export function ConnectionsView() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       {/* File Dialog */}
       <Dialog open={showFileDialog} onOpenChange={setShowFileDialog}>
