@@ -2951,6 +2951,18 @@ Workshop for student organizations interested in applying for SIP Grants funding
 - **Next Steps**: Awaiting update from recruiting team[100]
 - **Resources**: Early Careers site, Gen AI technology information, company culture and values available[100]
 
+
+
+## Garmin Career Opportunities
+
+### Career Fair Follow-up
+- **Company**: Garmin International, Inc.[101]
+- **Event**: UCR Career Fair[101]
+- **Date**: October 23, 2025[101]
+- **Contact**: Emily Green, Talent Acquisition[101]
+- **Action**: Invited to apply for available positions on Garmin careers site[101]
+- **Application Link**: Available via email from noreply@garmin.com[101]
+
 ## Related Offers
 - **Frontier Vacations**: Package booking for airfare, hotels, and transportation[89]
 - **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com; earn 50,000 Travel Miles after qualifying activity[89]

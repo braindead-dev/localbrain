@@ -222,5 +222,15 @@ OpenRouter is a universal API for accessing, scaling and monitoring language mod
 - **Mailing List**: https://lists.ucr.edu/mailman/listinfo/sdrcstudentlist[18]
 - **Contact**: Laura Riley (laura.riley@ucr.edu)[18]
 
+
+# Lab Access
+
+## Lockbox
+- **Location**: Outside the lab[19]
+- **Key Code**: 798243[19]
+- **Key Availability**: Will be placed in lockbox on Wednesday, October 29, 2025[19]
+- **Access Policy**: Do not share combination with people outside of the lab[19]
+- **Contact**: Ian Ballard (ianb@ucr.edu)[19]
+
 ## Related
 
