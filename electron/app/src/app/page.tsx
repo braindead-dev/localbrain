@@ -28,7 +28,6 @@ import { NotesView } from "../components/NotesView";
 import { FileTree, TreeItem } from "../components/FileTree";
 import { HomeView } from "../components/HomeView";
 import { VaultIcon } from "../components/VaultIcon";
-import { RearrangeIcon } from "../components/RearrangeIcon";
 
 type TabValue = "home" | "ask" | "connections" | "search" | "notes" | "settings";
 
@@ -38,73 +37,41 @@ interface Tab {
   label: string;
 }
 
-interface DraggableTabProps {
+interface TabButtonProps {
   tab: Tab;
-  index: number;
   isActive: boolean;
-  isRearrangeMode: boolean;
-  onDragStart: (index: number) => void;
-  onDragOver: (index: number) => void;
-  onDragEnd: () => void;
   onClick: () => void;
   disabled: boolean;
 }
 
-function DraggableTab({ tab, index, isActive, isRearrangeMode, onDragStart, onDragOver, onDragEnd, onClick, disabled }: DraggableTabProps) {
+function TabButton({ tab, isActive, onClick, disabled }: TabButtonProps) {
   const Icon = tab.icon;
 
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!isRearrangeMode) return;
-    e.dataTransfer.effectAllowed = "move";
-    onDragStart(index);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!isRearrangeMode) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    onDragOver(index);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!isRearrangeMode) return;
-    e.preventDefault();
-    onDragEnd();
-  };
-
   return (
-    <div
-      draggable={isRearrangeMode}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      onDragEnd={onDragEnd}
-    >
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClick}
-            disabled={disabled}
-            data-active={isActive}
-            className={`h-12 w-12 rounded-lg shadow-sm ${
-              isActive
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "text-foreground"
-            } ${isRearrangeMode ? "cursor-move" : ""}
-            transition-colors duration-200
-            data-[active=false]:hover:bg-accent
-            data-[active=true]:hover:bg-primary/90`}
-          >
-            <Icon className="h-5 w-5" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          <p>{tab.label}</p>
-        </TooltipContent>
-      </Tooltip>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClick}
+          disabled={disabled}
+          data-active={isActive}
+          className={`h-12 w-12 rounded-lg shadow-sm ${
+            isActive
+              ? "bg-primary text-primary-foreground shadow-md"
+              : "text-foreground"
+          }
+          transition-colors duration-200
+          data-[active=false]:hover:bg-accent
+          data-[active=true]:hover:bg-primary/90`}
+        >
+          <Icon className="h-5 w-5" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="right">
+        <p>{tab.label}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -113,7 +80,6 @@ function AppContent() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState<TabValue>("home");
   const [setupOverlayVisible, setSetupOverlayVisible] = useState(false);
-  const [isRearrangeMode, setIsRearrangeMode] = useState(false);
   const [openedFile, setOpenedFile] = useState<TreeItem | null>(null);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [highlightedFilePath, setHighlightedFilePath] = useState<string | null>(null);
@@ -156,29 +122,9 @@ function AppContent() {
     { value: "notes" as TabValue, icon: PencilLine, label: "Notes" },
   ];
 
-  const [mainTabs, setMainTabs] = useState<Tab[]>(defaultTabs);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [selectedConnection, setSelectedConnection] = useState<string | null>(null);
   const [autoQuery, setAutoQuery] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Array<{id: string, name: string, connected: boolean}>>([]);
-
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
-
-  const handleDragOver = (index: number) => {
-    if (draggedIndex === null || draggedIndex === index) return;
-
-    const updatedTabs = [...mainTabs];
-    const [draggedTab] = updatedTabs.splice(draggedIndex, 1);
-    updatedTabs.splice(index, 0, draggedTab);
-    setMainTabs(updatedTabs);
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
 
   const handleFileOpen = (file: TreeItem) => {
     setOpenedFile(file);
@@ -236,51 +182,20 @@ function AppContent() {
                 </TooltipContent>
               </Tooltip>
 
-              {/* Draggable Tabs */}
-              {mainTabs.map((tab, index) => (
-                <DraggableTab
+              {/* Main Tabs */}
+              {defaultTabs.map((tab) => (
+                <TabButton
                   key={tab.value}
                   tab={tab}
-                  index={index}
                   isActive={activeTab === tab.value}
-                  isRearrangeMode={isRearrangeMode}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDragEnd={handleDragEnd}
                   onClick={() => setActiveTab(tab.value)}
                   disabled={setupOverlayVisible}
                 />
               ))}
             </div>
 
-            {/* Rearrange and Settings at bottom */}
+            {/* Settings at bottom */}
             <div className="flex flex-col gap-3">
-              {/* Rearrange Button */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsRearrangeMode(!isRearrangeMode)}
-                    disabled={setupOverlayVisible}
-                    data-active={isRearrangeMode}
-                    className={`h-12 w-12 rounded-lg shadow-sm ${
-                      isRearrangeMode
-                        ? "bg-primary text-primary-foreground shadow-md"
-                        : "text-foreground"
-                    }
-                    transition-colors duration-200
-                    data-[active=false]:hover:bg-accent
-                    data-[active=true]:hover:bg-primary/90`}
-                  >
-                    <RearrangeIcon className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>{isRearrangeMode ? "Done Rearranging" : "Rearrange Icons"}</p>
-                </TooltipContent>
-              </Tooltip>
-
               {/* Settings Button */}
               <Tooltip>
                 <TooltipTrigger asChild>

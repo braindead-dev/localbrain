@@ -213,37 +213,14 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
     <div className="h-full flex flex-col bg-background relative m-4 rounded-2xl overflow-hidden border border-border shadow-2xl">
       {/* Header */}
       <div className={`border-b border-border px-6 py-5 bg-card shadow-sm ${showSetup ? 'pointer-events-none' : ''}`}>
-        <div className="relative flex justify-between items-center">
+        <div className="relative flex justify-center items-center">
           <div className="flex items-center gap-3">
-            <motion.div
-              className="p-2 bg-primary/10 rounded-lg shadow-sm"
-              initial={{ x: 100 }}
-              animate={{ x: 0 }}
-              transition={{
-                type: "spring",
-                damping: 22,
-                stiffness: 90,
-                duration: 1.0,
-              }}
-            >
+            <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
               <Brain className="h-8 w-8 text-primary" />
-            </motion.div>
-            <div className="overflow-hidden">
-              <motion.h1
-                initial={{ x: -500 }}
-                animate={{ x: 0 }}
-                transition={{
-                  type: "spring",
-                  damping: 22,
-                  stiffness: 90,
-                  duration: 1.0,
-                }}
-              >
-                Welcome to LocalBrain
-              </motion.h1>
             </div>
+            <h1>Welcome to LocalBrain</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="absolute right-0 flex items-center gap-4">
             {/* Daemon Status */}
             {daemonConnected === null ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
