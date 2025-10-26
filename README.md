@@ -1,7 +1,21 @@
 # LocalBrain
 
 > **The personalization layer for the next generation of AI apps**  
-> Provide AI apps with context about your life, on autopilot.
+> The protocol to give AI apps your life's context.
+
+Whether it's an agent like Poke or a chat app like Claude, next gen AI apps rely on accurate personal context. **This raises an issue** at both sides, for the AI app *and* the user.
+
+For AI apps:
+ - Engineering and maintaining a system to gather and use personal context eats up engineering time, ends up working okay at best in practice, and pulls focus away from shipping the core product.
+
+For users:
+ - Linking all of your connectors (email, slack, iMessage, etc) to every AI app you use is high-friction, a privacy risk, and leaves your own context fragmented and inaccessible.
+
+This gap is only getting bigger as we move to an AI-adjusted world.
+
+LocalBrain is the open-source layer that fixes this gap; it automatically organizes your personal digital footprint into a **local, source-backed, readable knowledge base** that any AI app can query to understand you, safely and privately.
+
+<img width="1035" height="543" alt="Screenshot 2025-10-26 at 3 05 40 AM" src="https://github.com/user-attachments/assets/87795413-06c2-4da5-8f74-ece0c9fbb09f" />
 
 ## What is LocalBrain?
 
