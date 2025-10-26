@@ -278,5 +278,11 @@
 - **Registration URL**: https://www.publicanth.net/[27]
 - **Project Goals**: Thoughtful analyses of heated debates, effective writing skills, positive engagement with those who disagree[27]
 
+
+### Week 1 Submission
+- **Graded**: Oct 23 at 12:10pm[28]
+- **Status**: Grade changes and new comments released[28]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951194/submissions/131590[28]
+
 ## Related
 

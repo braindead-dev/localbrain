@@ -210,5 +210,17 @@ OpenRouter is a universal API for accessing, scaling and monitoring language mod
 - **Email**: support@openrouter.ai[16]
 - **Discord**: https://discord.gg/openrouter[16]
 
+
+## Shared Resources
+- **click-and-switch folder**: https://drive.google.com/drive/folders/1cZ8iswbvKI0MdSs5ALtJ6yALDtOrpTcI?usp=sharing&ts=68fa84ba[17]
+  - Shared by Ian Ballard on October 23, 2025[17]
+
+
+## Student Disability Resource Center (SDRC)
+
+- **Email**: SDRCstudentlist@lists.ucr.edu[18]
+- **Mailing List**: https://lists.ucr.edu/mailman/listinfo/sdrcstudentlist[18]
+- **Contact**: Laura Riley (laura.riley@ucr.edu)[18]
+
 ## Related
 
