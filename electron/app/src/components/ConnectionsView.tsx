@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { 
   Plug, 
   Search, 
@@ -19,6 +20,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { api } from "../lib/api";
+import { toast } from "sonner";
 
 interface Connector {
   id: string;
@@ -46,6 +48,9 @@ export function ConnectionsView() {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showConnectDialog, setShowConnectDialog] = useState(false);
+  const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
+  const [connectPath, setConnectPath] = useState("");
 
   // Load connectors on mount
   useEffect(() => {
@@ -103,6 +108,36 @@ export function ConnectionsView() {
       await loadConnectors();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to disconnect");
+    }
+  };
+
+  const handleConnect = (connector: Connector) => {
+    setSelectedConnector(connector);
+    setConnectPath("");
+    setShowConnectDialog(true);
+  };
+
+  const handleConfirmConnect = async () => {
+    if (!selectedConnector) return;
+
+    try {
+      // For browser connector: auto-detect or use path
+      const credentials = connectPath.trim() 
+        ? { history_path: connectPath.trim() }
+        : {}; // Empty will trigger auto-detection
+      
+      const result = await api.connectorAuth(selectedConnector.id, credentials);
+      
+      if (result.success) {
+        toast.success(`Connected to ${selectedConnector.name}!`);
+        setShowConnectDialog(false);
+        await loadConnectors();
+      } else {
+        toast.error(result.message || "Authentication failed");
+      }
+    } catch (err) {
+      console.error("Connection error:", err);
+      toast.error(err instanceof Error ? err.message : "Connection failed");
     }
   };
 
@@ -253,8 +288,11 @@ export function ConnectionsView() {
                           </Button>
                         </>
                       ) : (
-                        <Button size="sm" disabled>
-                          Not Connected
+                        <Button 
+                          size="sm"
+                          onClick={() => handleConnect(connector)}
+                        >
+                          Connect
                         </Button>
                       )}
                     </div>
@@ -265,6 +303,54 @@ export function ConnectionsView() {
           )}
         </div>
       </ScrollArea>
+
+      {/* Connect Dialog */}
+      <Dialog open={showConnectDialog} onOpenChange={setShowConnectDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect to {selectedConnector?.name}</DialogTitle>
+            <DialogDescription>
+              {selectedConnector?.id === 'browser' ? (
+                <>
+                  Leave blank to auto-detect Chrome, or enter custom browser history path
+                </>
+              ) : (
+                <>Configure connection settings for {selectedConnector?.name}</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {selectedConnector?.id === 'browser' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Browser History Path (optional)
+                </label>
+                <Input
+                  placeholder="Leave blank for auto-detect, or enter path..."
+                  value={connectPath}
+                  onChange={(e) => setConnectPath(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Example: ~/Library/Application Support/Google/Chrome/Default/History
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConnectDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmConnect}>
+              Connect
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

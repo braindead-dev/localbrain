@@ -92,6 +92,8 @@ class ConnectorManager:
                         
             except Exception as e:
                 print(f"⚠️  Failed to load connector from {item.name}: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
     
     def list_connectors(self) -> List[ConnectorMetadata]:

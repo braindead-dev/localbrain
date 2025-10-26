@@ -219,14 +219,20 @@ class ApiClient {
   /**
    * Authenticate connector
    */
-  async connectorAuth(connectorId: string, credentials: any): Promise<{ success: boolean; message: string }> {
+  async connectorAuth(connectorId: string, credentials: any): Promise<{ success: boolean; message?: string; error?: string }> {
     const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
     });
-    if (!response.ok) throw new Error(`Failed to authenticate ${connectorId}`);
-    return response.json();
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || `Failed to authenticate ${connectorId}`);
+    }
+    
+    return data;
   }
 
   /**
