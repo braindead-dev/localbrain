@@ -1,0 +1,3 @@
+2025-10-26 03:02:29,160 - __main__ - INFO - Starting LocalBrain Slack Bot on 0.0.0.0:8000
+2025-10-26 03:02:29,160 - __main__ - INFO - Daemon URL: http://127.0.0.1:8765
+2025-10-26 03:02:29,160 - __main__ - INFO - Monitoring all channels where bot is added
