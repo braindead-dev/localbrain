@@ -76,5 +76,8 @@ Members will receive separate email with registration process details[1].
 - **Hold Release Time**: Approximately 15 minutes after acknowledgment submission[2]
 - **Contact**: Student Affairs (vcsa@ucr.edu) for training questions; Office of the Registrar (reghelpdesk@ucr.edu or 951-827-7284) for technical issues[2]
 
+
+- **Sona System Login Issues**: Fixed as of October 22, 2025[3]
+
 ## Related
 
