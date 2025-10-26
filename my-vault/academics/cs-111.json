@@ -130,5 +130,17 @@
     "timestamp": "2025-10-23T06:07:17+00:00",
     "url": null,
     "quote": "Your Quiz 1 B for CS111, Fall 2025 has been graded!"
+  },
+  "23": {
+    "platform": "Browser",
+    "timestamp": "2025-10-26T10:42:38.977483Z",
+    "url": null,
+    "quote": "CS111 Dashboard | Gradescope"
+  },
+  "24": {
+    "platform": "Browser",
+    "timestamp": "2025-10-26T10:42:38.977485Z",
+    "url": null,
+    "quote": "Your Courses | Gradescope"
   }
 }

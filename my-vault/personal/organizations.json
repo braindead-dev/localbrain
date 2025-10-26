@@ -64,5 +64,23 @@
     "timestamp": "2025-10-16T10:09:31-07:00",
     "url": null,
     "quote": "Let's plan for 10:30 AM tomorrow. I'll send over the meeting link in the morning."
+  },
+  "12": {
+    "platform": "Browser",
+    "timestamp": "2025-10-26T10:42:38.977350Z",
+    "url": null,
+    "quote": "Y Combinator account page with redirect to YC x Cal Hacks Challenge 2025"
+  },
+  "13": {
+    "platform": "Slack",
+    "timestamp": "2025-10-26T10:42:38.977361Z",
+    "url": null,
+    "quote": "spons-fish-audio (Channel) - Cal Hacks 12.0 - 1 new item"
+  },
+  "14": {
+    "platform": "Browser",
+    "timestamp": "2025-10-26T10:42:38.977460Z",
+    "url": null,
+    "quote": "Members \u00b7 People \u00b7 twocentinc - GitHub organization members page"
   }
 }

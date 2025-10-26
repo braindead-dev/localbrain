@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
@@ -54,6 +54,7 @@ export function ConnectionsView() {
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load connectors on mount
   useEffect(() => {
@@ -190,6 +191,33 @@ export function ConnectionsView() {
       await loadConnectors();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to disconnect");
+    }
+  };
+
+  const handleFileSelect = async () => {
+    if (!selectedFile) {
+      toast.error("Please select a file first.");
+      return;
+    }
+
+    const toastId = toast.loading("Ingesting browser history...");
+    setShowFileDialog(false); // Close the dialog immediately
+
+    try {
+      const fileContent = await selectedFile.text();
+      const items = JSON.parse(fileContent);
+
+      const result = await api.browserIngest(items);
+
+      if (result.success) {
+        toast.success(`Successfully ingested ${result.items_ingested} items.`, { id: toastId });
+      } else {
+        toast.error(`Ingestion failed. Errors: ${result.errors.join(', ')}`, { id: toastId });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "An unknown error occurred.", { id: toastId });
+    } finally {
+      setSelectedFile(null);
     }
   };
 
@@ -390,13 +418,21 @@ export function ConnectionsView() {
           <DialogHeader>
             <DialogTitle>Select File</DialogTitle>
             <DialogDescription>
-              Please select the appropriate file for {selectedConnector?.name}.
+              Please select the JSON file for {selectedConnector?.name}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              This is a placeholder for a file dialog. In a real application, you would use a file input to select the file.
-            </p>
+            <Input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+            />
+            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+              Choose File
+            </Button>
+            {selectedFile && <p className="text-sm text-muted-foreground">Selected file: {selectedFile.name}</p>}
           </div>
           <DialogFooter>
             <Button
@@ -405,7 +441,7 @@ export function ConnectionsView() {
             >
               Cancel
             </Button>
-            <Button onClick={() => setShowFileDialog(false)}>
+            <Button onClick={handleFileSelect} disabled={!selectedFile}>
               Select
             </Button>
           </DialogFooter>

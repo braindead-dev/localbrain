@@ -1,9 +1,17 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict
 from agentic_ingest import AgenticIngestionPipeline
 
 logger = logging.getLogger(__name__)
+
+def chrome_timestamp_to_iso(chrome_timestamp: float) -> str:
+    """Converts a Chrome timestamp (microseconds since 1601-01-01) to ISO 8601 format."""
+    # The epoch for Chrome timestamps is 1601-01-01 UTC.
+    # The difference between the Chrome epoch and the Unix epoch (1970-01-01) is 11644473600 seconds.
+    epoch_start = datetime(1601, 1, 1)
+    delta = timedelta(microseconds=chrome_timestamp)
+    return (epoch_start + delta).isoformat() + "Z"
 
 def ingest_browser_data(items: List[Dict], vault_path: str) -> Dict:
     """
@@ -26,7 +34,15 @@ def ingest_browser_data(items: List[Dict], vault_path: str) -> Dict:
             title = item.get('title', '(No Title)')
             url = item.get('url', '')
             content = item.get('content', '')
-            timestamp = item.get('timestamp', datetime.utcnow().isoformat() + 'Z')
+
+            # Handle timestamp
+            if 'timestamp' in item:
+                timestamp = item['timestamp']
+            elif 'visitTime' in item:
+                timestamp = chrome_timestamp_to_iso(item['visitTime'])
+            else:
+                timestamp = datetime.utcnow().isoformat() + 'Z'
+
             extra_metadata = item.get('metadata', {})
 
             # Format as structured text (similar to Gmail/Calendar format)

@@ -116,5 +116,32 @@
 - **Meeting Link**: https://meet.google.com/bgh-jsbw-ddq[11]
 - **Status**: Rescheduled from original 5:30 PM slot[11]
 
+
+## Y Combinator Events
+
+- **Event**: YC x Cal Hacks Challenge 2025[12]
+- **Registration URL**: https://events.ycombinator.com/ycxcalhackschallenge25[12]
+- **Access Date**: October 26, 2025[12]
+
+
+
+## Cal Hacks 12.0
+
+- **Event**: Cal Hacks 12.0[13]
+- **Sponsorship Channel**: spons-fish-audio on Slack[13]
+- **Notification Date**: October 26, 2025[13]
+
+
+## twocentinc
+
+**Platform**: GitHub[14]
+
+**URL**: https://github.com/orgs/twocentinc/people[14]
+
+**Type**: Organization
+
+**Description**: GitHub organization with members list[14]
+
+
 ## Related
 

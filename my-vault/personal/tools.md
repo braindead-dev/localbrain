@@ -1,22 +1,15 @@
 # tools
 
-# Calendly
+# Tools and Extensions
 
-## Account Setup
-- **Email**: hwang585@ucr.edu[1]
-- **Setup Date**: October 18, 2025[1]
-- **Status**: Booking page created with available times, location, duration, and description[1]
+## Chrome Extensions
 
-## Sharing Options
-Recommended ways to share scheduling link[1]:
-- Include in email signature[1]
-- Add to social media bio[1]
-- Include on business cards[1]
-- Embed directly on website[1]
-- Send personalized emails from Calendly[1]
-
-## Company Info
-- **Address**: 115 E. Main Street, Suite A1B, Buford, GA 30518[1]
+### Export Chrome History
+- **Name**: Export Chrome History[3]
+- **Source**: Chrome Web Store[3]
+- **URL**: https://chromewebstore.google.com/detail/export-chrome-history/dihloblpkeiddiaojbagoecedbfpifdj?hl=en[3]
+- **Purpose**: Export and backup Chrome browser history[3]
+- **Discovered**: October 26, 2025[3]
 
 ## Related
 
