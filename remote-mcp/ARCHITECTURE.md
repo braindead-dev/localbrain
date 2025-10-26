@@ -1,8 +1,10 @@
-# Remote MCP Bridge - Architecture Overview
+# Remote MCP Bridge - Architecture
 
-## Integration with LocalBrain
+Technical architecture overview for the Remote MCP Bridge system.
 
-The Remote MCP Bridge extends LocalBrain's existing architecture to enable secure external access without modifying core components.
+## System Overview
+
+The Remote MCP Bridge is a relay service that connects your local MCP server to a publicly accessible bridge server via encrypted WebSocket tunnels, enabling external access without exposing your local machine.
 
 ## Component Stack
 
@@ -23,7 +25,7 @@ The Remote MCP Bridge extends LocalBrain's existing architecture to enable secur
 │  • Rate limiting (60 req/min)                            │
 │  • No data storage (100% relay)                          │
 └───────────────────┬─────────────────────────────────────┘
-                    │ WebSocket Tunnel
+                    │ WebSocket Tunnel (WSS)
                     ▼
 ┌─────────────────────────────────────────────────────────┐
 │             Tunnel Client (NEW)                          │
@@ -33,9 +35,9 @@ The Remote MCP Bridge extends LocalBrain's existing architecture to enable secur
 │  • Forward requests to local MCP                         │
 │  • Send responses back through tunnel                    │
 │  • Auto-reconnect on disconnect                          │
-│  • Keepalive pings                                       │
+│  • Keepalive pings every 30s                             │
 └───────────────────┬─────────────────────────────────────┘
-                    │ HTTP + X-API-Key
+                    │ HTTP + X-API-Key (Local)
                     ▼
 ┌─────────────────────────────────────────────────────────┐
 │          MCP Server (EXISTING - Port 8766)               │
@@ -46,7 +48,7 @@ The Remote MCP Bridge extends LocalBrain's existing architecture to enable secur
 │    summarize, list                                       │
 │  • Proxies to daemon                                     │
 └───────────────────┬─────────────────────────────────────┘
-                    │ HTTP
+                    │ HTTP (localhost only)
                     ▼
 ┌─────────────────────────────────────────────────────────┐
 │           Daemon (EXISTING - Port 8765)                  │
@@ -67,28 +69,28 @@ The Remote MCP Bridge extends LocalBrain's existing architecture to enable secur
 
 ## Authentication Flow
 
-The bridge adds an additional authentication layer without modifying existing auth:
+Multi-layer authentication ensures security at each step:
 
 ```
-1. External Request
-   ↓
-   X-API-Key: REMOTE_API_KEY (bridge validates)
-   ↓
-2. Bridge → Tunnel
-   ↓
-   WebSocket connection authenticated with USER_ID + REMOTE_API_KEY
-   ↓
-3. Tunnel → MCP Server
-   ↓
-   X-API-Key: dev-key-local-only (existing MCP auth)
-   ↓
+1. External Tool → Bridge
+   X-API-Key: REMOTE_API_KEY
+   (Bridge validates and checks tunnel exists)
+
+2. Bridge ↔ Tunnel
+   WebSocket authenticated with USER_ID + REMOTE_API_KEY
+   (Established during tunnel connection)
+
+3. Tunnel → Local MCP Server
+   X-API-Key: LOCAL_API_KEY (dev-key-local-only)
+   (Tunnel authenticates to MCP)
+
 4. MCP Server → Daemon
-   ↓
-   localhost only (existing proxy)
-   ↓
+   localhost HTTP (no external auth needed)
+   (MCP proxies to daemon)
+
 5. Daemon → Vault
-   ↓
    File system access
+   (Direct file operations)
 ```
 
 ## Request Flow Example
@@ -96,14 +98,14 @@ The bridge adds an additional authentication layer without modifying existing au
 **External Search Request:**
 
 ```
-1. External tool sends:
-   POST https://bridge.com/u/abc123/search
-   Headers: X-API-Key: lb_xyz789...
+1. External Tool:
+   POST https://bridge.com/u/USER_ID/search
+   Headers: X-API-Key: REMOTE_API_KEY
    Body: {"query": "internship applications", "top_k": 5}
 
-2. Bridge server:
-   - Validates REMOTE_API_KEY (lb_xyz789...)
-   - Checks USER_ID (abc123) has active tunnel
+2. Bridge Server:
+   - Validates REMOTE_API_KEY
+   - Checks USER_ID has active tunnel
    - Verifies "search" tool is allowed
    - Checks rate limit (60/min)
    - Forwards via WebSocket:
@@ -113,16 +115,16 @@ The bridge adds an additional authentication layer without modifying existing au
        "request_id": "req-123"
      }
 
-3. Tunnel client:
+3. Tunnel Client:
    - Receives from WebSocket
    - Forwards to local MCP:
      POST http://127.0.0.1:8766/mcp/search
      Headers: X-API-Key: dev-key-local-only
      Body: {"query": "...", "top_k": 5}
 
-4. MCP server:
+4. MCP Server:
    - Authenticates local API key
-   - Forwards to daemon:
+   - Proxies to daemon:
      POST http://127.0.0.1:8765/protocol/search
      Body: {"q": "internship applications"}
 
@@ -134,24 +136,21 @@ The bridge adds an additional authentication layer without modifying existing au
    Daemon → MCP → Tunnel → Bridge → External Tool
 ```
 
-## Data Privacy Guarantees
+## Data Privacy
 
-**Bridge Server:**
-- Stores in memory:
-  - Active WebSocket connections
-  - USER_ID → REMOTE_API_KEY mappings
-  - Rate limit counters
-  - Connection timestamps
-- **Never stores:**
-  - Search queries
-  - File contents
-  - Search results
-  - Any vault data
+**Bridge Server Stores (in-memory only):**
+- Active WebSocket connections
+- USER_ID → REMOTE_API_KEY mappings
+- Rate limit counters
+- Connection timestamps
 
-**All data is ephemeral and lost when:**
-- WebSocket connection closes
-- Bridge server restarts
-- User disconnects tunnel
+**Bridge Server NEVER Stores:**
+- Search queries
+- File contents
+- Search results
+- Any vault data
+
+**All data is ephemeral** - lost when WebSocket closes or server restarts.
 
 ## Port Allocation
 
@@ -161,197 +160,92 @@ The bridge adds an additional authentication layer without modifying existing au
 | MCP Server | 8766 | localhost only |
 | Bridge Server | 8767 | public (0.0.0.0) |
 
-**Security Note:** Daemon and MCP server should NEVER be exposed to the internet. Only the bridge server is public-facing.
+**Critical:** Daemon and MCP server must NEVER be exposed to the internet. Only the bridge server should be public-facing.
 
-## File Organization
+## Concurrency Handling
 
-```
-remote-mcp/
-├── bridge_server.py         # Public relay server
-├── tunnel_client.py         # Local tunnel client
-├── requirements.txt         # Dependencies
-├── .env.example             # Configuration template
-├── .env                     # User config (git-ignored)
-├── .gitignore               # Prevent committing secrets
-├── start_bridge.sh          # Start bridge script
-├── start_tunnel.sh          # Start tunnel script
-├── test_bridge.py           # Integration tests
-├── README.md                # Overview and quick start
-├── IMPLEMENTATION.md        # Complete setup guide
-└── ARCHITECTURE.md          # This file
-```
+The bridge uses a **Single Receiver + Future-based routing** pattern to handle multiple concurrent requests over a single WebSocket:
 
-## Zero Modification Integration
-
-The bridge integrates with LocalBrain **without modifying any existing code**:
-
-✅ **No changes to:**
-- daemon.py
-- server.py (MCP server)
-- Any ingestion or search logic
-- Any existing authentication
-- Any file operations
-
-✅ **Only additions:**
-- New bridge server (separate process)
-- New tunnel client (separate process)
-- New configuration (.env)
-- New documentation
-
-✅ **Benefits:**
-- No risk to existing functionality
-- Can be disabled by stopping tunnel client
-- Can be removed completely without affecting LocalBrain
-- Updates to LocalBrain don't affect bridge
-- Bridge updates don't affect LocalBrain
-
-## Deployment Scenarios
-
-### Scenario 1: Local Testing
-
-```
-Bridge:  localhost:8767
-Tunnel:  localhost → localhost:8767
-MCP:     localhost:8766
-Daemon:  localhost:8765
-```
-
-All components run on same machine for development/testing.
-
-### Scenario 2: Self-Hosted Bridge
-
-```
-Bridge:  your-vps.com:8767 (public)
-Tunnel:  local machine → your-vps.com:8767 (WebSocket)
-MCP:     localhost:8766
-Daemon:  localhost:8765
-```
-
-Bridge on VPS, everything else local. Recommended for personal use.
-
-### Scenario 3: Official Hosted Service (Future)
-
-```
-Bridge:  mcp.localbrain.app (managed service)
-Tunnel:  local machine → mcp.localbrain.app (WebSocket)
-MCP:     localhost:8766
-Daemon:  localhost:8765
-```
-
-Official LocalBrain relay service. Coming soon.
-
-## Request/Response Architecture
-
-### Concurrency Handling
-
-The bridge uses an async request/response matching system to handle multiple concurrent requests over a single WebSocket:
-
-**Single Receiver Pattern:**
+**Single Receiver:**
 ```python
-# In tunnel_connect() - ONLY place that receives from WebSocket
+# Only tunnel_connect() receives from WebSocket
 while True:
     message = await websocket.receive_json()
 
     if message.get("type") == "ping":
-        # Handle keepalive
         await websocket.send_json({"type": "pong"})
 
     elif "request_id" in message:
-        # Route response to waiting Future
         tunnel_manager.handle_response(tunnel_id, message)
 ```
 
-**Future-Based Waiting:**
+**Future-Based Request Handling:**
 ```python
-# In forward_request() - multiple can run concurrently
+# Multiple forward_request() calls can run concurrently
 response_future = asyncio.Future()
 pending_responses[tunnel_id][request_id] = response_future
 
-# Send request (with lock for serialization)
-async with lock:
+async with lock:  # Serialize sends
     await tunnel.send_json(request)
 
-# Wait for response (without lock)
 response = await asyncio.wait_for(response_future, timeout=30.0)
 ```
 
-**Key Benefits:**
-1. **No WebSocket Contention:** Only one coroutine ever calls `receive()`
-2. **Concurrent Requests:** Multiple requests can be in-flight simultaneously
-3. **Request/Response Matching:** Each response is routed to the correct waiting coroutine
-4. **Timeout Handling:** Each request has its own 30-second timeout
+**Benefits:**
+- No WebSocket recv() contention
+- True concurrent request handling
+- 30-second timeout per request
+- Clean request/response matching
 
-**Flow Diagram:**
-```
-Request 1 →
-           ↓ (send with lock)
-Request 2 →  WebSocket  → Single Receiver Loop
-           ↓ (send with lock)                  ↓
-Request 3 →                           Route by request_id
-                                               ↓
-                      Future 1 ← Response 1
-                      Future 2 ← Response 2
-                      Future 3 ← Response 3
-```
-
-**Why This Design:**
-- WebSockets don't support concurrent `recv()` operations
-- Previous design with locks still had one receiver in `forward_request` and one in `tunnel_connect`
-- New design has ONLY ONE receiver that routes all messages
-- Requests wait on Futures instead of directly on WebSocket
-
-## Performance Characteristics
+## Performance
 
 **Latency Added:**
 - Bridge relay: ~10-50ms
 - WebSocket overhead: ~5-10ms
 - Total added latency: ~15-60ms
 
-**Throughput:**
-- Limited by rate limiting (60 req/min default)
-- Can be increased per-user by bridge admin
-
 **Scalability:**
-- Bridge server: Handles 100s of concurrent tunnels
-- Memory usage: ~1-5MB per active tunnel
+- Bridge handles 100s of concurrent tunnels
+- Memory: ~1-5MB per active tunnel
 - No disk I/O (everything in-memory)
+- Rate limited to 60 req/min per user
 
-## Security Architecture
+## Security
 
-### Defense in Depth
+**Defense in Depth:**
 
-1. **Network Level:**
-   - Firewall: Block ports 8765, 8766 from internet
-   - Only port 8767 (bridge) exposed
+1. **Network Level**
+   - Firewall blocks ports 8765, 8766 from internet
+   - Only bridge port exposed publicly
 
-2. **Application Level:**
-   - Bridge: Remote API key authentication
-   - MCP: Local API key authentication
-   - Daemon: localhost-only binding
+2. **Application Level**
+   - Remote API key authentication at bridge
+   - Local API key authentication at MCP
+   - Daemon bound to localhost only
 
-3. **Transport Level:**
-   - HTTPS for public endpoints (with reverse proxy)
-   - WSS for WebSocket tunnels (with reverse proxy)
+3. **Transport Level**
+   - HTTPS for public endpoints (via reverse proxy)
+   - WSS for WebSocket tunnels
+   - SSL/TLS encryption
 
-4. **Access Control:**
+4. **Access Control**
    - Per-user tool allowlist
-   - Rate limiting per user
-   - Revocable access (stop tunnel anytime)
+   - Rate limiting (60 req/min)
+   - Revocable access (stop tunnel/change key)
 
-### Attack Surface
+**Attack Surface:**
 
-**What attackers CAN do:**
-- Try to guess REMOTE_API_KEYs (mitigated by strong random keys)
+What attackers CAN attempt:
+- Guess REMOTE_API_KEYs (mitigated by strong random keys)
 - Flood bridge with requests (mitigated by rate limiting)
-- Attempt to connect fake tunnels (requires USER_ID + REMOTE_API_KEY)
 
-**What attackers CANNOT do:**
+What attackers CANNOT do:
 - Access MCP or daemon directly (not exposed)
 - Bypass authentication (enforced at multiple layers)
-- Access data without valid tunnel connection
-- Perform DoS on local machine (rate limited at bridge)
+- Access data without valid tunnel
+- DoS local machine (rate limited at bridge)
 
-## Monitoring and Observability
+## Monitoring
 
 **Bridge Server Logs:**
 ```
@@ -370,107 +264,103 @@ ERROR: HTTP error forwarding request: Connection refused
 ```
 
 **Admin Endpoints:**
-```
-GET /admin/tunnels
-  → List all active tunnels with stats
+- `GET /admin/tunnels` - List active tunnels with stats
+- `POST /admin/tunnel/{user_id}/revoke` - Force disconnect tunnel
 
-POST /admin/tunnel/{user_id}/revoke
-  → Force disconnect a user's tunnel
-```
-
-## Failure Modes and Recovery
+## Failure Modes
 
 | Failure | Impact | Recovery |
 |---------|--------|----------|
 | Bridge server down | External access unavailable | Auto-reconnect when back up |
-| Tunnel disconnected | External access unavailable | Auto-reconnect in 5 seconds |
+| Tunnel disconnected | External access unavailable | Auto-reconnect in 5s |
 | MCP server down | Requests fail | Restart MCP server |
 | Daemon down | Requests fail | Restart daemon |
-| Network interruption | Tunnel disconnects | Auto-reconnect when network restored |
+| Network interruption | Tunnel disconnects | Auto-reconnect on restore |
 
 All failures are **graceful** - they don't affect LocalBrain's local functionality.
 
-## Comparison with Alternatives
+## Zero-Modification Integration
 
-### vs. ngrok/localtunnel
+The bridge integrates with LocalBrain **without modifying any existing code**:
 
-**Bridge Approach:**
-- ✅ Complete control over security
-- ✅ Custom authentication
-- ✅ No third-party exposure
-- ✅ Can self-host
-- ❌ Requires VPS/cloud for bridge
+**No changes to:**
+- daemon.py
+- server.py (MCP server)
+- Any ingestion or search logic
+- Any existing authentication
+- Any file operations
 
-**ngrok/localtunnel:**
-- ❌ Third-party has tunnel access
-- ❌ Limited authentication control
-- ❌ Potential security/privacy concerns
-- ✅ No infrastructure needed
+**Only additions:**
+- New bridge server (separate process)
+- New tunnel client (separate process)
+- New configuration (.env)
+- New documentation
 
-### vs. Direct Port Forwarding
+**Benefits:**
+- No risk to existing functionality
+- Can be disabled by stopping tunnel client
+- Can be removed completely without affecting LocalBrain
+- Updates to LocalBrain don't affect bridge
+- Bridge updates don't affect LocalBrain
 
-**Bridge Approach:**
-- ✅ No home IP exposure
-- ✅ Additional auth layer
-- ✅ Rate limiting
-- ✅ Can revoke access instantly
+## File Organization
 
-**Port Forwarding:**
-- ❌ Exposes home IP
-- ❌ Direct access to MCP server
-- ❌ No rate limiting
-- ❌ Network reconfiguration needed
-
-### vs. VPN
-
-**Bridge Approach:**
-- ✅ No VPN client needed
-- ✅ Works from any device/network
-- ✅ Per-tool permissions
-
-**VPN:**
-- ❌ VPN client required
-- ❌ More complex setup
-- ❌ Network configuration needed
-- ✅ Full local network access
-
-## Future Architecture Considerations
-
-**Load Balancing:**
 ```
-External Tools
-    ↓
-Load Balancer
-    ↓
-Bridge 1    Bridge 2    Bridge 3
-    ↓          ↓          ↓
-  Tunnel Client (picks least loaded bridge)
+remote-mcp/
+├── bridge_server.py         # Public relay server
+├── tunnel_client.py         # Local tunnel client
+├── requirements.txt         # Dependencies
+├── .env.example             # Configuration template
+├── .gitignore               # Prevent committing secrets
+├── Caddyfile.example        # HTTPS reverse proxy config
+├── start_bridge.sh          # Start bridge script
+├── start_tunnel.sh          # Start tunnel script
+├── test_bridge.py           # Integration tests
+├── README.md                # Overview and quick start
+├── DEPLOY_DIGITALOCEAN.md   # Production deployment guide
+└── ARCHITECTURE.md          # This file
 ```
 
-**Geographic Distribution:**
+## Deployment Architecture
+
+**Typical Deployment:**
+
 ```
-US Users → US Bridge → Tunnel → Local MCP
-EU Users → EU Bridge → Tunnel → Local MCP
-Asia Users → Asia Bridge → Tunnel → Local MCP
+Bridge Server: VPS/Cloud (e.g., DigitalOcean droplet)
+  - bridge_server.py running via systemd
+  - Caddy reverse proxy for HTTPS/SSL
+  - Public domain: bridge.example.com
+  - Ports 80/443 open (for HTTPS)
+  - Port 8767 internal only (bridge listens here)
+
+Local Machine: Your computer
+  - tunnel_client.py running
+  - MCP server (port 8766)
+  - Daemon (port 8765)
+  - LocalBrain vault
+  - Connects to bridge via WSS
 ```
 
-**Multi-Device Sync:**
+**Configuration:**
+
+Bridge `.env` (on VPS):
+```env
+BRIDGE_HOST=0.0.0.0
+BRIDGE_PORT=8767
+BRIDGE_SECRET=<admin-secret>
+MAX_TUNNEL_IDLE_SECONDS=300
 ```
-Bridge Server
-    ↓
-Multiple Tunnel Clients
-    ↓
-Multiple LocalBrain Instances
-    ↓
-Sync via Bridge (with conflict resolution)
+
+Tunnel `.env` (on local machine):
+```env
+BRIDGE_URL=wss://bridge.example.com/tunnel/connect
+LOCAL_MCP_URL=http://127.0.0.1:8766
+LOCAL_API_KEY=dev-key-local-only
+USER_ID=<your-uuid>
+REMOTE_API_KEY=<your-api-key>
+ALLOWED_TOOLS=search,search_agentic,open,summarize,list
 ```
 
-## Conclusion
+---
 
-The Remote MCP Bridge provides secure, optional external access to LocalBrain while:
-- Maintaining zero-knowledge architecture
-- Requiring no modifications to existing code
-- Adding minimal latency and overhead
-- Being completely removable if not needed
-
-It's designed as a **pure relay** - no data processing, no data storage, just forwarding.
+**Design Philosophy:** The bridge is a **pure relay** - no data processing, no data storage, just forwarding. It maintains zero-knowledge architecture while enabling external access.

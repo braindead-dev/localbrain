@@ -733,7 +733,7 @@ For issues:
 1. Check logs: `sudo journalctl -u mcp-bridge -n 100`
 2. Verify services: `sudo systemctl status mcp-bridge caddy`
 3. Test connectivity: `curl https://mcp.yourdomain.com/health`
-4. Review [IMPLEMENTATION.md](./IMPLEMENTATION.md) troubleshooting section
+4. Review troubleshooting section in [README.md](./README.md)
 5. File issue on GitHub with relevant logs
 
 ---
