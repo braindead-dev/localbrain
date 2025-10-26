@@ -19,22 +19,13 @@
     "appId": "com.localbrain.app",
     "productName": "LocalBrain",
     "directories": {
-      "output": "dist",
-      "app": "."
+      "output": "dist"
     },
     "files": [
-      "electron-stuff/**/*",
-      "!electron-stuff/dist",
-      "!electron-stuff/assets/*.png",
+      "electron-stuff/main.js",
       "package.json",
-      "app/out/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "backend",
-        "to": "backend",
-        "filter": ["**/*", "!**/__pycache__", "!**/*.pyc"]
-      }
+      "app/out/**/*",
+      "electron-stuff/node_modules/**/*"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -54,12 +45,15 @@
           ]
         }
       ],
+      "icon": "electron-stuff/assets/icon.icns",
       "extendInfo": {
         "NSRequiresAquaSystemAppearance": false
       }
     },
     "dmg": {
       "title": "LocalBrain ${version}",
+      "icon": "electron-stuff/assets/icon.icns",
+      "background": "electron-stuff/assets/dmg-background.png",
       "contents": [
         {
           "x": 130,
