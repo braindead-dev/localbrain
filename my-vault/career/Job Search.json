@@ -58,5 +58,29 @@
     "timestamp": "2025-10-25T11:28:24-07:00",
     "url": null,
     "quote": "I got a job offer at nvida"
+  },
+  "11": {
+    "platform": "LinkedIn",
+    "timestamp": "2025-10-25T19:21:30+00:00",
+    "url": null,
+    "quote": "25 new jobs match your preferences for fa software engineer intern in Greater Boston"
+  },
+  "12": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-25T17:49:12+00:00",
+    "url": null,
+    "quote": "Thanks for applying to Uber Freight. Your application has been received and is under review."
+  },
+  "13": {
+    "platform": "LinkedIn",
+    "timestamp": "2025-10-25T17:22:43+00:00",
+    "url": null,
+    "quote": "Software Developer Intern at Lensa (Boston, MA), Engineering Intern, Embedded Software at Lumafield (Boston, MA), Software Engineer, Co-Op at State Street (Quincy, MA), Co-op, AI Engineer at TalentAlly (Cambridge, MA), Camera Software Intern at metalenz (Boston, MA), Software Engineer Intern at Innovative Defense Technologies (Fall River, MA)"
+  },
+  "14": {
+    "platform": "LinkedIn",
+    "timestamp": "2025-10-25T15:21:40+00:00",
+    "url": null,
+    "quote": "Software Developer Intern at Lensa (Boston, MA), Engineering Intern Backend at Lumafield (San Francisco, CA), Software Engineer Intern at Bits to Atoms (Fremont, CA), and 3 more positions"
   }
 }

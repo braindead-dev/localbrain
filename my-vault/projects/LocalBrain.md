@@ -49,6 +49,26 @@ Started development on October 1, 2024 [1]. Currently in Phase 1 - building core
 
 Received final interview date from Amazon for Senior SWE role on November 18th [2].
 
+
+## Data Sources Tested
+
+- Slack: Cal Hacks 12.0 workspace notifications [3]
+
+
+
+## Data Sources Tested
+
+- Slack: Cal Hacks 12.0 workspace notifications [4]
+
+
+
+## Data Sources Tracked
+
+- Gmail
+- Slack (Cal Hacks 12.0 workspace) [5]
+- Discord
+- Manual entries
+
 ## Related
 
 - [[AI Projects]]

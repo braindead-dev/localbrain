@@ -40,6 +40,79 @@ Tracking applications, interviews, and offers for new grad SWE roles (2025-2026)
 - **Location:** Santa Clara headquarters [2]
 - **Compensation:** $155,000 base + $25,000 sign-on + $180,000 RSUs (4-year vest) [2]
 
+
+## Job Alerts
+
+### LinkedIn Job Alert - Software Engineer Intern (Greater Boston)
+- **Date:** October 25, 2025 [11]
+- **Alert:** 25 new jobs matching "fa software engineer intern" search [11]
+- **Opportunities Found:** [11]
+  - Software Developer Intern at Lensa (Boston, MA) [11]
+  - Internships in Computer Science or Software Engineering at Lensa (Bedford, MA) [11]
+  - Embedded Software Engineer Intern at Bose Corporation (Framingham, MA) [11]
+  - Co-op, AI Engineer at TalentAlly (Cambridge, MA) [11]
+  - UI/UX Developer Summer Internship at STR (Woburn, MA) [11]
+  - Embedded Software QA Intern at Bose Corporation (Framingham, MA) [11]
+
+
+### Uber Freight - Software Engineer
+- **Applied:** October 25, 2025 [12]
+- **Status:** Application under review [12]
+- **Notes:** Received confirmation email from Talent Acquisition team [12]
+
+
+## Job Alerts
+
+### LinkedIn Job Alert - Software Engineering Intern (Massachusetts) [13]
+**Date:** October 25, 2025 [13]
+**Positions Found:** 6 internship/co-op opportunities [13]
+
+| Position | Company | Location | Type |
+|----------|---------|----------|------|
+| Software Developer Intern | Lensa | Boston, MA | Internship [13] |
+| Engineering Intern, Embedded Software | Lumafield | Boston, MA | Internship [13] |
+| Software Engineer, Co-Op | State Street | Quincy, MA | Co-op [13] |
+| Co-op, AI Engineer | TalentAlly | Cambridge, MA | Co-op [13] |
+| Camera Software Intern | metalenz | Boston, MA | Internship [13] |
+| Software Engineer Intern | Innovative Defense Technologies (IDT) | Fall River, MA | Internship [13] |
+
+
+
+## Job Alerts - October 25, 2025
+
+### Lensa - Software Developer Intern (Boston, MA)
+- **Source:** LinkedIn Job Alert [14]
+- **Status:** Not applied
+- **Link:** https://www.linkedin.com/comm/jobs/view/4323994466/
+
+### Lumafield - Engineering Intern, Backend Software (San Francisco, CA)
+- **Source:** LinkedIn Job Alert [14]
+- **Status:** Not applied
+- **Notes:** 4 school alumni [14]
+- **Link:** https://www.linkedin.com/comm/jobs/view/4318369502/
+
+### Bits to Atoms - Software Engineer Intern (Fremont, CA)
+- **Source:** LinkedIn Job Alert [14]
+- **Status:** Not applied
+- **Link:** https://www.linkedin.com/comm/jobs/view/4323927546/
+
+### Lensa - Software Developer Intern (Hartford, CT)
+- **Source:** LinkedIn Job Alert [14]
+- **Status:** Not applied
+- **Link:** https://www.linkedin.com/comm/jobs/view/4331102317/
+
+### Nintendo - Intern - Software Engineer NTD (Redmond, WA)
+- **Source:** LinkedIn Job Alert [14]
+- **Status:** Not applied
+- **Notes:** Company actively hiring [14]
+- **Link:** https://www.linkedin.com/comm/jobs/view/4323948499/
+
+### KCF Technologies, Inc. - Software Engineering Intern (United States)
+- **Source:** LinkedIn Job Alert [14]
+- **Status:** Not applied
+- **Notes:** Company actively hiring [14]
+- **Link:** https://www.linkedin.com/comm/jobs/view/4331151061/
+
 ## Related
 
 - [[Resume]]

@@ -6,7 +6,7 @@
 
 ## Overview
 
-Connectors are **plugins** that fetch data from external sources (Gmail, Discord, iMessage, etc.) and convert it into a standardized format for ingestion.
+Connectors are **plugins** that fetch data from external sources (Gmail, Calendar, iMessage, etc.) and convert it into a standardized format for ingestion.
 
 **Before**: Hardcoded routes for each connector in `daemon.py` 🤮  
 **After**: Dynamic plugin system with auto-discovery ✨
@@ -34,10 +34,6 @@ src/connectors/
 ├── gmail/                    # Example connector
 │   ├── gmail_connector.py    # Implements BaseConnector
 │   └── README.md            # Setup instructions
-│
-├── discord/
-│   ├── discord_connector.py
-│   └── README.md
 │
 └── <your-connector>/        # Add your own!
     ├── <name>_connector.py  # Must follow naming convention
@@ -173,7 +169,7 @@ POST /connectors/gmail/auth
 POST /connectors/{connector_id}/sync?auto_ingest=true&limit=100
 ```
 
-Example: `POST /connectors/discord/sync?auto_ingest=true`
+Example: `POST /connectors/gmail/sync?auto_ingest=true`
 
 ### Sync All
 ```bash
@@ -228,7 +224,7 @@ def authenticate(self, credentials):
     return True, None
 ```
 
-### Token (e.g., Discord bot token)
+### Token (e.g., API token)
 ```python
 auth_type="token"
 
@@ -294,17 +290,17 @@ def fetch_updates(self, since=None, limit=None):
     pass
 ```
 
-### Medium: Discord
+### Medium: Calendar
 ```python
 def has_updates(self, since=None):
-    # Use discord.py to check DMs
+    # Use Calendar API to check events
     # Compare timestamps
-    return bool(new_messages)
+    return bool(new_events)
 
 def fetch_updates(self, since=None, limit=None):
-    # Fetch DM messages
+    # Fetch calendar events
     # Convert to ConnectorData with metadata
-    return messages
+    return events
 ```
 
 ### Complex: Gmail (OAuth)
@@ -363,10 +359,10 @@ POST /connectors/my_connector/action/send_message
 ## Supported Connectors (Future)
 
 Current state:
-- ✅ Gmail (needs refactor to BaseConnector)
-- ✅ Discord (needs refactor to BaseConnector)
+- ✅ Gmail (updated to BaseConnector)
+- ✅ Calendar (updated to BaseConnector)
 - ⚠️ Browser History (partial)
-- ⚠️ Calendar (partial)
+- ⚠️ iMessage (planned)
 - ⚠️ iMessage (partial)
 
 Easy to add:

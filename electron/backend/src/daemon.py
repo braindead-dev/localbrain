@@ -50,12 +50,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger('localbrain-daemon')
 
+# Load config first
+CONFIG = load_config()
+VAULT_PATH = get_vault_path()
+PORT = CONFIG.get('port', 8765)
+
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
 
 # Include connector plugin routes
 from connectors.connector_api import create_connector_router
-app.include_router(create_connector_router(vault_path=None))  # Will be set after config loads
+app.include_router(create_connector_router(vault_path=VAULT_PATH))
 
 # Add CORS middleware to allow frontend access
 app.add_middleware(
@@ -65,11 +70,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-
-# Load config
-CONFIG = load_config()
-VAULT_PATH = get_vault_path()
-PORT = CONFIG.get('port', 8765)
 
 # Background task for auto-syncing all connectors
 async def auto_sync_connectors():
@@ -96,6 +96,56 @@ async def auto_sync_connectors():
         
         # Wait 10 minutes before next sync
         await asyncio.sleep(600)  # 600 seconds = 10 minutes
+
+
+# Background task for auto-syncing Google Calendar
+async def auto_sync_calendar():
+    """Background task that syncs Google Calendar every 1 hour."""
+    await asyncio.sleep(120)  # Wait 2 minutes after startup before first sync
+    
+    while True:
+        try:
+            logger.info("📅 Auto-sync: Checking Google Calendar...")
+            from connectors.calendar.calendar_connector import CalendarConnector
+            
+            connector = CalendarConnector(vault_path=VAULT_PATH)
+            
+            if connector.is_authenticated():
+                # Check if initial sync is needed (first connection)
+                if connector.needs_initial_sync():
+                    logger.info("📅 Auto-sync: First connection detected, performing initial sync (30 days)...")
+                    result = connector.initial_sync(max_results=500)
+                    logger.info(f"📅 Auto-sync: Initial sync completed - fetched {result.get('events_processed', 0)} events from past 30 days")
+                else:
+                    logger.info("📅 Auto-sync: Syncing Calendar...")
+                    result = connector.sync(max_results=100, days=7)
+                
+                if result['success'] and result['events']:
+                    logger.info(f"📅 Auto-sync: Found {len(result['events'])} calendar events, ingesting...")
+                    pipeline = AgenticIngestionPipeline(VAULT_PATH)
+                    
+                    ingested = 0
+                    for event_data in result['events']:
+                        try:
+                            pipeline.ingest(
+                                context=event_data['text'],
+                                source_metadata=event_data['metadata']
+                            )
+                            ingested += 1
+                        except Exception as e:
+                            logger.error(f"Failed to ingest calendar event: {e}")
+                    
+                    logger.info(f"✅ Auto-sync: Successfully ingested {ingested}/{len(result['events'])} calendar events")
+                else:
+                    logger.info("📅 Auto-sync: No new calendar events found")
+            else:
+                logger.debug("Auto-sync: Google Calendar not connected, skipping")
+                
+        except Exception as e:
+            logger.error(f"Calendar auto-sync error: {e}")
+        
+        # Wait 1 hour before next sync
+        await asyncio.sleep(3600)  # 3600 seconds = 1 hour
 
 @app.on_event("startup")
 async def startup_event():
@@ -190,7 +240,7 @@ async def handle_ingest(request: Request):
     
     Query parameters:
         - text (required): Content to ingest
-        - platform (optional): Source platform (e.g., "Gmail", "Discord")
+        - platform (optional): Source platform (e.g., "Gmail", "Calendar")
         - timestamp (optional): ISO 8601 timestamp
         - url (optional): Source URL
     """
@@ -582,12 +632,14 @@ def main():
     logger.info("  POST /connectors/gmail/sync          - Sync & ingest emails")
     logger.info("  GET  /connectors/gmail/emails/recent - Fetch recent emails")
     logger.info("")
-    logger.info("Discord Connector:")
-    logger.info("  POST /connectors/discord/auth/save-token - Save bot token")
-    logger.info("  POST /connectors/discord/auth/revoke     - Disconnect Discord")
-    logger.info("  GET  /connectors/discord/status          - Connection status")
-    logger.info("  POST /connectors/discord/sync            - Sync & ingest DMs")
-    logger.info("  GET  /connectors/discord/dms/recent      - Fetch recent DMs")
+    logger.info("Google Calendar Connector:")
+    logger.info("  POST /connectors/calendar/auth/start      - Start OAuth")
+    logger.info("  GET  /connectors/calendar/auth/callback   - OAuth callback")
+    logger.info("  POST /connectors/calendar/auth/revoke     - Disconnect Calendar")
+    logger.info("  GET  /connectors/calendar/status          - Connection status")
+    logger.info("  POST /connectors/calendar/sync            - Sync & ingest events")
+    logger.info("  GET  /connectors/calendar/events/upcoming - Fetch upcoming events")
+    logger.info("")
     logger.info("")
     logger.info("Service running. Press Ctrl+C to stop.")
     logger.info("="*60)
