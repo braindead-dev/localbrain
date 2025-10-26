@@ -1,10 +1,10 @@
 # Remote MCP Bridge
 
-An optional online bridge that relays your local MCP server to a remote URL, enabling external access to LocalBrain from anywhere.
+An optional relay service that enables external access to your LocalBrain from anywhere by connecting your local MCP server to a publicly accessible bridge.
 
 ## Overview
 
-The Remote MCP is **just a proxy/relay service** between the local MCP on your machine and a publicly accessible URL. It doesn't process any data itself - it simply forwards requests and responses via WebSocket tunnels.
+The Remote MCP Bridge is a **proxy/relay service** that forwards requests between external tools and your local MCP server via encrypted WebSocket tunnels.
 
 **How It Works:**
 ```
@@ -12,32 +12,128 @@ External Tool → Bridge Server → WebSocket Tunnel → Local MCP Server → Da
    (Internet)    (Public VPS)      (Encrypted)      (Port 8766)    (Port 8765)
 ```
 
-This allows your local MCP to be used anywhere a remote MCP URL is accepted (ChatGPT, Claude, custom tools, etc.).
-
-## Implementation Status
-
-✅ **COMPLETE** - Fully implemented with:
-- Bridge server (FastAPI + WebSockets)
-- Tunnel client (persistent connection to bridge)
-- Authentication at multiple layers
-- Rate limiting (60 req/min per user)
-- Tool-level permissions
-- Audit logging
-- Auto-reconnection
-- Keepalive mechanism
-
-See [IMPLEMENTATION.md](./IMPLEMENTATION.md) for complete setup and usage instructions.
+**Key Features:**
+- ✅ Zero data storage (100% ephemeral relay)
+- ✅ Multi-layer authentication
+- ✅ Rate limiting (60 req/min per user)
+- ✅ Auto-reconnection & keepalive
+- ✅ Tool-level permissions
+- ✅ Self-hosted or use existing bridge
 
 ## Quick Start
 
-### Step 1: Install Dependencies
+### Connect to an Existing Bridge
+
+**If someone is already running a bridge server** (e.g., `localbrain.henr.ee`), you can connect directly:
+
+#### 1. Install Dependencies
 
 ```bash
 cd remote-mcp
 pip install -r requirements.txt
 ```
 
-### Step 2: Start Bridge Server (One-Time Setup)
+#### 2. Configure Tunnel Client
+
+**Copy the environment template:**
+
+```bash
+cp .env.example .env
+```
+
+**Generate your unique credentials:**
+
+```bash
+# Generate USER_ID (your unique identifier)
+python3 -c "import uuid; print(str(uuid.uuid4()))"
+# Example output: 3f079754-88ea-40d7-a486-d41944c0bfd4
+
+# Generate REMOTE_API_KEY (your secret access key)
+python3 -c "import secrets; print('lb_' + secrets.token_urlsafe(32))"
+# Example output: lb_Tj1oK5B-S0jTSw0vUU63txbal0S1ugcFrjB7pgsf3PI
+```
+
+**Edit your `.env` file:**
+
+```bash
+nano .env
+```
+
+**Update these values:**
+
+```env
+# Bridge server URL (replace with the bridge you're connecting to)
+BRIDGE_URL=wss://localbrain.henr.ee/tunnel/connect
+
+# Your generated credentials
+USER_ID=3f079754-88ea-40d7-a486-d41944c0bfd4
+REMOTE_API_KEY=lb_Tj1oK5B-S0jTSw0vUU63txbal0S1ugcFrjB7pgsf3PI
+
+# These defaults should work as-is
+LOCAL_MCP_URL=http://127.0.0.1:8766
+LOCAL_API_KEY=dev-key-local-only
+ALLOWED_TOOLS=search,search_agentic,open,summarize,list
+KEEPALIVE_INTERVAL=30
+SSL_VERIFY=true
+```
+
+**Security Notes:**
+- ⚠️ **Keep your `USER_ID` and `REMOTE_API_KEY` secret!**
+- ✅ **Each user must generate their own unique credentials** - never share
+- 🔒 **Never commit `.env` to git** - it's in `.gitignore` for safety
+
+#### 3. Start Local MCP Server
+
+```bash
+# From project root
+python electron/backend/src/core/mcp/extension/start_servers.py
+
+# You should see:
+# ✅ Daemon running on http://127.0.0.1:8765
+# ✅ MCP Server running on http://127.0.0.1:8766
+```
+
+Keep this terminal open.
+
+#### 4. Start Tunnel
+
+**In a new terminal:**
+
+```bash
+cd remote-mcp
+./start_tunnel.sh
+```
+
+**You should see:**
+
+```
+✅ SSL certificate verification enabled.
+✅ Tunnel established successfully!
+  Remote URL: https://localbrain.henr.ee/u/YOUR_USER_ID
+
+External tools can now access your vault using:
+  URL: https://localbrain.henr.ee/u/YOUR_USER_ID/{tool}
+  API Key: YOUR_REMOTE_API_KEY
+```
+
+#### 5. Test Your Connection
+
+```bash
+curl -X POST https://localbrain.henr.ee/u/YOUR_USER_ID/search \
+  -H "X-API-Key: YOUR_REMOTE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "test search", "top_k": 3}'
+```
+
+---
+
+### Run Your Own Bridge Server
+
+**To self-host your own bridge:**
+
+1. **Deploy bridge to VPS** - See [DEPLOY_DIGITALOCEAN.md](./DEPLOY_DIGITALOCEAN.md) for complete setup guide
+2. **Configure tunnel client** - Same as above, but set `BRIDGE_URL` to your server
+3. **Start tunnel** - Follow steps 3-5 above
 
 **For local testing:**
 
@@ -46,138 +142,71 @@ pip install -r requirements.txt
 # Bridge runs on http://localhost:8767
 ```
 
-**For production:** Deploy to VPS/cloud with HTTPS (see IMPLEMENTATION.md)
-
-### Step 3: Configure Tunnel Client
-
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Generate credentials
-python3 -c "import uuid; print('USER_ID=' + str(uuid.uuid4()))"
-python3 -c "import secrets; print('REMOTE_API_KEY=lb_' + secrets.token_urlsafe(32))"
-
-# Edit .env and paste your credentials
-vim .env
-```
-
-### Step 4: Start Tunnel
-
-**Ensure your MCP server is running first:**
-
-```bash
-# Terminal 1: Start servers (from project root)
-python electron/backend/src/core/mcp/extension/start_servers.py
-
-# Terminal 2: Start tunnel
-cd remote-mcp
-./start_tunnel.sh
-```
-
-You'll see your remote URL:
-```
-✅ Tunnel established successfully!
-Remote URL: https://mcp.localbrain.app/u/YOUR_USER_ID
-```
-
-### Step 5: Use from External Tools
-
-```bash
-curl -X POST http://localhost:8767/u/YOUR_USER_ID/search \
-  -H "X-API-Key: YOUR_REMOTE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "internship applications", "top_k": 5}'
-```
-
-## Purpose
-
-Enable external access to your LocalBrain instance without:
-- Port forwarding or network configuration
-- Exposing your home IP address
-- Complex VPN setup
-- Cloud hosting requirements
+---
 
 ## Architecture
 
-### Components
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for technical details.
 
-**1. Bridge Server** (bridge_server.py)
-- FastAPI application deployed on public VPS/cloud
-- WebSocket endpoint for tunnel connections (`/tunnel/connect`)
-- Public MCP endpoints (`/u/{user_id}/{tool}`)
-- In-memory tunnel registry (no persistent storage)
-- Rate limiting: 60 requests/minute per user
-- Admin endpoints for tunnel management
+**Components:**
 
-**2. Tunnel Client** (tunnel_client.py)
-- Python script running on your local machine
-- Maintains persistent WebSocket connection to bridge
-- Forwards requests to local MCP server (http://127.0.0.1:8766)
-- Sends responses back through tunnel
-- Auto-reconnection on disconnection
-- Keepalive pings every 30 seconds
+1. **Bridge Server** (`bridge_server.py`)
+   - FastAPI application deployed on public VPS
+   - WebSocket endpoint: `/tunnel/connect`
+   - Public MCP endpoints: `/u/{user_id}/{tool}`
+   - In-memory tunnel registry (no persistent storage)
+   - Rate limiting: 60 requests/minute per user
 
-**3. Local MCP Server** (existing)
-- Your existing MCP server on port 8766
-- Receives forwarded requests from tunnel client
-- Authenticates with local API key
-- Proxies to daemon on port 8765
-- Returns responses to tunnel client
+2. **Tunnel Client** (`tunnel_client.py`)
+   - Runs on your local machine
+   - Persistent WebSocket connection to bridge
+   - Forwards requests to local MCP server
+   - Auto-reconnection with keepalive pings
 
-### Request Flow
+3. **Local MCP Server** (existing)
+   - Port 8766 (localhost only)
+   - Receives forwarded requests from tunnel
+   - Proxies to daemon on port 8765
+
+**Request Flow:**
 
 ```
-1. External tool sends request to bridge
-   POST https://bridge.com/u/USER_ID/search
-   Header: X-API-Key: REMOTE_API_KEY
+1. External tool → Bridge: POST https://bridge.com/u/USER_ID/search
+   Authentication: X-API-Key: REMOTE_API_KEY
 
-2. Bridge validates API key and permissions
-
-3. Bridge forwards via WebSocket to tunnel client
+2. Bridge → Tunnel: WebSocket message
    {tool: "search", params: {...}}
 
-4. Tunnel client forwards to local MCP
-   POST http://127.0.0.1:8766/mcp/search
-   Header: X-API-Key: dev-key-local-only
+3. Tunnel → MCP: POST http://127.0.0.1:8766/mcp/search
+   Authentication: X-API-Key: LOCAL_API_KEY
 
-5. MCP server proxies to daemon
-   POST http://127.0.0.1:8765/protocol/search
+4. MCP → Daemon: POST http://127.0.0.1:8765/protocol/search
 
-6. Response flows back through same chain
+5. Response flows back through same chain
 ```
 
-### Security Layers
+**Security:**
 
-**Authentication:**
-- External → Bridge: Remote API key verification
-- Bridge ↔ Tunnel: User ID + Remote API key in WebSocket handshake
-- Tunnel → MCP: Local API key (dev-key-local-only)
-
-**Permissions:**
-- Tool-level allowlist per user (search, open, list, etc.)
-- Path restrictions (future enhancement)
-- Result count limits (future enhancement)
-
-**Data Privacy:**
-- No query/response storage on bridge (100% ephemeral)
-- All data processing happens locally
-- Bridge only relays encrypted WebSocket messages
+- **Multi-layer authentication**: Remote API key + local API key
+- **Zero data storage**: All data is ephemeral, nothing persists on bridge
+- **Tool permissions**: Per-user allowlist (search, open, list, etc.)
+- **Rate limiting**: 60 requests/minute default
+- **SSL/TLS**: Encrypted WebSocket connections (WSS)
+- **Revocable access**: Stop tunnel or change API key anytime
 
 **What the Bridge Does:**
 - Accept requests at public URL
 - Authenticate API keys
 - Forward requests via WebSocket tunnel
 - Return responses to requester
-- Rate limiting and abuse prevention
-- Connection management (keepalive, cleanup)
 
 **What the Bridge Does NOT Do:**
 - Store queries, responses, or any user data
 - Process or analyze content
 - Cache responses
 - Access your files directly
-- Log request contents (only metadata)
+
+---
 
 ## Files
 
@@ -185,37 +214,49 @@ Enable external access to your LocalBrain instance without:
 - `tunnel_client.py` - Tunnel client (run locally)
 - `requirements.txt` - Python dependencies
 - `.env.example` - Environment configuration template
-- `start_bridge.sh` - Script to start bridge server
-- `start_tunnel.sh` - Script to start tunnel client
-- `IMPLEMENTATION.md` - Complete implementation guide
+- `Caddyfile.example` - Reverse proxy configuration for HTTPS
+- `start_bridge.sh` - Start bridge server script
+- `start_tunnel.sh` - Start tunnel client script
+- `test_bridge.py` - Integration tests
 - `README.md` - This file
+- `ARCHITECTURE.md` - Technical architecture details
+- `DEPLOY_DIGITALOCEAN.md` - Production deployment guide
+
+---
 
 ## Configuration
 
-The bridge uses environment variables for configuration. See `.env.example` for all options.
+See `.env.example` for all options.
 
-**Key Variables:**
+**Tunnel Client Configuration:**
 
 ```env
-# Bridge Server (VPS/Cloud)
-BRIDGE_HOST=0.0.0.0
-BRIDGE_PORT=8767
-BRIDGE_SECRET=change-me-in-production
-
-# Tunnel Client (Local Machine)
-BRIDGE_URL=ws://your-bridge-server.com:8767
-LOCAL_MCP_URL=http://127.0.0.1:8766
-LOCAL_API_KEY=dev-key-local-only
-USER_ID=<your-unique-id>
-REMOTE_API_KEY=<your-remote-api-key>
+BRIDGE_URL=wss://your-bridge.com/tunnel/connect  # Bridge WebSocket URL
+LOCAL_MCP_URL=http://127.0.0.1:8766              # Local MCP server
+LOCAL_API_KEY=dev-key-local-only                 # Local MCP auth
+USER_ID=<your-unique-uuid>                       # Your unique ID
+REMOTE_API_KEY=<your-remote-api-key>             # Your remote auth key
 ALLOWED_TOOLS=search,search_agentic,open,summarize,list
+KEEPALIVE_INTERVAL=30                            # Seconds
+SSL_VERIFY=true                                  # Verify SSL certificates
 ```
+
+**Bridge Server Configuration:**
+
+```env
+BRIDGE_HOST=0.0.0.0                              # Bind address
+BRIDGE_PORT=8767                                 # Server port
+BRIDGE_SECRET=<admin-secret>                     # Admin API secret
+MAX_TUNNEL_IDLE_SECONDS=300                      # Auto-disconnect idle tunnels
+```
+
+---
 
 ## Use Cases
 
 **AI Tool Integration:**
 - Use LocalBrain with ChatGPT, Claude, or other AI assistants
-- Access your knowledge base from any AI tool that supports MCP
+- Access your knowledge base from any AI tool
 - Custom workflows and automations
 
 **Mobile Access:**
@@ -228,45 +269,21 @@ ALLOWED_TOOLS=search,search_agentic,open,summarize,list
 - Use from any device without VPN
 - Seamless cross-device experience
 
-## Technical Details
-
-**Connection:**
-- WebSocket tunnel with persistent connection
-- Auto-reconnection on disconnection
-- Keepalive pings every 30 seconds
-- JSON message format for requests/responses
-
-**Deployment:**
-- **Self-Hosted**: Run your own bridge on VPS or cloud (recommended)
-- **Local Testing**: Run bridge on localhost for development
-- **Docker**: Coming soon
-- **Hosted Service**: Coming soon (official LocalBrain relay servers)
-
-**Technologies:**
-- FastAPI (async web framework)
-- websockets (WebSocket client/server)
-- httpx (async HTTP client)
-- Pydantic (data validation)
+---
 
 ## Privacy & Control
 
 **Data Privacy:**
-- Zero data storage on bridge server (100% ephemeral)
-- All processing happens locally on your machine
-- Bridge only relays encrypted WebSocket messages
-- No logging of query contents (only connection metadata)
+- ✅ Zero data storage on bridge server (100% ephemeral)
+- ✅ All processing happens locally on your machine
+- ✅ Bridge only relays encrypted messages
+- ✅ No logging of query contents (only connection metadata)
 
 **Access Control:**
 - Stop tunnel client to disable remote access instantly
 - Per-tool permissions (allow only search, block open, etc.)
-- Rate limiting: 60 requests/minute per user
+- Rate limiting prevents abuse
 - Revoke access by changing REMOTE_API_KEY
-
-**Monitoring:**
-- Bridge server logs connection events
-- Tunnel client logs all forwarded requests
-- Admin endpoints to view active tunnels
-- Track request counts and last activity per tunnel
 
 **Offline First:**
 - LocalBrain works fully without remote bridge
@@ -274,28 +291,47 @@ ALLOWED_TOOLS=search,search_agentic,open,summarize,list
 - No degradation of local functionality
 - All data stays local unless explicitly accessed via tunnel
 
-## Future Enhancements
+---
 
-Planned improvements (see IMPLEMENTATION.md for full list):
+## Technologies
 
-**Performance:**
-- [ ] Multiple concurrent requests per tunnel (async queue)
-- [ ] Request/response compression
-- [ ] Response caching (with opt-in)
-- [ ] Load balancing across multiple bridges
+- **FastAPI** - Async web framework
+- **websockets** - WebSocket client/server
+- **httpx** - Async HTTP client
+- **Pydantic** - Data validation
+- **Caddy** - Reverse proxy with automatic HTTPS
 
-**Features:**
-- [ ] Docker deployment
-- [ ] Official hosted bridge service
-- [ ] Custom domain support
-- [ ] Webhook notifications for tunnel events
-- [ ] Web dashboard for tunnel management
+---
 
-**Security:**
-- [ ] Two-factor authentication for tunnel setup
-- [ ] IP whitelisting
-- [ ] Request signing and verification
-- [ ] Time-limited access tokens
-- [ ] Per-path access restrictions
+## Troubleshooting
 
-**Note:** This remote bridge is purely for convenience - LocalBrain is designed to work completely offline and locally without any cloud dependencies. The bridge is 100% optional.
+**Tunnel won't connect:**
+- Check bridge server is running and accessible
+- Verify `BRIDGE_URL` is correct in `.env`
+- Check firewall allows WebSocket connections
+
+**Requests timeout:**
+- Ensure local MCP server is running (port 8766)
+- Verify daemon is running (port 8765)
+- Check tunnel client logs for forwarding errors
+
+**SSL certificate errors:**
+- For valid certificates: Set `SSL_VERIFY=true`
+- For self-signed/testing: Set `SSL_VERIFY=false`
+
+**"No active tunnel" error:**
+- Ensure tunnel client is running and connected
+- Check USER_ID matches in both client and requests
+- Restart tunnel client if connection dropped
+
+---
+
+## Documentation
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Technical architecture and design
+- **[DEPLOY_DIGITALOCEAN.md](./DEPLOY_DIGITALOCEAN.md)** - Production deployment guide
+- **[Caddyfile.example](./Caddyfile.example)** - HTTPS reverse proxy configuration
+
+---
+
+**Note:** The remote bridge is purely for convenience - LocalBrain is designed to work completely offline and locally without any cloud dependencies. The bridge is 100% optional.

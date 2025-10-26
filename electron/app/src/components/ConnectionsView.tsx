@@ -116,14 +116,33 @@ export function ConnectionsView() {
 
       // For OAuth connectors (gmail, calendar), start OAuth flow
       if (connector.auth_type === 'oauth') {
+        console.log(`🔵 Starting OAuth flow for ${connector.id}...`);
         const authResult = await api.connectorAuthStart(connector.id);
         if (authResult.success && authResult.auth_url) {
+          console.log(`🔵 Opening OAuth window for ${connector.id}:`, authResult.auth_url);
           // Open OAuth URL in new window
           window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
-          // Reload connectors after a short delay to check for new connections
-          setTimeout(() => {
-            loadConnectors();
-          }, 2000);
+          // Reload connectors and auto-sync after OAuth completes
+          console.log(`🔵 Setting up auto-sync timer for ${connector.id} (3 seconds)...`);
+          setTimeout(async () => {
+            console.log(`🔵 Timer fired! Reloading connectors for ${connector.id}...`);
+            await loadConnectors();
+            // Auto-sync the newly connected connector
+            try {
+              console.log(`🔵 Checking connection status for ${connector.id}...`);
+              const status = await api.connectorStatus(connector.id);
+              console.log(`🔵 Status for ${connector.id}:`, status);
+              if (status.status?.connected) {
+                console.log(`✅ ${connector.id} is connected! Starting auto-sync...`);
+                await handleSync(connector.id);
+                console.log(`✅ Auto-sync triggered for ${connector.id}`);
+              } else {
+                console.log(`⚠️ ${connector.id} not connected yet. Status:`, status);
+              }
+            } catch (err) {
+              console.error(`❌ Auto-sync failed for ${connector.id}:`, err);
+            }
+          }, 3000); // Wait 3 seconds for OAuth to complete
         }
       } else {
         // For other connectors (browser), show dialog

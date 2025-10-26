@@ -146,7 +146,7 @@ class TunnelManager:
         # Create pending responses dict for this tunnel
         self.pending_responses[tunnel_id] = {}
 
-        remote_url = f"https://mcp.localbrain.app/u/{user_id}"
+        remote_url = f"https://localbrain.henr.ee/u/{user_id}"
 
         self.tunnel_info[tunnel_id] = TunnelInfo(
             tunnel_id=tunnel_id,
