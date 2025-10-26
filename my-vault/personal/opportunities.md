@@ -2888,6 +2888,38 @@ Anyone found in possession will be removed from event premises[81]:
 - **Emergency Contact**: +1 (409) 202-6060[95]
 - **Incident Email**: incidents@mlh.io[95]
 
+
+## Student-Initiated Programs (SIP) Grants
+
+### Workshop Details
+- **Event**: SIP Grants Workshop[96]
+- **Date**: October 23, 2025[96]
+- **Time**: 12:00 PM - 1:00 PM[96]
+- **Location**: HUB 260[96]
+- **Organizer**: Office of Student Life, UC Riverside[96]
+- **Contact**: Colin T. Lewis, Senior Coordinator, Student Organizations[96]
+- **Email**: colin.lewis@ucr.edu[96]
+
+### Eligibility & Requirements
+- Available for student organizations[96]
+- Funding awarded for service or specific outreach activities only[96]
+- Requirements must be met to earn a SIP Grant[96]
+
+
+## Student-Initiated Programs (SIP) Grants Workshop
+
+### Event Details
+- **Event**: SIP Grants Workshop[97]
+- **Date**: October 23, 2025[97]
+- **Time**: 12:00 PM - 1:00 PM[97]
+- **Location**: HUB 260[97]
+- **Organizer**: Office of Student Life, UC Riverside[97]
+- **Contact**: Colin T. Lewis, Senior Coordinator, Student Organizations[97]
+- **Email**: colin.lewis@ucr.edu[97]
+
+### Program Overview
+Workshop for student organizations interested in applying for SIP Grants funding[97]. Grants are awarded for service or specific outreach activities[97].
+
 ## Related Offers
 - **Frontier Vacations**: Package booking for airfare, hotels, and transportation[89]
 - **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com; earn 50,000 Travel Miles after qualifying activity[89]
