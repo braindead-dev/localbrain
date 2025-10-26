@@ -502,5 +502,17 @@
     "timestamp": "2025-10-25T22:46:51+00:00",
     "url": null,
     "quote": "Ripple workshop starting at 3:15 in breakout 3 (Doe); food distribution area for merch; YOGA AND SWAG AT BREAKOUT 4 (bancroft)"
+  },
+  "85": {
+    "platform": "Google Calendar",
+    "timestamp": "2025-10-20T05:30:00-07:00",
+    "url": null,
+    "quote": "ECE 2002, FRNY G140, 2025-10-20 05:30-06:20 (recurring)"
+  },
+  "86": {
+    "platform": "Google Calendar",
+    "timestamp": "2025-10-20T11:30:00-07:00",
+    "url": null,
+    "quote": "ECE 463, 2025-10-20 11:30-12:20, 150 N University St, West Lafayette IN"
   }
 }

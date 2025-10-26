@@ -10,5 +10,11 @@
     "timestamp": "2025-08-22T08:25:00-07:00",
     "url": null,
     "quote": "Flight to Indianapolis (AA 4636) from Boston BOS, departure 08:25, arrival 11:03"
+  },
+  "3": {
+    "platform": "Google Calendar",
+    "timestamp": "2025-10-19T07:00:00-07:00",
+    "url": null,
+    "quote": "Bus to Lafayette Bus Stop, Chicago Bus Station, October 19, 2025, 7:00 AM - 9:45 AM"
   }
 }

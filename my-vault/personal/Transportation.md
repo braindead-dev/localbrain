@@ -37,5 +37,16 @@
 
 **Destination:** Indianapolis [2]
 
+
+## Bus to Lafayette Bus Stop
+
+**Date:** October 19, 2025 [3]
+
+**Departure:** Chicago Bus Station at 7:00 AM [3]
+
+**Arrival:** 9:45 AM [3]
+
+**Destination:** Lafayette Bus Stop [3]
+
 ## Related
 
