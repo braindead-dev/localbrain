@@ -37,6 +37,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
+      preload: path.join(__dirname, 'preload.js'),
     },
     icon: isDev
       ? path.join(__dirname, 'assets/icon.png')  // PNG for development

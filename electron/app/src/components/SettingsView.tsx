@@ -82,12 +82,15 @@ export function SettingsView({ darkMode, setDarkMode, showLineNumbers, setShowLi
     setIsSelecting(true);
 
     try {
-      if ('showDirectoryPicker' in window) {
-        const dirHandle = await (window as any).showDirectoryPicker();
-        const path = dirHandle.name;
-        setPathInput(path);
+      // Use Electron's native folder picker
+      if ((window as any).electron?.selectDirectory) {
+        const selectedPath = await (window as any).electron.selectDirectory();
+        if (selectedPath) {
+          setPathInput(selectedPath);
+        }
       } else {
-        alert("Your browser doesn't support folder selection. Please paste the folder path manually.");
+        // Fallback for web/browser version
+        toast.error("Folder picker not available. Please enter the path manually.");
       }
     } catch (error) {
       console.log("Folder selection cancelled or error:", error);

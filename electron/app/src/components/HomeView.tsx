@@ -72,19 +72,19 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
 
   const handleBrowseFolder = async () => {
     setIsSelecting(true);
-    
+
     try {
-      // Try to use the File System Access API (modern browsers)
-      if ('showDirectoryPicker' in window) {
-        const dirHandle = await (window as any).showDirectoryPicker();
-        const path = dirHandle.name; // In a real app, you'd get the full path
-        setPathInput(path);
+      // Use Electron's native folder picker
+      if ((window as any).electron?.selectDirectory) {
+        const selectedPath = await (window as any).electron.selectDirectory();
+        if (selectedPath) {
+          setPathInput(selectedPath);
+        }
       } else {
-        // Fallback: inform user to paste the path manually
-        alert("Your browser doesn't support folder selection. Please paste the folder path manually.");
+        // Fallback for web/browser version
+        alert("Folder picker not available. Please enter the full path manually.");
       }
     } catch (error) {
-      // User cancelled or error occurred
       console.log("Folder selection cancelled or error:", error);
     } finally {
       setIsSelecting(false);
