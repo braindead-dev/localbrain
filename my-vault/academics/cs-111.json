@@ -82,5 +82,41 @@
     "timestamp": "2025-10-21T04:49:45+00:00",
     "url": null,
     "quote": "You have been invited to an Overleaf project. Project: hw2. Shared by: ryan032@ucr.edu"
+  },
+  "15": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-21T01:50:17+00:00",
+    "url": null,
+    "quote": "Your Homework 1 for CS111, Fall 2025 has been graded!"
+  },
+  "16": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-20T19:31:13+00:00",
+    "url": null,
+    "quote": "Ryan Yan has added you to a submission for HW2 Code Submission"
+  },
+  "17": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-19T06:39:13+00:00",
+    "url": null,
+    "quote": "Fixed for partial credit. Showing the roots are non-integers is not sufficient to show all integers satisfy the condition."
+  },
+  "18": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-17T02:54:31+00:00",
+    "url": null,
+    "quote": "My Office Hours are going to be on Mondays from 4:30-5:30pm at WCH 461 instead of WCH 110"
+  },
+  "19": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-25T20:09:30+00:00",
+    "url": null,
+    "quote": "Ryan Yan has added you to a submission for HW2 Code Submission"
+  },
+  "20": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-24T03:47:12+00:00",
+    "url": null,
+    "quote": "Quiz 2 will be due next Wednesday. The quiz will take place in the CS department's test center in Winston Chung Hall 132."
   }
 }

@@ -133,5 +133,63 @@
 - CS major interested in communicating with people through technology[2]
 - Students motivated by teacher encouragement, family influence in tech industry, and practical career prospects[2]
 
+
+
+## Week 4 (October 20-24, 2025)
+
+### Announcements
+- Lectures meet as scheduled[11]
+- Students strongly encouraged to use Lecture Note Outlines for lectures[11]
+- Discussions will meet asynchronously this week[11]
+- Office hours available; see schedule and locations in COURSE RESOURCES module[11]
+
+### Assignments Due Friday 11:59pm
+- Participation Post: Connect with your Classmates[11]
+- CH 2 Quiz (counting rules and probability)[11]
+- HW#2[11]
+
+
+### Participation Post: Accomplishments
+- **Status**: Graded[12]
+- **Graded Date**: Oct 19 at 1:38pm[12]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/922834/submissions/131590[12]
+
+
+
+### CH 2 Quiz (Counting Rules and Probability)
+- **Due Date**: Oct 24 at 11:59pm[13]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/922845[13]
+
+
+
+## Assignments
+
+### HW#1 | CH 1 | Descriptive Statistics
+- **Status**: Graded[14]
+- **Graded Date**: Oct 17 at 3:01am[14]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/924348/submissions/131590[14]
+
+
+### Participation Post: Study Tips
+- **Due Date**: Oct 31 at 11:59pm[15]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/922836[15]
+
+### CH 3 Quiz (discrete rvs)
+- **Due Date**: Oct 31 at 11:59pm[15]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/922847[15]
+
+### HW#3 | CH 3 | Discrete RVs
+- **Due Date**: Nov 7 at 11:59pm[15]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/924350[15]
+
+
+
+## Assignments
+
+### Homework 2 - Chapter 2: Probability
+- **Assignment**: STAT 155 | HW#2 | CH 2 | Probability[16]
+- **Graded Date**: October 23 at 9:39pm[16]
+- **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/924349/submissions/131590[16]
+
 ## Related
 

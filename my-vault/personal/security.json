@@ -16,5 +16,11 @@
     "timestamp": "2025-10-21T16:20:01-07:00",
     "url": null,
     "quote": "A third-party OAuth application (WakaTime) with user:email scopes was recently authorized to access your account"
+  },
+  "4": {
+    "platform": "Gmail",
+    "timestamp": "2025-10-25T09:56:16-07:00",
+    "url": null,
+    "quote": "A third-party OAuth application (coderabbitai) with read:org and user:email scopes was recently authorized to access your account."
   }
 }

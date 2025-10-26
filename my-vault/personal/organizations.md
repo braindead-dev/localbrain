@@ -65,5 +65,56 @@
 - **Meeting Link**: https://meet.google.com/bgh-jsbw-ddq[6]
 - **Status**: Rescheduled from original 5:30 PM time[6]
 
+
+### Beach Social Event
+- **Event**: Beach Social[7]
+- **Date**: October 17, 2025 (groupings announced)[7]
+- **Meeting Location**: Winston Chung Hall 127[7]
+- **Meeting Time**: 11:00 AM[7]
+- **Groupings**: Assigned groups with driver and car assignments available in spreadsheet[7]
+- **Instagram**: Follow @acm_ucr for group chat invitations; reply with group assignment and Instagram handle to be added[7]
+- **Contact**: Rebecca Jennings, VP of Marketing[7]
+
+
+## Highlanders Builders Initiative
+
+- **Status**: Officially registered with UCR Office of Student Life[8]
+- **Category**: Academic/Professional organizations[8]
+- **Registration Date**: October 16, 2025[8]
+- **Coordinator**: Korinna Magana (korinna.magana@ucr.edu)[8]
+- **Coordinator Office**: HUB 229[8]
+- **Schedule Meeting**: https://calendly.com/kmaga004-ucr[8]
+
+
+## Organization Registration Quiz
+- **Quiz**: Registration - Organization Quiz[9]
+- **Status**: Passed[9]
+- **Date Completed**: October 16, 2025[9]
+- **Score**: 2 incorrect answers[9]
+
+### Key Takeaways
+- **UCR Naming Format**: Correct format is "Student Organization at UCR"[9]
+- **Belltower Table Reservation**: Information tables with only promotional/informational materials (no food or money transactions) do not require a reservation[9]
+
+
+
+## Project/Team Placement
+- **Status**: Accepted to team/project cycle[10]
+- **Acceptance Date**: October 16, 2025[10]
+- **Mandatory Orientation**: October 16, 2025 at 7:00 PM @ Hub 269[10]
+- **Orientation Purpose**: Mandatory orientation to get track started, meet peers, and receive team/project assignment[10]
+- **Team Assignment Method**: Spreadsheet with team/project assignments available at meeting; name tag placement required[10]
+- **Dual Application Note**: If applied for both intern and project positions, name will be highlighted and must speak with exec to clarify time commitments[10]
+- **Excuse Form**: Available for conflicts with class or pre-planned commitments: https://forms.gle/uPUKZJDkjiX2LvAB6[10]
+
+
+
+## Interview - AISC Competitive Project
+- **Date**: October 16, 2025[11]
+- **Time**: 10:30 AM[11]
+- **Interviewer**: Houston Gunter (hgunter32@gmail.com)[11]
+- **Meeting Link**: https://meet.google.com/bgh-jsbw-ddq[11]
+- **Status**: Rescheduled from original 5:30 PM slot[11]
+
 ## Related
 

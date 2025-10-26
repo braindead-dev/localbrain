@@ -14,7 +14,7 @@
 
 ### Canvas Restoration - October 21
 - Canvas is back up and running[1]
-- Zoom link sent via email for future reference[1][2]
+- Zoom link sent via email for future reference[1][2][3][4]
 
 ## Assignments
 
@@ -201,6 +201,82 @@
 
 ## Course Schedule
 - **Next Class**: Wednesday - finishing race and gender discussion[17]
+
+
+
+### Zoom Meeting Link
+- **URL**: https://ucr.zoom.us/j/94536141639[3]
+- **Meeting ID**: 945 3614 1639[3]
+- **Purpose**: Class sessions for ANTH 001[3]
+
+
+
+### InQuizitive Extension - October 20
+- **Extension Granted**: All InQuizitive assignments extended due to Canvas outage[3]
+- **Reason**: Canvas system downtime[3]
+- **Announcement**: Extension details to be sent once Canvas is restored[3]
+
+
+
+## Zoom Meeting Link
+- **URL**: https://ucr.zoom.us/j/94536141639[20]
+- **Meeting ID**: 945 3614 1639[20]
+- **Sent**: October 20, 2025 (Canvas outage)[20]
+
+
+## Zoom Meeting Link
+- **Meeting URL**: https://ucr.zoom.us/j/94536141639[21]
+- **Meeting ID**: 945 3614 1639[21]
+- **Date Provided**: October 20, 2025[21]
+- **Note**: Shared when Canvas was temporarily down[21]
+
+
+### Week 1
+- **Due Date**: No Due Date[22]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951532[22]
+
+### Week 2
+- **Due Date**: No Due Date[22]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951535[22]
+
+### Week 3
+- **Due Date**: No Due Date[22]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951536[22]
+
+
+### Public Anthropology Project
+- **Program**: Public Anthropology Project[23]
+- **Registration Deadline**: February 10, 2026[23]
+- **Grade Impact**: Missing deadline could affect class grade[23]
+- **Registration URL**: https://www.publicanth.net/[23]
+- **Project Goals**: Thoughtful analyses of heated debates, effective writing skills, positive engagement with those who disagree[23]
+- **Status**: Registration required ASAP[23]
+
+
+### Week 2 Assignment
+- **Graded**: Oct 24 at 9:53am[24]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951196/submissions/131590[24]
+- **Status**: Grade changes and instructor comments released[24]
+
+
+### Week 2 Assignment
+- **Graded**: Oct 24 at 9:54am[25]
+- **Status**: Grade changes and new comments released[25]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951535/submissions/131590[25]
+
+
+### Week 1 Assignment
+- **Status**: Graded[26]
+- **Grade Released**: October 24, 2025 at 9:53am[26]
+- **Canvas Link**: https://elearn.ucr.edu/courses/187842/assignments/951532/submissions/131590[26]
+
+
+### Public Anthropology Project
+- **Program**: Public Anthropology Project[27]
+- **Registration Deadline**: ASAP to avoid missing February 10 deadline[27]
+- **Grade Impact**: Missing the February 10 deadline could affect class grade[27]
+- **Registration URL**: https://www.publicanth.net/[27]
+- **Project Goals**: Thoughtful analyses of heated debates, effective writing skills, positive engagement with those who disagree[27]
 
 ## Related
 

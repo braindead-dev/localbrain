@@ -1294,8 +1294,1535 @@ Register for the STEM Career & Internship Fair via Handshake[52]
 - **Login Email**: hwang585@ucr.edu[55]
 - **Status**: Bonus available to claim[55]
 
+
+
+## Cal Hacks 12.0 - Hardware Track
+
+### Event Details
+- **Event**: Cal Hacks 12.0[63]
+- **Organizer**: Hackathons @ Berkeley[63]
+- **Contact**: Charlie Huang <charlie@hackberkeley.org>[63]
+- **Date**: Friday-Saturday (October 24-25, 2025)[63]
+
+### Hardware Tracks & Prizes
+
+#### Best Hardware Hack
+- **Prize**: 3D Printers[63]
+- **Description**: Best overall use of hardware or robotics in a project[63]
+
+#### BitRobot: Best Robotics Hack
+- **1st Prize**: XLeRobot kit[63]
+- **2nd Prize**: LeKiwi kit[63]
+- **3rd Prize**: Earth Rover Mini+[63]
+- **Description**: Best overall use of a BitRobot-provided robot in a project[63]
+
+### Available Hardware
+
+#### Cal Hacks Hardware Rental Booth (First-Come, First-Served)
+- Arduino Unos[63]
+- Raspberry Pis (with HDMI cable, MicroSD card, monitor, keyboard, mouse)[63]
+- ESP32s[63]
+- MPU6050s[63]
+- Assortment of sensor modules for microcontrollers[63]
+
+#### 3D Printing Station
+- Four 3D printers with PLA filament in assorted colors[63]
+- Queue form required for access[63]
+
+#### MLH DigiKey Hardware Lab (First-Come, First-Served)
+- Raspberry Pi Kits[63]
+- Arduinos and Base Shields[63]
+- Logitech Webcams[63]
+- Google Home Mini[63]
+- SenseCAP Indicator[63]
+- Echo Show[63]
+- Echo Dot[63]
+- Assorted breadboards, cables, wire cutters, grove components, multimeter[63]
+
+### BitRobot Robotics Track
+
+#### Application Required
+- Limited robot availability requires application[63]
+- Application form: https://docs.google.com/forms/d/e/1FAIpQLSf_tZjgPYSGj8VzdNbks76miiJpJOqJwJBxX5VKdfU6_YGiFw/viewform[63]
+- BitRobot will contact selected teams on Friday[63]
+
+#### Available Robots
+
+**Le Robot Ecosystem**[63]
+- 10 XLE robots[63]
+- 10 Kiwi robots[63]
+- 20 SO101 arms & leaders[63]
+- 10 camera stands with Intel RealSense[63]
+
+**Humanoid Robots**[63]
+- 3 Unitree G1[63]
+- 3 Booster T1[63]
+- 5 Booster K1[63]
+
+#### Support
+- BitRobot mentors and engineers available to guide teams[63]
+
+### BitRobot Hardware Speakers Event
+
+**Date & Time**: Saturday, 3:00–5:00 PM[63]
+**Location**: Theater[63]
+**Topic**: Frontier of embodied AI and robot learning[63]
+
+**Schedule**[63]:
+- 3:00–3:30 PM: Kyle Stachowicz (Researcher @ Physical Intelligence / PhD @ UC Berkeley)[63]
+- 3:30–3:50 PM: Jason Ma (Co-Founder @ Dyna Robotics)[63]
+- 3:50–4:00 PM: BitRobot Platform Presentation[63]
+- 4:00–4:20 PM: Paril Jain (CTO @ The Bot Company)[63]
+- 4:20–4:40 PM: Kevin Kemper (Member of Technical Staff @ OpenAI)[63]
+- 4:40–5:00 PM: Eric Jang (VP of AI @ 1X)[63]
+
+### Additional Info
+- **BitRobot Website**: https://bitrobot.ai[63]
+- **BitRobot Mission**: Building the world's open robotics lab for embodied AI breakthroughs[63]
+- **Ecosystem Access**: Data, robots, compute, funding, and more available to participants[63]
+
+
+
+## Cal Hacks 12.0 Hardware Track
+
+### Event Details
+- **Event**: Cal Hacks 12.0[64]
+- **Organizer**: Hackathons @ Berkeley[64]
+- **Date**: Friday-Saturday (October 24-25, 2025)[64]
+- **Hardware Track**: Dedicated robotics track brought by BitRobot Network[64]
+
+### Prizes & Tracks
+
+#### Best Hardware Hack
+- **Prize**: 3D Printers[64]
+- **Description**: Best overall use of hardware or robotics in a project[64]
+
+#### BitRobot: Best Robotics Hack
+- **1st Prize**: XLeRobot kit[64]
+- **2nd Prize**: LeKiwi kit[64]
+- **3rd Prize**: Earth Rover Mini+[64]
+- **Description**: Best overall use of a BitRobot-provided robot in a project[64]
+
+### Hardware Available
+
+#### Cal Hacks Hardware Rental Booth (First-Come, First-Served)
+- Arduino Unos[64]
+- Raspberry Pis (with HDMI cable, MicroSD card, monitor, keyboard, mouse)[64]
+- ESP32s[64]
+- MPU6050s[64]
+- Assortment of sensor modules for microcontrollers[64]
+
+#### 3D Printing Station
+- Four 3D printers with PLA filament in assorted colors[64]
+- Queue form required for access[64]
+
+#### MLH DigiKey Hardware Lab (First-Come, First-Served)
+- Raspberry Pi Kits[64]
+- Arduinos and Base Shields[64]
+- Logitech Webcams[64]
+- Google Home Mini[64]
+- SenseCAP Indicator[64]
+- Echo Show[64]
+- Echo Dot[64]
+- Assorted breadboards, cables, wire cutters, grove components, multimeter[64]
+
+### BitRobot Network Robotics Space
+
+**Overview**: BitRobot is building an open robotics lab for embodied AI breakthroughs[64]. Mentors and engineers will guide teams in using equipment[64].
+
+**Application Required**: Must apply to work on BitRobot-provided robots[64]. Application form: https://docs.google.com/forms/d/e/1FAIpQLSf_tZjgPYSGj8VzdNbks76miiJpJOqJwJBxX5VKdfU6_YGiFw/viewform[64]
+
+#### Le Robot Ecosystem
+- 10 XLE robots[64]
+- 10 Kiwi robots[64]
+- 20 SO101 arms & leaders[64]
+- 10 camera stands with Intel Real Sense[64]
+
+#### Humanoid Robots
+- 3 Unitree G1[64]
+- 3 Booster T1[64]
+- 5 Booster K1[64]
+
+### BitRobot Hardware Speakers Event
+
+**Date & Time**: Saturday, 3:00 PM - 5:00 PM[64]
+**Location**: Theater[64]
+**Topic**: Frontier of embodied AI and robot learning[64]
+
+#### Speaker Schedule
+- **3:00–3:30 PM**: Kyle Stachowicz (Researcher @ Physical Intelligence / PhD @ UC Berkeley)[64]
+- **3:30–3:50 PM**: Jason Ma (Co-Founder @ Dyna Robotics)[64]
+- **3:50–4:00 PM**: BitRobot platform presentation[64]
+- **4:00–4:20 PM**: Paril Jain (CTO @ The Bot Company)[64]
+- **4:20–4:40 PM**: Kevin Kemper (Member of Technical Staff @ OpenAI)[64]
+- **4:40–5:00 PM**: Eric Jang (VP of AI @ 1X)[64]
+
+### Contact
+- **Email**: charlie@hackberkeley.org[64]
+
+
+
+## Cal Hacks 12.0 Hardware Track
+
+### Event Details
+- **Event**: Cal Hacks 12.0[65]
+- **Organizer**: Hackathons @ Berkeley[65]
+- **Hardware Track**: Available with first-come, first-served basis[65]
+- **Robotics Track**: Dedicated track brought by BitRobot Network[65]
+- **Robot Application Required**: Must apply to work on BitRobot-provided robots (humanoids & robotic arms)[65]
+- **Application Form**: https://docs.google.com/forms/d/e/1FAIpQLSf_tZjgPYSGj8VzdNbks76miiJpJOqJwJBxX5VKdfU6_YGiFw/viewform[65]
+
+### Prizes & Tracks
+
+#### Best Hardware Hack
+- **Prize**: 3D Printers[65]
+- **Description**: Best overall use of hardware or robotics in a project[65]
+
+#### BitRobot: Best Robotics Hack
+- **1st Prize**: XLeRobot kit[65]
+- **2nd Prize**: LeKiwi kit[65]
+- **3rd Prize**: Earth Rover Mini+[65]
+- **Description**: Best overall use of a BitRobot-provided robot in a project[65]
+
+### Hardware Available
+
+#### Cal Hacks Hardware Rental Booth
+- Arduino Unos[65]
+- Raspberry Pis (including HDMI cable, MicroSD card, monitor, keyboard, & mouse)[65]
+- ESP32s[65]
+- MPU6050s[65]
+- Assortment of sensor modules for microcontrollers[65]
+
+#### 3D Printing Station
+- Four 3D printers with PLA filament in assorted colors[65]
+- Queue form required for access[65]
+
+#### MLH DigiKey Hardware Lab
+- Raspberry Pi Kits[65]
+- Arduinos and Base Shields[65]
+- Logitech Webcams[65]
+- Google Home Mini[65]
+- SenseCAP Indicator[65]
+- Echo Show[65]
+- Echo Dot[65]
+- Assorted bread boards, cables, wire cutters, grove components, and multimeter[65]
+
+#### BitRobot Network Robotics Space
+- **Organization**: BitRobot (https://bitrobot.ai)[65]
+- **Mission**: Building the world's open robotics lab for embodied AI breakthroughs[65]
+- **Support**: Access to data, robots, compute, funding, and more[65]
+
+##### Le Robot Ecosystem
+- 10 XLE robots (https://xlerobot.readthedocs.io/en/latest/index.html)[65]
+- 10 Kiwi robots (https://github.com/SIGRobotics-UIUC/LeKiwi)[65]
+- 20 so101 arms & leaders (https://github.com/TheRobotStudio/SO-ARM100)[65]
+- 10 camera stands with Intel Real Sense[65]
+
+##### Humanoid Robots
+- 3 Unitree G1 (https://github.com/orgs/unitreerobotics/repositories)[65]
+- 3 Booster T1 (https://github.com/BoosterRobotics?tab=repositories)[65]
+- 5 Booster K1[65]
+
+### BitRobot Hardware Speakers Event
+- **Date**: Saturday, 3:00 PM - 5:00 PM[65]
+- **Location**: Theater[65]
+- **Topic**: Frontier of embodied AI and robot learning[65]
+- **Mentors**: BitRobot engineers and mentors on-site[65]
+
+#### Speaker Schedule
+- **3:00–3:30 PM**: Kyle Stachowicz (Researcher @ Physical Intelligence / PhD @ UC Berkeley)[65]
+- **3:30–3:50 PM**: Jason Ma (Co-Founder @ Dyna Robotics)[65]
+- **3:50–4:00 PM**: BitRobot platform presentation[65]
+- **4:00–4:20 PM**: Paril Jain (CTO @ The Bot Company)[65]
+- **4:20–4:40 PM**: Kevin Kemper (Member of Technical Staff @ OpenAI)[65]
+- **4:40–5:00 PM**: Eric Jang (VP of AI @ 1X)[65]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[66]
+- **Date**: October 24-25, 2025[66]
+- **Venue**: Palace of Fine Arts[66]
+- **Check-in Time**: 2:30pm Friday, October 24th (continues through Saturday)[66]
+- **Required ID**: Government-issued or student ID[66]
+- **Live Site**: https://live.calhacks.io[66]
+- **Slack Channel**: https://join.slack.com/t/calhacks120/shared_invite/zt-3fdci1zpc-kWNDZ66ZgUZUBmpWMQ1DLQ[66]
+
+### Logistics
+- Hacker passes will be emailed for meals, check-in, and judging[66]
+- Overnight stays permitted; sleeping bag recommended[66]
+- Portable showers available; bring towel and toiletries[66]
+- Buses run 2pm-6:30pm Friday from Montgomery BART Station to Palace of Fine Arts[66]
+- Montgomery BART Station: https://www.google.com/maps/place/37%C2%B047'27.0%22N+122%C2%B024'02.8%22W[66]
+- BART Map: https://www.bart.gov/system-map[66]
+
+### Entertainment & Amenities
+- Cal Band performance before opening ceremony[66]
+- Ice cream truck, meditation sessions, hike[66]
+- Designated sleeping spaces[66]
+
+### Prohibited Items[66]
+- No flammable items (fuels, gasoline, gas torches, lighter fluid)
+- No weapons (guns, knives, pocket knives, fireworks)
+- No tobacco products or e-cigarettes
+- No illegal drugs or alcoholic beverages
+- No tents
+- No animals
+
+### Packing Recommendations[66]
+- Laptop & Charger
+- Government-issued ID / Student ID
+- Power bank
+- Headphones
+- Sleeping Bag or Blanket & Pillow
+- Toothbrush & Toothpaste
+- Deodorant
+
+### Sponsors & Challenges
+
+**Conversion**[66]
+- Founded from UC Berkeley dorm (Unit 2)
+- $28M Series A funding
+- Hiring full-time engineers
+- Workshop: Build workflow systems using Temporal
+- Prize: Vespa for top project
+
+**CodeRabbit**[66]
+- AI-powered pull request reviews for GitHub
+- CLI reviews and IDE extension
+- Recruiting interns
+- Workshop available
+
+**Warp**[66]
+- Automated HR and payroll platform for founders/startups
+- Challenge: Best Visualization Agent
+
+**Windsurf**[66]
+- IDE by Cognition team
+- Offer: 6 months Windsurf Pro for all Cal Hacks participants
+- Code: CALHACKS6 at checkout
+- Download: https://windsurf.com/download
+
+**SnapDev/Cofoundry.ai**[66]
+- No-code platform to design, build, launch apps with AI
+- Real-time engineering support during hackathon
+- Prize: Nintendo Switch for each winning team member
+- Startup interview with founders
+- Requirements: Sign up for account, build on platform, show working app at judging
+
+**Composio**[66]
+- Skills layer for AGI
+- Dev tools for AI agent integration
+- 800+ maintained integrations and MCPs
+
+**Snap**[66]
+- Spectacles Track for AR experiences
+- 5th gen Spectacles available
+- Prize: Spectacles for top team
+
+**Ethereum Foundation**[66]
+- Focus on composable, permissionless systems
+- Interested in tooling, protocols, experiments
+- Key interests: money as primitive, composability, open tooling surface, fast feedback loops
+
+**Comet**[66]
+- Opik: open-source platform for LLM applications
+- Debugging, testing, monitoring tools
+- Mentorship available
+- Raffle: Free Star Wars LEGO set
+
+### Pre-Event Workshops
+
+**AppLovin Pre-Event Workshop**[66]
+- Date: Monday, October 20, 2-3pm PST
+- Platform: Zoom
+- Topic: Axon real-time recommendation system
+- RSVP: https://docs.google.com/forms/d/e/1FAIpQLSeheRLwZ9NM1B9PBhfFn0b2rbNnMk3vrmU_bbg0YgqntbIrzA/viewform?usp=header
+
+**Fetch.ai Pre-Event Workshop**[66]
+- Date: Wednesday, October 22, 7-8pm PST
+- Platform: Zoom
+- Topic: ASI:One agentic LLM and Agentverse marketplace
+- RSVP: http://bit.ly/calhacks12-fetchai-workshop
+
+### FAQ
+
+**Team Formation**[66]
+- #team-formation channel in Slack for introductions
+- In-person team formation activity on Friday, 10/24
+
+**Overnight Stay**[66]
+- Not required; optional tradition
+
+**Dietary Restrictions**[66]
+- Vegetarian and common dietary options provided
+- Contact team@hackberkeley.org for specific allergies/restrictions
+- Restaurants available nearby
+
+**Travel Reimbursement**[66]
+- Partial travel stipend for freshmen and junior transfers closed 09/23
+- All other travel not reimbursed
+
+### Contact & Resources
+- **Questions**: #ask-directors channel on Slack or team@hackberkeley.org[66]
+- **Instagram**: @calhacks[66]
+- **Organizer**: Diya Vij (diya@hackberkeley.org)[66]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[67]
+- **Date**: October 24-25, 2025[67]
+- **Location**: Palace of Fine Arts, San Francisco[67]
+- **Check-in Start**: 2:30pm Friday, October 24[67]
+- **Check-in Continues**: Through Saturday[67]
+- **Live Site**: https://live.calhacks.io[67]
+- **Slack**: https://join.slack.com/t/calhacks120/shared_invite/zt-3fdci1zpc-kWNDZ66ZgUZUBmpWMQ1DLQ[67]
+
+### Requirements
+- Bring government-issued or student ID[67]
+- Hacker pass will be emailed (use for meals, check-in, judging)[67]
+
+### Transportation
+- Buses run 2pm-6:30pm Friday from Montgomery BART Station to Palace of Fine Arts[67]
+- Montgomery BART: https://www.google.com/maps/place/37%C2%B047'27.0%22N+122%C2%B024'02.8%22W/@37.7908184,-122.4033396,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.7908184!4d-122.4007647?entry=ttu&g_ep=EgoyMDI1MTAxNC4wIKXMDSoASAFQAw%3D%3D[67]
+- BART Map: https://www.bart.gov/system-map[67]
+- From SFO: Take BART to Montgomery Station[67]
+- From Berkeley: Use BayPass and BART, then local bus or ferry to Palace[67]
+
+### Venue Amenities
+- Cal Band performance before opening ceremony[67]
+- Ice cream truck, meditation sessions, hike[67]
+- Overnight sleeping allowed with designated spaces[67]
+- Portable showers available (bring towel and toiletries)[67]
+
+### What to Pack
+- Laptop & Charger[67]
+- Government-issued ID / Student ID[67]
+- Power bank[67]
+- Headphones[67]
+- Sleeping Bag or Blanket & Pillow (optional)[67]
+- Toothbrush & Toothpaste[67]
+- Deodorant[67]
+
+### Prohibited Items
+- No flammable items (fuels, gasoline, gas torches, lighter fluid)[67]
+- No weapons (guns, knives, pocket knives, fireworks)[67]
+- No tobacco products or e-cigarettes[67]
+- No illegal drugs or alcoholic beverages[67]
+- No tents[67]
+- No animals[67]
+
+### Sponsors & Challenges
+
+#### Conversion
+- Founded from UC Berkeley dorm (Unit 2)[67]
+- Modern Marketing OS for high-growth teams[67]
+- Recently raised $28M Series A[67]
+- Hiring full-time engineers[67]
+- Workshop: Build workflow systems using Temporal[67]
+- Prize: Top project wins Vespa[67]
+
+#### CodeRabbit
+- AI-powered pull request reviews for GitHub[67]
+- CLI reviews and IDE extension[67]
+- Hiring interns[67]
+- Workshop: AI-code review and development workflow[67]
+
+#### Warp
+- Automated HR and payroll platform for founders/startups[67]
+- Actively recruiting from hackathons[67]
+- Challenge: Best Visualization Agent[67]
+
+#### Windsurf
+- IDE by Cognition team[67]
+- 50%+ student discount available[67]
+- Cal Hacks participants get 6 months Windsurf Pro free[67]
+- Code: CALHACKS6 at checkout[67]
+- Download: https://windsurf.com/download[67]
+
+#### SnapDev/Cofoundry.ai
+- Platform: Ship ideas to production in hours[67]
+- No coding needed, AI-powered app building[67]
+- Real-time engineering support during hackathon[67]
+- Prize: Each winning team member gets Nintendo Switch[67]
+- Startup interview with Cofoundry founders[67]
+- Requirements: Sign up for account, build on platform, show working app at judging[67]
+- Free engineering help: Up to 2 hours during event[67]
+
+#### Composio
+- Skills layer for AGI[67]
+- Dev tools for AI agent integration[67]
+- 800+ maintained integrations and MCPs[67]
+- Accelerates production-ready AI agent development[67]
+
+#### Snap
+- Spectacles Track for AR experiences[67]
+- 5th gen Spectacles available[67]
+- Prize: Top team each gets pair of Spectacles[67]
+
+#### Ethereum Foundation
+- Focus: Systems that are composable, permissionless, code-controlled value[67]
+- Looking for: Curious builders, weird experiments, scrappy prototypes[67]
+- Key interests: Tooling, wallets, debugging, gas optimizers, dev UX[67]
+
+#### Comet
+- Opik: Open-source platform for LLM applications[67]
+- Tools: Debugging, testing, monitoring[67]
+- Mentorship available for AI projects[67]
+- Raffle: Free Star Wars LEGO set[67]
+
+### Pre-Event Workshops
+
+#### AppLovin
+- **Date**: Monday, October 20, 2-3pm PST[67]
+- **Platform**: Zoom[67]
+- **RSVP**: https://docs.google.com/forms/d/e/1FAIpQLSeheRLwZ9NM1B9PBhfFn0b2rbNnMk3vrmU_bbg0YgqntbIrzA/viewform?usp=header[67]
+- **Topic**: Axon real-time recommendation system, challenge projects preview[67]
+
+#### Fetch.ai
+- **Date**: Wednesday, October 22, 7-8pm PST[67]
+- **Platform**: Zoom[67]
+- **RSVP**: http://bit.ly/calhacks12-fetchai-workshop[67]
+- **Topic**: ASI:One agentic LLM, multi-agent execution on Agentverse[67]
+
+### Team Formation
+- #team-formation channel in Slack for introductions[67]
+- In-person team formation activity Friday 10/24 if needed[67]
+
+### Food & Dietary Restrictions
+- Vegetarian and common dietary restricted options available[67]
+- Cannot account for all allergies/restrictions[67]
+- Contact: team@hackberkeley.org for options[67]
+- Many restaurants nearby[67]
+
+### FAQ
+- Overnight stay not required[67]
+- Travel reimbursement: Partial stipend for freshmen/junior transfers closed 09/23[67]
+- Questions: #ask-directors channel on Slack or team@hackberkeley.org[67]
+
+### Contact
+- **Organizer**: Diya Vij (diya@hackberkeley.org)[67]
+- **Team Email**: team@hackberkeley.org[67]
+- **Instagram**: @calhacks (https://www.instagram.com/calhacks/)[67]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[68]
+- **Date**: October 24-25, 2025[68]
+- **Location**: Palace of Fine Arts, San Francisco[68]
+- **Check-in Start**: 2:30pm Friday, October 24[68]
+- **Check-in Continues**: Through Saturday[68]
+- **Required ID**: Government-issued or student ID[68]
+- **Live Site**: https://live.calhacks.io[68]
+- **Slack Channel**: https://join.slack.com/t/calhacks120/shared_invite/zt-3fdci1zpc-kWNDZ66ZgUZUBmpWMQ1DLQ[68]
+
+### Transportation
+- **Bus Service**: 2pm - 6:30pm Friday from Montgomery BART Station to Palace of Fine Arts[68]
+- **BART Map**: https://www.bart.gov/system-map[68]
+- **From SFO**: Take BART to Montgomery Station[68]
+- **From Berkeley**: Use BayPass and BART, then local bus or ferry to Palace[68]
+
+### Venue Amenities
+- **Entertainment**: Cal Band performance, ice cream truck, meditation sessions, hike[68]
+- **Overnight Stay**: Designated sleeping spaces available; bring sleeping bag[68]
+- **Showers**: Portable showers on-site; bring towel and toiletries[68]
+- **Meals**: Vegetarian and common dietary restriction options available[68]
+
+### Prohibited Items
+- No flammable items (fuels, gasoline, gas torches, lighter fluid)[68]
+- No weapons (guns, knives, pocket knives, fireworks)[68]
+- No tobacco products or e-cigarettes[68]
+- No illegal drugs or alcoholic beverages[68]
+- No tents[68]
+- No animals[68]
+
+### Packing Recommendations
+- Laptop & Charger[68]
+- Government-issued ID / Student ID[68]
+- Power bank[68]
+- Headphones[68]
+- Sleeping Bag or Blanket & Pillow[68]
+- Toothbrush & Toothpaste[68]
+- Deodorant[68]
+
+### Team Formation
+- **Slack Channel**: #team-formation in Cal Hacks 12.0 Slack[68]
+- **In-Person Activity**: October 24 (Friday) if no team found online[68]
+
+### Sponsors & Challenges
+
+#### Conversion
+- **Workshop**: Build real-world workflow systems using Temporal[68]
+- **Prize**: Top project wins a Vespa[68]
+- **Background**: Founded from UC Berkeley dorm room (Unit 2), raised $28M Series A[68]
+
+#### CodeRabbit
+- **Service**: AI-powered pull request reviews for GitHub[68]
+- **Hiring**: Recruiting interns[68]
+- **Workshop**: Available this weekend[68]
+
+#### Warp
+- **Service**: Automated HR and payroll platform for founders and startups[68]
+- **Challenge**: Best Visualization Agent[68]
+
+#### Windsurf
+- **Service**: IDE powered by Cognition team[68]
+- **Offer**: 6 months of Windsurf Pro for all Cal Hacks participants[68]
+- **Code**: CALHACKS6 at Stripe checkout[68]
+- **Download**: https://windsurf.com/download[68]
+
+#### SnapDev/Cofoundry.ai
+- **Service**: No-code platform to design, build, and launch apps with AI[68]
+- **Support**: Real-time engineering support during hackathon[68]
+- **Prize**: Each winning team member gets Nintendo Switch[68]
+- **Benefit**: Startup interview with Cofoundry founders[68]
+- **Requirements**: Sign up for free account, build on platform, show working app at judging[68]
+
+#### Composio
+- **Service**: Skills layer for AGI with integrations for 800+ applications[68]
+- **Focus**: AI agent development tools[68]
+
+#### Snap
+- **Track**: Spectacles Track for AR experiences[68]
+- **Hardware**: 5th gen Spectacles (advanced AR glasses)[68]
+- **Prize**: Top team each receives pair of Spectacles[68]
+
+#### Ethereum Foundation
+- **Focus**: Systems that are composable, permissionless, code-controlled value[68]
+- **Interest Areas**: Tooling (infra, wallets, debugging, gas optimizers), protocol ideas[68]
+- **Approach**: Ship small, open-source, share demo[68]
+
+#### Comet
+- **Platform**: Opik (open-source for building LLM applications)[68]
+- **Services**: Debugging, testing, monitoring tools[68]
+- **Raffle**: Free Star Wars LEGO set[68]
+
+### Pre-Event Workshops
+
+#### AppLovin
+- **Date**: Monday, October 20, 2-3pm PST[68]
+- **Format**: Zoom[68]
+- **RSVP**: https://docs.google.com/forms/d/e/1FAIpQLSeheRLwZ9NM1B9PBhfFn0b2rbNnMk3vrmU_bbg0YgqntbIrzA/viewform?usp=header[68]
+- **Topic**: Axon real-time recommendation system, challenge projects[68]
+
+#### Fetch.ai
+- **Date**: Wednesday, October 22, 7-8pm PST[68]
+- **Format**: Zoom[68]
+- **RSVP**: http://bit.ly/calhacks12-fetchai-workshop[68]
+- **Topic**: ASI:One agentic LLM, multi-agent execution on Agentverse[68]
+
+### FAQ
+
+#### Travel Reimbursement
+- **Partial Stipend**: Closed 09/23 for freshmen and junior transfers[68]
+- **Other Travel**: Not reimbursed[68]
+
+#### Overnight Stay
+- **Required**: No, optional[68]
+- **Alternatives**: Return to Berkeley or stay in nearby hotels[68]
+
+#### Contact
+- **Questions**: #ask-directors channel in Cal Hacks 12.0 Slack[68]
+- **Email**: team@hackberkeley.org[68]
+- **Instagram**: @calhacks[68]
+
+
+
+## UCR STEM Career & Internship Fair
+
+### Event Details
+- **Event**: STEM Career & Internship Fair[69]
+- **Date**: Wednesday, October 22, 2025[69]
+- **Time**: 11:00 AM – 3:00 PM[69]
+- **Location**: HUB 302[69]
+- **Employers**: 35+ companies hiring for internships and full-time positions[69]
+
+### Participating Employers[69]
+RBC Bearings, Bloom Energy Corporation, Applied Medical, Cisco, Amazon, Epic, HBK Engineering LLC, Los Angeles Department of Water and Power, Sorenson Engineering, Southern California Edison, California Air Resource Board, Yorke Engineering LLC, Whiting-Turner Contracting Company, Garmin
+
+### Preparation Resources[69]
+- Career Fair Prep Tips available from UCR Career Center
+- R'Professional Career Closet: Free professional items (3 per quarter)
+- Blazer borrowing available at fair check-in (3rd floor lobby) with Student ID[69]
+
+### Contact
+- **Organization**: UCR Career Center[69]
+- **Phone**: (951) 827-3631[69]
+- **Website**: careers.ucr.edu[69]
+
+
+
+## UCR STEM Career & Internship Fair
+
+### Event Details
+- **Event**: STEM Career & Internship Fair[70]
+- **Date**: Wednesday, October 22, 2025[70]
+- **Time**: 11:00 AM – 3:00 PM[70]
+- **Location**: HUB 302[70]
+- **Organizer**: UCR Career Center[70]
+
+### Participating Employers
+35+ employers hiring for internships and full-time positions[70]:
+- RBC Bearings[70]
+- Bloom Energy Corporation[70]
+- Applied Medical[70]
+- Cisco[70]
+- Amazon[70]
+- Epic[70]
+- HBK Engineering, LLC[70]
+- Los Angeles Department of Water and Power[70]
+- Sorenson Engineering[70]
+- Southern California Edison[70]
+- California Air Resource Board[70]
+- Yorke Engineering, LLC[70]
+- Whiting-Turner Contracting Company[70]
+- Garmin[70]
+
+### Preparation Resources
+- Career Fair Prep Tips available[70]
+- R'Professional Career Closet: 3 free professional items per quarter[70]
+- Borrow a Blazer: Available at fair check-in (3rd floor lobby) with Student ID[70]
+
+### Contact
+- **Email**: careers@ucr.edu[70]
+- **Phone**: (951) 827-3631[70]
+- **Website**: careers.ucr.edu[70]
+
+
+
+## UCR STEM Career & Internship Fair
+
+### Event Details
+- **Event**: STEM Career & Internship Fair[71]
+- **Date**: Wednesday, October 22, 2025[71]
+- **Time**: 11:00 AM – 3:00 PM[71]
+- **Location**: HUB 302[71]
+- **Organizer**: UCR Career Center[71]
+
+### Participating Employers
+35+ employers hiring for internships and full-time positions[71]:
+- RBC Bearings[71]
+- Bloom Energy Corporation[71]
+- Applied Medical[71]
+- Cisco[71]
+- Amazon[71]
+- Epic[71]
+- HBK Engineering, LLC[71]
+- Los Angeles Department of Water and Power[71]
+- Sorenson Engineering[71]
+- Southern California Edison[71]
+- California Air Resource Board[71]
+- Yorke Engineering, LLC[71]
+- Whiting-Turner Contracting Company[71]
+- Garmin[71]
+
+### Preparation Resources
+- Career Fair Prep Tips available[71]
+- R'Professional Career Closet: 3 free professional items per quarter[71]
+- Borrow a Blazer: Available at fair check-in (3rd floor lobby) with Student ID[71]
+
+### Contact
+- **Phone**: (951) 827-3631[71]
+- **Website**: careers.ucr.edu[71]
+
+
+## IvyAdmit.AI
+
+### Account Signup
+- **Service**: College admissions AI tool[72]
+- **Email**: hwang585@ucr.edu[72]
+- **Signup Date**: October 17, 2025[72]
+- **Status**: Email confirmation pending[72]
+- **Website**: https://ivyadmit.ai[72]
+
+
+## IvyAdmit.AI
+
+### Account Signup
+- **Service**: IvyAdmit.AI - College admissions guidance platform[73]
+- **Email**: hwang585@ucr.edu[73]
+- **Status**: Email confirmation required to activate account[73]
+- **Confirmation Link**: https://ivyadmit.ai/auth[73]
+- **Date Received**: October 17, 2025[73]
+
+
+## IvyAdmit.AI
+
+### Account Signup
+- **Service**: IvyAdmit.AI - College admissions guidance platform[74]
+- **Email**: hwang585@ucr.edu[74]
+- **Status**: Email confirmation required to activate account[74]
+- **Signup Date**: October 17, 2025[74]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[75]
+- **Organizer**: Hackathons @ Berkeley[75]
+- **Dates**: October 24-26, 2025[75]
+- **Location**: Palace of Fine Arts, San Francisco, CA[75]
+- **Check-in Time**: 2:30 PM Friday, October 24th[75]
+- **Slack Workspace**: Cal Hacks 12.0 Slack (multiple invite links available)[75]
+
+### Sponsors & Challenges[75]
+- **Primary Sponsors**: Anthropic, AppLovin, Amazon, Fetch.ai[75]
+- **Additional Sponsors**: Y Combinator, Postman, Creao.ai, Bright Data, Visa, Rox, Reka, Groq, Fish Audio, Listen Labs, Terac, LabelBox[75]
+
+### Y Combinator Challenge
+- **Challenge**: YC x Cal Hacks 12.0 Challenge[75]
+- **Dates**: October 24-26, 2025[75]
+- **Submission Deadline**: Sunday, October 26 at 10 AM[75]
+- **Prizes**: 1st place - guaranteed interview with YC partner; 2nd & 3rd - guaranteed office hours + special swag[75]
+- **Event Page**: https://events.ycombinator.com/ycxcalhackschallenge25[75]
+- **Afterparty**: Cal Hacks x YC Afterparty at YC offices in SF on Sunday, October 26 at 5 PM[75]
+
+### Pre-Event Workshops[75]
+- **Fetch.ai**: Wednesday, October 22, 7-8 PM PST on Zoom[75]
+- **AppLovin**: Monday, October 20, 2-3 PM PST on Zoom[75]
+- **Groq**: Tuesday, October 21, 6 PM PST on Zoom[75]
+- **Reka**: "Roast My Life: AI Commentary on Your Camera Roll" workshop during hackathon[75]
+- **Terac**: Mini combinatorics contest with prizes (iPhone, AirPod Pros, $1000 cash)[75]
+
+### Transportation
+- **Buses**: Running 2 PM - 6:30 PM Friday, October 24 from Montgomery BART Station to Palace of Fine Arts[75]
+- **BART Map**: https://www.bart.gov/system-map[75]
+- **Montgomery Station**: https://www.google.com/maps/place/37%C2%B047'27.0%22N+122%C2%B024'02.8%22W/@37.7908184,-122.4033396,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.7908184!4d-122.4007647?entry=ttu&g_ep=EgoyMDI1MTAxNC4wIKXMDSoASAFQAw%3D%3D[75]
+
+### Hardware Track[75]
+- **Available**: Humanoid robots, robotic arms, 3D printers, microcontrollers and components[75]
+- **Interest Form**: https://forms.gle/Yz251QX8TxsRhTuc7[75]
+
+### Prohibited Items[75]
+- No flammable items (fuels, gasoline, gas torches, lighter fluid)[75]
+- No weapons (guns, knives, pocket knives, fireworks)[75]
+- No tobacco products or e-cigarettes[75]
+- No illegal drugs or alcoholic beverages[75]
+- No tents[75]
+- No animals[75]
+
+### Packing Recommendations[75]
+- Laptop & Charger[75]
+- Government-issued ID / Student ID[75]
+- Power bank[75]
+- Headphones[75]
+- Sleeping Bag or Blanket & Pillow[75]
+- Toothbrush & Toothpaste[75]
+- Deodorant[75]
+
+### FAQ[75]
+- **Overnight Stay**: Not required; some hackers return to Berkeley or stay in nearby hotels[75]
+- **Travel Reimbursement**: Partial travel stipend for freshmen and junior transfers closed 09/23; other travel not reimbursed[75]
+- **Dietary Restrictions**: Vegetarian and common dietary restricted options available; contact team@hackberkeley.org for specific allergies[75]
+- **Team Formation**: #team-formation channel in Slack; in-person team formation activity on Friday, October 24[75]
+- **Questions**: Ask in #ask-directors channel on Cal Hacks 12.0 Slack or email team@hackberkeley.org[75]
+
+### Contact & Social
+- **Email**: team@hackberkeley.org[75]
+- **Instagram**: @calhacks[75]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[76]
+- **Organizer**: Hackathons @ Berkeley[76]
+- **Dates**: October 24-26, 2025[76]
+- **Location**: Palace of Fine Arts, San Francisco, CA[76]
+- **Check-in Time**: 2:30 PM Friday, October 24th[76]
+- **Sponsors**: Anthropic, AppLovin, Amazon, Fetch.ai[76]
+
+### Getting There
+- **Bus Service**: Buses run 2pm - 6:30pm Friday, 10/24 from Montgomery BART Station to Palace of Fine Arts[76]
+- **BART Map**: https://www.bart.gov/system-map[76]
+- **Montgomery Station**: https://www.google.com/maps/place/37%C2%B047'27.0%22N+122%C2%B024'02.8%22W/@37.7908184,-122.4033396,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.7908184!4d-122.4007647?entry=ttu&g_ep=EgoyMDI1MTAxNC4wIKXMDSoASAFQAw%3D%3D[76]
+
+### Communication
+- **Slack Workspace**: Cal Hacks 12.0 Slack (critical for announcements)[76]
+- **Slack Invite Links**:[76]
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3ex3y5f03-v3uJmOz4xeXmvLaExUBoXw
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3f1qk1wyc-KVWlz02XE5a52ew5bZPhog
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3f62a9zo1-FuzpJVXJ6HGGSgFmwNLb5g
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3eymecbl1-6jRFY4qobBDFvAVWTNzRmA
+- **Team Formation**: #team-formation channel in Slack; in-person team formation activity on 10/24[76]
+- **Questions**: #ask-directors channel or team@hackberkeley.org[76]
+
+### Sponsors & Workshops
+
+#### Fetch.ai
+- **Focus**: Build autonomous agents with uAgents or agentic frameworks[76]
+- **Pre-Event Workshop**: Wednesday, October 22, 7-8pm PST on Zoom[76]
+- **Workshop RSVP**: https://docs.google.com/forms/d/e/1FAIpQLScHbiZG8CEyy_XByyVPxjbxTI3mWPAhg_W9DSyiDiRcKrBbHA/viewform[76]
+- **Topic**: ASI:One agentic LLM and Agentverse marketplace[76]
+
+#### AppLovin
+- **Focus**: Real-time recommendation system (Axon) powering ads for 1.6 billion people daily[76]
+- **Pre-Event Workshop**: Monday, October 20, 2-3pm PST on Zoom[76]
+- **Workshop RSVP**: https://docs.google.com/forms/d/e/1FAIpQLSeheRLwZ9NM1B9PBhfFn0b2rbNnMk3vrmU_bbg0YgqntbIrzA/viewform[76]
+- **Services**: End-to-end software and AI solutions for customer reach and monetization[76]
+
+#### Y Combinator
+- **Challenge**: YC x Cal Hacks 12.0 Challenge to build iconic YC company with AI[76]
+- **Challenge Page**: https://events.ycombinator.com/ycxcalhackschallenge25[76]
+- **Prizes**: 1st place - guaranteed YC partner interview; 2nd & 3rd - guaranteed office hours + special swag[76]
+- **Challenge Deadline**: Sunday, 10/26 at 10 am[76]
+- **Afterparty**: Cal Hacks x YC Afterparty at YC offices in SF on Sunday, 10/26 at 5 pm[76]
+- **Afterparty Link**: https://events.ycombinator.com/calhacks-afterparty[76]
+
+#### Postman
+- **Focus**: API platform for designing, testing, delivery, and monitoring[76]
+- **Challenge**: Use Postman Flows to create AI Agent solving day-to-day problem[76]
+
+#### Creao.ai
+- **Focus**: Vibe coding platform for AI-native web apps and agent systems[76]
+- **Prize Track**: $4,000 in cash prizes across three categories (Best Real-World Productivity Tool, Best Designed Web App, Best Build Customization)[76]
+
+#### Bright Data
+- **Focus**: Web access and data layer for agents to search, browse, and engage with web[76]
+- **Free Start**: brdta.com/calhacks[76]
+- **Services**: Agentic browsing, API/SDK/MCP access, RAG and LLM integration[76]
+
+#### Visa
+- **Focus**: Digital payments and global economy access[76]
+- **Opportunities**: Internships and New College Grad full-time roles monthly[76]
+
+#### Rox
+- **Focus**: Agentic Revenue Operating System[76]
+- **Funding**: $50M from Sequoia, General Catalyst, Elad Gil[76]
+- **Team**: Former execs from AWS, Apple, Google, Ramp; IMO/IOI/IPhO gold medalists[76]
+
+#### Reka
+- **Focus**: AI research and product company (multimodal-native agentic tasks)[76]
+- **Workshop**: Roast My Life - AI Commentary on Your Camera Roll[76]
+- **Funding**: $170M from NVIDIA, Snowflake, and others[76]
+- **Team**: Experts from Google DeepMind and Meta[76]
+
+#### Groq
+- **Focus**: Generative AI solutions with LPU Inference Engine[76]
+- **Workshop**: Tuesday, 10/21 at 6pm PST on Zoom[76]
+- **Technology**: Language Processing Unit for fast AI inference[76]
+
+#### Fish Audio
+- **Focus**: Open source text-to-speech models (Fish Audio S1)[76]
+- **Offer**: $50 API credits for real-time TTS and voice cloning[76]
+- **Prize Track**: Best use of TTS technology[76]
+
+#### Listen Labs
+- **Focus**: AI-powered customer interview analysis[76]
+- **Funding**: Backed by Sequoia; $10M run rate in under a year[76]
+- **Hiring**: Seeking students graduating Spring 2026[76]
+
+#### Terac
+- **Focus**: AI-powered interview engine for extracting human thoughts at scale[76]
+- **Clients**: DoorDash, Notion[76]
+- **Workshop**: Mini combinatorics contest with prizes (iPhone, AirPod Pros, $1000 cash)[76]
+
+#### Labelbox
+- **Focus**: Training data platform for AI agents, robotics, voice, code, STEM[76]
+- **Services**: High-quality data for model development acceleration[76]
+
+#### Osheen M.
+- **Role**: Leads Ops for AI and Research Engineering[76]
+- **Prize Track**: Best Data Collection / Tooling for AI Research[76]
+
+### Hardware Track
+- **Available**: Humanoid robots, robotic arms, 3D printers, microcontrollers, components[76]
+- **Interest Form**: https://forms.gle/Yz251QX8TxsRhTuc7[76]
+
+### Prohibited Items
+- No flammable items (fuels, gasoline, gas torches, lighter fluid)[76]
+- No weapons (guns, knives, pocket knives, fireworks)[76]
+- No tobacco products or e-cigarettes[76]
+- No illegal drugs or alcoholic beverages[76]
+- No tents[76]
+- No animals[76]
+
+### Packing List
+- Laptop & Charger[76]
+- Government-issued ID / Student ID[76]
+- Power bank[76]
+- Headphones[76]
+- Sleeping Bag or Blanket & Pillow[76]
+- Toothbrush & Toothpaste[76]
+- Deodorant[76]
+
+### FAQ
+- **Overnight Stay**: Not required; some hackers return to Berkeley or stay in nearby hotels[76]
+- **Travel Reimbursement**: Partial travel stipend for freshmen and junior transfers closed 09/23; no other travel reimbursed[76]
+- **Dietary Restrictions**: Vegetarian and common dietary restricted options available; contact team@hackberkeley.org for specific needs[76]
+- **Nearby Restaurants**: Large number of great restaurants near venue[76]
+
+### Contact
+- **Email**: team@hackberkeley.org[76]
+- **Instagram**: @calhacks[76]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[77]
+- **Organizer**: Hackathons @ Berkeley[77]
+- **Dates**: October 24-26, 2025[77]
+- **Location**: Palace of Fine Arts, San Francisco, CA[77]
+- **Check-in Time**: 2:30 PM Friday, October 24[77]
+- **Primary Sponsors**: Anthropic, AppLovin, Amazon, Fetch.ai[77]
+
+### Transportation
+- **Bus Service**: Runs 2pm-6:30pm Friday, 10/24 from Montgomery BART Station to Palace of Fine Arts[77]
+- **BART Map Reference**: https://www.bart.gov/system-map[77]
+- **Montgomery Station**: https://www.google.com/maps/place/37%C2%B047'27.0%22N+122%C2%B024'02.8%22W/@37.7908184,-122.4033396,17z/data=!3m1!4b1!4m4!3m3!8m2!3d37.7908184!4d-122.4007647?entry=ttu&g_ep=EgoyMDI1MTAxNC4wIKXMDSoASAFQAw%3D%3D[77]
+
+### Communication
+- **Slack Workspace**: Cal Hacks 12.0 Slack (required for announcements)[77]
+- **Slack Invite Links**:[77]
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3ex3y5f03-v3uJmOz4xeXmvLaExUBoXw
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3f1qk1wyc-KVWlz02XE5a52ew5bZPhog
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3f62a9zo1-FuzpJVXJ6HGGSgFmwNLb5g
+  - https://join.slack.com/t/calhacks120/shared_invite/zt-3eymecbl1-6jRFY4qobBDFvAVWTNzRmA
+- **Team Formation**: #team-formation channel in Slack; in-person team formation activity on 10/24[77]
+
+### Sponsors & Workshops
+
+#### Fetch.ai
+- **Focus**: Autonomous agents, agentic frameworks, Agentverse[77]
+- **Pre-Event Workshop**: Wednesday, October 22, 7-8pm PST on Zoom[77]
+- **RSVP**: https://docs.google.com/forms/d/e/1FAIpQLScHbiZG8CEyy_XByyVPxjbxTI3mWPAhg_W9DSyiDiRcKrBbHA/viewform[77]
+- **Workshop Topic**: ASI:One agentic LLM, agent search and execution[77]
+
+#### AppLovin
+- **Focus**: Ad technology, Axon recommendation system[77]
+- **Pre-Event Workshop**: Monday, October 20, 2-3pm PST on Zoom[77]
+- **RSVP**: https://docs.google.com/forms/d/e/1FAIpQLSeheRLwZ9NM1B9PBhfFn0b2rbNnMk3vrmU_bbg0YgqntbIrzA/viewform[77]
+- **Company Info**: 1.6 billion people see AppLovin ads daily; provides end-to-end software and AI solutions[77]
+
+#### Y Combinator
+- **Challenge**: YC x Cal Hacks 12.0 Challenge (build iconic YC company with AI)[77]
+- **Challenge Link**: https://events.ycombinator.com/ycxcalhackschallenge25[77]
+- **Prizes**: 1st place - guaranteed YC partner interview; 2nd & 3rd - guaranteed office hours + special swag[77]
+- **Challenge Dates**: Friday 10/24 - Sunday 10/26, deadline Sunday 10/26 at 10am[77]
+- **Afterparty**: Cal Hacks x YC Afterparty at YC SF offices, Sunday 10/26 at 5pm[77]
+- **Afterparty Link**: https://events.ycombinator.com/calhacks-afterparty[77]
+
+#### Postman
+- **Focus**: API platform for design, testing, delivery, monitoring[77]
+- **Challenge**: Use Postman Flows to create AI Agent solving day-to-day problem[77]
+
+#### Creao.ai
+- **Focus**: Vibe coding platform for AI-native web apps and agent systems[77]
+- **Prize Track**: $4,000 in cash prizes across three categories (Best Real-World Productivity Tool, Best Designed Web App, Best Build Customization)[77]
+- **Website**: https://creao.ai/[77]
+
+#### Bright Data
+- **Focus**: Web access and data layer for agents, agentic browsing[77]
+- **Free Start**: brdta.com/calhacks[77]
+- **Services**: API, SDK, MCP access for AI tech stack integration[77]
+
+#### Visa
+- **Focus**: Digital payments, internships and New College Grad roles[77]
+- **Opportunity**: Opt into talent community to learn about upcoming roles[77]
+
+#### Rox
+- **Focus**: Agentic Revenue Operating System[77]
+- **Funding**: $50M from Sequoia, General Catalyst, Elad Gil[77]
+- **Team Background**: Former execs from AWS, Apple, Google, Ramp; IMO/IOI/IPhO gold medalists; grads from Berkeley, MIT, Caltech, Harvard, Stanford[77]
+- **Customers**: Ramp, Nvidia, WSP, Redis[77]
+
+#### Reka
+- **Focus**: AI research and product company, multimodal-native agentic tasks[77]
+- **Workshop**: Roast My Life - AI Commentary on Your Camera Roll (build personalized app analyzing videos)[77]
+- **Funding**: $170M from NVIDIA, Snowflake and other investors[77]
+- **Team**: Experts from Google DeepMind and Meta[77]
+
+#### Groq
+- **Focus**: Generative AI solutions, LPU Inference Engine[77]
+- **Founder**: Jonathan Ross (inventor of Google TPU)[77]
+- **Products**: GroqCloud platform, GroqRack compute clusters[77]
+- **Workshop**: Tuesday, October 21 at 6pm PST on Zoom[77]
+
+#### Fish Audio
+- **Focus**: Open source text-to-speech models, Fish Audio S1[77]
+- **Offer**: $50 API credits for real-time TTS and voice cloning[77]
+- **Prize Track**: Best use of TTS technology[77]
+- **Website**: https://fish.audio/[77]
+
+#### Listen Labs
+- **Focus**: AI analysis of customer interviews[77]
+- **Funding**: Backed by Sequoia[77]
+- **Growth**: $0 to $10M run rate in under a year[77]
+- **Hiring**: Seeking students graduating Spring 2026[77]
+- **Clients**: Google, Microsoft[77]
+
+#### Terac
+- **Focus**: AI-powered interview engine for extracting human thoughts at scale[77]
+- **Clients**: DoorDash, Notion[77]
+- **Workshop**: Mini combinatorics contest with prizes (iPhone, AirPod Pros, $1000 cash)[77]
+- **Website**: https://terac.com/[77]
+
+#### Labelbox
+- **Focus**: Training data platform for AI agents, robotics, voice, code, STEM[77]
+- **Services**: Career opportunities, high-quality data for model development[77]
+- **Website**: https://labelbox.com/[77]
+
+#### Osheen M.
+- **Role**: Leads Ops for AI and Research Engineering[77]
+- **Prize Track**: Best Data Collection / Tooling for AI Research[77]
+
+### Hardware Track
+- **Available Equipment**: Humanoid robots, robotic arms, 3D printers, microcontrollers and components[77]
+- **Interest Form**: https://forms.gle/Yz251QX8TxsRhTuc7[77]
+
+### Prohibited Items
+- No flammable items (fuels, gasoline, gas torches, lighter fluid)[77]
+- No weapons (guns, knives, pocket knives, fireworks)[77]
+- No tobacco products or e-cigarettes[77]
+- No illegal drugs or alcoholic beverages[77]
+- No tents[77]
+- No animals[77]
+
+### Packing Recommendations
+- Laptop & Charger[77]
+- Government-issued ID / Student ID[77]
+- Power bank[77]
+- Headphones[77]
+- Sleeping Bag or Blanket & Pillow[77]
+- Toothbrush & Toothpaste[77]
+- Deodorant[77]
+
+### FAQ
+- **Overnight Stay**: Not required; some hackers return to Berkeley or stay in nearby hotels[77]
+- **Travel Reimbursement**: Partial travel stipend for freshmen and junior transfers closed 09/23; no other travel reimbursed[77]
+- **Dietary Restrictions**: Vegetarian and common dietary restricted options available; contact team@hackberkeley.org for specific allergies[77]
+- **Questions**: Ask in #ask-directors channel on Slack or email team@hackberkeley.org[77]
+
+### Contact & Social
+- **Email**: team@hackberkeley.org[77]
+- **Instagram**: @calhacks[77]
+- **Instagram Link**: https://www.instagram.com/calhacks/[77]
+
+
+## Netflix
+
+### Job Offer
+- **Position**: Software Engineer (implied)[78]
+- **Company**: Netflix[78]
+- **Base Salary**: $150,000[78]
+- **Offer Date**: October 25, 2025[78]
+- **From**: uc2 biz (bizuc8293@gmail.com)[78]
+
+
+
+## Netflix
+
+### Offer Details
+- **Company**: Netflix[79]
+- **Position**: Software Engineer[79]
+- **Base Salary**: $150,000[79]
+- **Offer Date**: October 25, 2025[79]
+- **From**: uc2 biz (bizuc8293@gmail.com)[79]
+
+
+
+## Netflix
+
+### Offer Details
+- **Company**: Netflix[80]
+- **Position**: Software Engineer (implied)[80]
+- **Base Salary**: $150,000[80]
+- **Offer Date**: October 25, 2025[80]
+- **From**: uc2 biz (bizuc8293@gmail.com)[80]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[81]
+- **Organizer**: Hackathons @ Berkeley[81]
+- **Date**: October 24, 2025[81]
+- **Location**: Palace of Fine Arts[81]
+- **Live Site**: https://live.calhacks.io/[81]
+- **Hacker Guide**: https://docs.google.com/document/d/1hUP32KVmNlEIQtwdseI-kiUl2lKQmtKm9zpJ6VZsiPw/edit?usp=sharing[81]
+
+### Schedule
+- **Check-in Start**: 2:30pm[81]
+- **Cal Band Performance**: 3:40pm at main stage[81]
+- **Opening Ceremony**: 4:00pm featuring Ali Ghodsi, CEO of Databricks[81]
+- **Team Formation Mixer & Hacking Start**: 6:00pm[81]
+
+### Check-in Requirements
+- Government-issued or school ID showing date of birth required[81]
+
+### Prohibited Items (Zero-Tolerance Policy)
+Anyone found in possession will be removed from event premises[81]:
+- Flammable items (fuel, gasoline, lighter fluid)[81]
+- Weapons (guns, knives, pocket knives, fireworks)[81]
+- Tobacco products, including e-cigarettes[81]
+- Tents[81]
+- Illegal drugs or alcoholic beverages[81]
+- Animals[81]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[82]
+- **Date**: October 24, 2025[82]
+- **Organizer**: Hackathons @ Berkeley[82]
+- **Venue**: Palace of Fine Arts[82]
+- **Live Site**: https://live.calhacks.io/[82]
+- **Hacker Guide**: https://docs.google.com/document/d/1hUP32KVmNlEIQtwdseI-kiUl2lKQmtKm9zpJ6VZsiPw/edit?usp=sharing[82]
+
+### Schedule
+- **Check-in Start**: 2:30pm[82]
+- **Cal Band Performance**: 3:40pm at main stage[82]
+- **Opening Ceremony**: 4:00pm[82]
+  - Keynote speaker: Ali Ghodsi, CEO of Databricks[82]
+  - Sponsor and prize track announcements[82]
+  - Oski mascot appearance with stickers and waterbottles[82]
+- **Team Formation Mixer**: 6:00pm (hacking starts)[82]
+
+### Check-in Requirements
+- Government-issued or school ID showing date of birth required[82]
+- Late check-in available but not recommended[82]
+
+### Prohibited Items (Zero-Tolerance Policy)[82]
+- No flammable items (fuel, gasoline, lighter fluid)[82]
+- No weapons (guns, knives, pocket knives, fireworks, etc)[82]
+- No tobacco products, including e-cigarettes[82]
+- No tents[82]
+- No illegal drugs or alcoholic beverages[82]
+- No animals[82]
+- Violation results in removal from event premises[82]
+
+### Contact
+- **Organizer**: Diya Vij (diya@hackberkeley.org)[82]
+- **Address**: 253 Cory Hall, Berkeley, CA[82]
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event Name**: Cal Hacks 12.0[83]
+- **Organizer**: Hackathons @ Berkeley[83]
+- **Date**: October 24, 2025[83]
+- **Venue**: Palace of Fine Arts[83]
+- **Live Site**: https://live.calhacks.io/[83]
+- **Hacker Guide**: https://docs.google.com/document/d/1hUP32KVmNlEIQtwdseI-kiUl2lKQmtKm9zpJ6VZsiPw/edit?usp=sharing[83]
+
+### Check-In
+- **Start Time**: 2:30pm[83]
+- **Required**: Government-issued or school ID showing date of birth[83]
+
+### Schedule
+- **3:40pm**: Cal Band performance at main stage[83]
+- **3:40pm**: Oski (Berkeley mascot) appearance with stickers and waterbottles[83]
+- **4:00pm**: Opening Ceremony featuring Ali Ghodsi, CEO of Databricks[83]
+- **6:00pm**: Team formation mixer and hacking start[83]
+
+### Prohibited Items (Zero-Tolerance Policy)[83]
+- No flammable items (fuel, gasoline, lighter fluid)[83]
+- No weapons (guns, knives, pocket knives, fireworks)[83]
+- No tobacco products or e-cigarettes[83]
+- No tents[83]
+- No illegal drugs or alcoholic beverages[83]
+- No animals[83]
+
+### Contact
+- **Organizer**: Diya Vij (diya@hackberkeley.org)[83]
+- **Address**: 253 Cory Hall, Berkeley, CA[83]
+
+
+## DigitalOcean Cloud Platform
+
+### Account Setup
+- **Email**: team@info.digitalocean.com[84]
+- **Date Received**: October 24, 2025[84]
+- **Status**: Account activated and ready to use[84]
+
+### Getting Started Resources
+- **Product Documentation**: https://www.digitalocean.com/docs/[84]
+- **Tutorials**: https://www.digitalocean.com/community/tutorials[84]
+- **Community**: https://www.digitalocean.com/community[84]
+
+### Initial Setup Tasks[84]
+- Create an SSH key
+- Add a storage volume
+- Enter a domain to manage DNS
+
+### Referral Program
+- Give $200, get $25 credit[84]
+
+
+## DigitalOcean Education Account
+
+### Account Setup
+- **Email**: hwang585@ucr.edu[85]
+- **Date Activated**: October 24, 2025[85]
+- **Status**: Welcome email received with onboarding resources[85]
+
+### Getting Started Resources
+- **Product Documentation**: https://www.digitalocean.com/docs/[85]
+- **Tutorials**: https://www.digitalocean.com/community/tutorials[85]
+- **Community**: https://www.digitalocean.com/community[85]
+- **Dashboard**: https://cloud.digitalocean.com/droplets/new[85]
+
+### Initial Setup Steps[85]
+- Create an SSH key
+- Add a storage volume
+- Enter a domain to manage DNS
+
+
+## DigitalOcean Account
+
+### Account Setup
+- **Email Received**: October 24, 2025[86]
+- **Account Status**: Active - welcome email received[86]
+- **Getting Started Resources**[86]:
+  - Create an SSH key
+  - Add a storage volume
+  - Enter a domain to manage DNS
+- **Documentation**: [Product Docs](https://www.digitalocean.com/docs/), [Tutorials](https://www.digitalocean.com/community/tutorials), [Community](https://www.digitalocean.com/community)[86]
+- **Dashboard**: [Log in to cloud.digitalocean.com](https://cloud.digitalocean.com/droplets/new)[86]
+
+
+
+## Frontier Airlines - FRONTIER Miles Program
+
+### Program Details
+- **Program Name**: FRONTIER Miles[87]
+- **Type**: Free frequent flyer program[87]
+- **Earning Rate**: 10 Travel Miles and 10 Elite Status Points per $1 spent on Flyfrontier.com[87]
+- **Award Flights**: One-way domestic award flights start at 10,000 Miles[87]
+- **Elite Status Threshold**: First tier starts at 10,000 Elite Status Points[87]
+
+### Elite Status Benefits[87]
+- Free carry-on and checked bags
+- Complimentary seat selection
+- Priority boarding
+
+#
+## Frontier Airlines - FRONTIER Miles Program
+
+### Program Details
+- **Program Name**: FRONTIER Miles[88]
+- **Type**: Free frequent flyer program[88]
+- **Earning Rate**: 10 Travel Miles and 10 Elite Status Points per $1 spent on Flyfrontier.com[88]
+- **Award Flights**: One-way domestic award flights start at 10,000 Miles[88]
+- **Elite Status Threshold**: First tier starts at 10,000 Elite Status Points[88]
+
+### Elite Status Benefits[88]
+- Free carry-on and checked bags
+- Complimentary seat selection
+- Priority boarding
+
+#
+## Frontier Airlines - FRONTIER Miles Program
+
+### Program Details
+- **Program Name**: FRONTIER Miles[89]
+- **Type**: Free frequent flyer program[89]
+- **Earning Rate**: 10 Travel Miles and 10 Elite Status Points per $1 spent on Flyfrontier.com[89]
+- **Award Flights**: One-way domestic award flights start at 10,000 Miles[89]
+- **Email Date**: October 24, 2025[89]
+
+### Elite Status Benefits
+- **First Tier Threshold**: 10,000 Elite Status Points[89]
+- **Benefits Include**[89]:
+  - Free carry-on and checked bags
+  - Complimentary seat selection
+  - Priority boarding
+- **Status**: Described as one of the easiest status programs to qualify for in the travel industry[89]
+
+#
+## Cal Hacks 12.0 - OpenRouter Credits
+
+### Offer Details
+- **Sponsor**: MLH and OpenRouter[90]
+- **Credit Amount**: $10 in credits[90]
+- **Use Case**: LLMs, AI, and inference[90]
+- **Expiration**: End of weekend (October 26, 2025)[90]
+- **Claim Link**: https://www.mlh.com/events/cal-hacks-12-0/partners/openrouter/promo_codes/redeem[90]
+
+### OpenRouter Details
+- Unified API providing access to hundreds of AI models through single endpoint[90]
+- Automatically handles fallbacks and selects cost-effective options[90]
+- Supports preferred SDKs and frameworks[90]
+
+
+
+## MLH x OpenRouter Credits - Cal Hacks 12.0
+
+### Offer Details
+- **Provider**: Major League Hacking & OpenRouter[91]
+- **Event**: Cal Hacks 12.0[91]
+- **Credit Amount**: $10 in OpenRouter credits[91]
+- **Expiration**: End of weekend (October 26, 2025)[91]
+- **Use Case**: LLMs, AI, and inference[91]
+
+### OpenRouter Details
+- Unified API providing access to hundreds of AI models through single endpoint[91]
+- Automatically handles fallbacks and selects cost-effective options[91]
+- Supports preferred SDK or framework integration[91]
+
+### Redemption
+- Claim link provided in MLH email[91]
+- Email received**: October 24, 2025[91]
+
+
+## Cal Hacks 12.0 - OpenRouter Credits
+
+### Offer Details
+- **Sponsor**: Major League Hacking (MLH) & OpenRouter[92]
+- **Benefit**: $10 in credits for LLMs, AI, and inference[92]
+- **Event**: Cal Hacks 12.0[92]
+- **Expiration**: End of weekend (October 26, 2025)[92]
+- **Redemption Link**: https://www.mlh.com/events/cal-hacks-12-0/partners/openrouter/promo_codes/redeem[92]
+
+### OpenRouter Details
+- Unified API providing access to hundreds of AI models through single endpoint[92]
+- Automatically handles fallbacks and selects cost-effective options[92]
+- Get started with preferred SDK or framework[92]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event**: Cal Hacks 12.0[93]
+- **Organizer**: Major League Hacking (MLH)[93]
+- **Email Sent**: October 23, 2025[93]
+
+### Sponsor Prizes & Credits
+
+#### OpenRouter
+- **Prize**: $10 in credits for LLMs, AI, and inference[93]
+- **Details**: Unified API for hundreds of AI models with automatic fallbacks[93]
+
+#### Reach Capital - Best Use of AI
+- **Prize**: Logitech Webcam & meeting with Reach Capital investors[93]
+- **Focus Areas**: Learning, health, and work transformation[93]
+- **Talent Network**: Reach's 130+ portfolio companies (Replit, Brilliant, ClassDojo, GPTZero, Desmos) recruiting[93]
+
+#### .Tech Domain
+- **Prize**: Blue Snowball Microphone & free .Tech domain for up to 10 years[93]
+- **Promo Code**: CALHACKS25[93]
+
+#### Google Gemini API
+- **Prize**: Google Swag Kits[93]
+- **Capabilities**: Language understanding, information analysis, creative content generation[93]
+
+#### Snowflake API
+- **Prize**: Arduino Tiny ML Kit[93]
+- **Offer**: 120-day free student trial[93]
+
+#### ElevenLabs
+- **Prize**: ElevenLabs Airpods[93]
+- **Feature**: Natural, human-sounding audio generation[93]
+
+#### DigitalOcean Gradient AI
+- **Prize**: Retro Wireless Mouse[93]
+- **Offer**: $200 in free credits[93]
+- **Features**: GPU infrastructure, serverless inference, 1-Click Models[93]
+
+### Workshops & Events
+- **Intro to Google AI Studio**: Workshop during opening ceremony or at MLH table[93]
+- **GitHub Copilot Mini-Event**: Demonstration on using Copilot for development[93]
+- **Hardware Lab**: Arduinos and Raspberry Pis available[93]
+
+### Resources
+- **GitHub Student Developer Pack**: Free access to GitHub Copilot[93]
+- **Digi-Key Hardware**: Browse available hardware components[93]
+- **MLH Code of Conduct**: All participants must comply[93]
+- **Support Contact**: +1 (409) 202-6060 or incidents@mlh.io[93]
+
+
+
+## Cal Hacks 12.0
+
+### Event Details
+- **Event**: Cal Hacks 12.0[94]
+- **Organizer**: Major League Hacking (MLH)[94]
+- **Date**: October 23-25, 2025[94]
+- **Email Recipient**: hwang585@ucr.edu[94]
+
+### Sponsor Credits & Resources
+
+#### OpenRouter - $10 AI Credits[94]
+- Unified API for hundreds of AI models
+- Automatic fallback handling and cost optimization
+- Claim link provided in email[94]
+
+#### Google Gemini API - Workshop[94]
+- **Workshop**: Intro to Google AI Studio
+- **When**: During Opening Ceremony or visit MLH table for details[94]
+- **Preregister**: https://events.mlh.io/events/13177[94]
+- **Capabilities**: Language understanding, information analysis, creative content generation[94]
+
+#### Snowflake API - 120-Day Student Trial[94]
+- Free trial for students[94]
+- Build RAG-powered chatbots and AI-powered features[94]
+- REST API integration available[94]
+
+#### ElevenLabs - Text-to-Speech[94]
+- Natural, human-sounding audio generation[94]
+- Promo code available for redemption[94]
+
+#### DigitalOcean Gradient AI - $200 Credits[94]
+- GPU infrastructure and serverless inference[94]
+- 1-Click Models for LLM deployment[94]
+- Sign up for free credits[94]
+
+#### GitHub Copilot Workshop[94]
+- Mini-event dedicated to GitHub Copilot
+- Free access via GitHub Student Developer Pack[94]
+- Event: "Step into the Flight Deck with Copilot"[94]
+
+### Prize Categories
+
+#### Best Use of AI (Reach Capital)[94]
+- **Prize**: Logitech Webcam + meeting with Reach Capital investors[94]
+- **Focus Areas**: Learning, health, or work transformation[94]
+- **Bonus**: Reach's 130+ portfolio companies (Replit, Brilliant, ClassDojo, GPTZero, Desmos) hiring through talent network[94]
+
+#### Best .Tech Domain Name[94]
+- **Prize**: Blue Snowball Microphone + free .Tech domain for up to 10 years[94]
+- **Promo Code**: CALHACKS25[94]
+
+#### Best Use of Gemini API[94]
+- **Prize**: Google Swag Kits[94]
+
+#### Best Use of Snowflake API[94]
+- **Prize**: Arduino Tiny ML Kit[94]
+
+#### Best Use of ElevenLabs[94]
+- **Prize**: ElevenLabs branded AirPods[94]
+
+#### Best Use of DigitalOcean Gradient AI[94]
+- **Prize**: Retro Wireless Mouse[94]
+
+### Hardware Lab[94]
+- Arduinos and Raspberry Pis available[94]
+- Ask MLH Coach for access[94]
+- Digi-Key hardware browsing available[94]
+
+### Code of Conduct[94]
+- All participants must respect MLH Code of Conduct[94]
+- **Report Issues**: +1 (409) 202-6060 or incidents@mlh.io[94]
+
+
 ## Related Offers
-- **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com[7]
-- **Sign-up Bonus**: 50,000 Travel Miles after qualifying activity[7]
-- **Frontier Vacations**: Package booking for airfare, hotels, and transportation[7]
+- **Frontier Vacations**: Package booking for airfare, hotels, and transportation[89]
+- **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com; earn 50,000 Travel Miles after qualifying activity[89]
 

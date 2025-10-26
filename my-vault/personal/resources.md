@@ -164,5 +164,51 @@ OpenRouter is a universal API for accessing, scaling and monitoring language mod
 - **Return Date**: October 20, 2025[12]
 - **Fine**: $0.00[12]
 
+
+## UCR Library - Rivera Library
+
+### Equipment Loans
+- **Available Item**: USB Charger (Ugreen - CD289)[13]
+- **Barcode**: 31210020072896[13]
+- **Location**: Rivera Library[13]
+- **Loan Process**: Email receipt sent to student email upon checkout[13]
+
+
+## Calendly Scheduling Tips
+
+### Polite Scheduling Link Sharing
+When sharing your Calendly scheduling link, word your message thoughtfully to ensure it's well received[14].
+
+**Example Messages**[14]:
+- "Feel free to share some times that you're available, or you can also pick from my Calendly if it's easier."
+- "Here's my availability, but I'm happy to use another method of booking if you'd prefer."
+- "Do you have a Calendly or schedule you can share with me? Alternatively, here's my Calendly if you want to find a time that works."
+
+
+## Zapier
+
+- **Notification Date**: October 16, 2025[15]
+- **Terms Update**: Updated Terms of Service effective November 1, 2025[15]
+- **Action Required**: No action required; continuing use after November 1 constitutes agreement to updated terms[15]
+- **Source**: privacy@mail.zapier.com[15]
+
+
+# OpenRouter
+
+## Overview
+OpenRouter is a universal API for accessing, scaling and monitoring language models from OpenAI, Google, Anthropic, and more with a single API key[16].
+
+## Getting Started
+- **API Key**: Access from API dashboard[16]
+- **Chat Playground**: Try models interactively at https://openrouter.ai/chat[16]
+- **Documentation**: https://openrouter.ai/docs[16]
+- **Models Page**: Compare models and pricing at https://openrouter.ai/models[16]
+- **Credits Page**: Top up account balance at https://openrouter.ai/credits[16]
+- **Activity Page**: Monitor requests at https://openrouter.ai/activity[16]
+
+## Support
+- **Email**: support@openrouter.ai[16]
+- **Discord**: https://discord.gg/openrouter[16]
+
 ## Related
 

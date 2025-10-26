@@ -4,6 +4,8 @@
 
 ## Registration Timeline
 - **Schedule of Classes Opens**: Thursday, October 23, 2025[1]
+- **Discourse and Free Expression Training Hold**: Hold placed on all student accounts October 23 until training reviewed[2]
+- **Hold Clearance Process**: Log into R'Web, click Holds icon, acknowledge training completion; hold released within ~15 minutes[2]
 - **View Registration Time Ticket**: October 28 in R'Web[1]
 - **Registration Starts**: November 3, 2025[1]
 - **Initial Enrollment Period**: November 3 - December 1, 2025[1]
@@ -61,6 +63,18 @@ ENGL 001C alternatives for Winter 2026 listed at: http://uwp.ucr.edu/wac.html[1]
 
 ## Freshman Learning Community
 Members will receive separate email with registration process details[1].
+
+
+
+## Important Holds & Requirements
+
+### Discourse and Free Expression Training Hold
+- **Deadline to Review**: ASAP (hold placed October 23)[2]
+- **Impact**: Cannot register for winter quarter until hold cleared[2]
+- **Training Link**: https://diversity.universityofcalifornia.edu/actions/campus-climate/discourse-and-free-expression.html[2]
+- **Clearance Steps**: Review training → Log into R'Web → Click Holds icon → Check acknowledgment box[2]
+- **Hold Release Time**: Approximately 15 minutes after acknowledgment submission[2]
+- **Contact**: Student Affairs (vcsa@ucr.edu) for training questions; Office of the Registrar (reghelpdesk@ucr.edu or 951-827-7284) for technical issues[2]
 
 ## Related
 

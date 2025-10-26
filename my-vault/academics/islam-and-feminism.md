@@ -128,5 +128,45 @@
 - Religious beliefs do not require people to abandon contemporary society[2]
 - Women in Deeb's research demonstrate their religious beliefs through practices that integrate with modern life[2]
 
+
+### Critical Engagement with Gender in Islamic Sources of Authority - October 13
+
+**Discussion Topic**: "Sexual Ethics and Islam"[6]
+
+**Recent Comment** (October 17)[6]:
+- Focuses on sexual inequality within Islam using Islamic texts[6]
+- Questions whether author is unintentionally supporting Western views[6]
+- Canvas Link: https://elearn.ucr.edu/courses/200987/discussion_topics/809514?entry_id=1915978#entry-1915978[6]
+
+### Feminist Alliances and Differences on Islamic Sources of Authority - October 15
+
+**Key Reading**: Women and Gender in Islam by Ahmed[6]
+
+**Recent Comment** (October 17)[6]:
+- Explores how patriarchy developed over time[6]
+- Discusses gradual subjugation of women into second-class roles[6]
+- Notes rise of urban centers contributed to changing views[6]
+- Canvas Link: https://elearn.ucr.edu/courses/200987/discussion_topics/811724?entry_id=1916007#entry-1916007[6]
+
+
+### Feminist Alliances and Differences on Islamic Sources of Authority - October 15
+
+**Discussion Topic**: Leila Ahmed's work on women and gender in Islamic contexts[7]
+
+**Student Comments**[7]:
+- Discussion of Leila Ahmed's principal purpose: showing how people's lives and identities have been affected by religion and culture, especially in Arab contexts[7]
+- Reflection on historical disillusionment regarding women's rights and gender discrimination[7]
+- Analysis of Ahmed's exploration of pre-Islamic cultural norms and their influence on later Islamic gender ideals[7]
+- Engagement with Ahmed's discussion of women's roles in Middle Eastern history[7]
+
+**Related Reading**: Leila Ahmed's work on women and gender in Islam[7]
+
+### Critical Engagement with Gender in Islamic Sources of Authority - October 13
+
+**Discussion Topic**: Sexual Ethics and Islam by Kecia Ali[7]
+
+**Key Theme**[7]:
+- Kecia Ali addresses how sexuality and gender have been shaped through Islamic law and interpretation[7]
+
 ## Related
 

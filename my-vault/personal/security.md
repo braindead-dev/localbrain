@@ -1,17 +1,16 @@
 # security
 
-# Security Events
+# Security & Account Access
 
-## GitHub Account
+## OAuth Applications
 
-### Third-Party OAuth Applications
-
-#### WakaTime Authorization
-- **Application**: WakaTime[3]
-- **Date Authorized**: October 21, 2025[3]
-- **Scopes**: user:email[3]
-- **Management Link**: https://github.com/settings/connections/applications/a012f99e47bb94935d83[3]
-- **Security Log**: https://github.com/settings/security-log[3]
+### CodeRabbit AI Authorization
+- **Application**: coderabbitai[4]
+- **Date Authorized**: October 25, 2025[4]
+- **Scopes Granted**: read:org, user:email[4]
+- **Platform**: GitHub[4]
+- **Management Link**: https://github.com/settings/connections/applications/45872a44c0e55c462eed[4]
+- **Security Log**: https://github.com/settings/security-log[4]
 
 
 ## Related
