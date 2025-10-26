@@ -195,18 +195,17 @@ class JSONRPCHandler:
         
         # Route to appropriate tool
         if tool_name == "search":
-            result = await self.tools.search(
-                query=arguments.get("query"),
-                top_k=arguments.get("top_k", 5)
-            )
+            # Create SearchRequest object
+            search_req = SearchRequest(query=arguments.get("query"))
+            result = await self.tools.search(search_req)
         elif tool_name == "open":
-            result = await self.tools.open_file(
-                file_path=arguments.get("file_path")
-            )
+            # Create OpenRequest object
+            open_req = OpenRequest(file_path=arguments.get("file_path"))
+            result = await self.tools.open_file(open_req)
         elif tool_name == "list":
-            result = await self.tools.list_directory(
-                directory_path=arguments.get("directory_path", "")
-            )
+            # Create ListRequest object
+            list_req = ListRequest(directory_path=arguments.get("directory_path", ""))
+            result = await self.tools.list_directory(list_req)
         else:
             raise ValueError(f"Unknown tool: {tool_name}")
         

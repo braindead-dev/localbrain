@@ -20,9 +20,14 @@ class TunnelManager:
     
     def _find_tunnel_client(self) -> Optional[Path]:
         """Find the tunnel client script"""
-        # Backend is: electron/backend/
-        # Tunnel client: remote-mcp/client/mcp_tunnel_client.py
-        backend_dir = Path(__file__).parent.parent.parent
+        # This file is: electron/backend/src/core/mcp/tunnel_manager.py
+        # Backend is:   electron/backend/
+        # Repo root is: localbrain/
+        # Tunnel path:  localbrain/remote-mcp/client/mcp_tunnel_client.py
+        
+        # Go up to backend dir (3 levels: mcp -> core -> src -> backend)
+        backend_dir = Path(__file__).parent.parent.parent.parent
+        # Go up to repo root (2 levels: backend -> electron -> localbrain)
         repo_root = backend_dir.parent.parent
         tunnel_path = repo_root / "remote-mcp" / "client" / "mcp_tunnel_client.py"
         
