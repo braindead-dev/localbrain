@@ -225,7 +225,7 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
     <div className="h-full flex flex-col bg-background relative m-4 rounded-2xl overflow-hidden border border-border shadow-2xl">
       {/* Header */}
       <div className={`border-b border-border px-6 py-5 bg-card shadow-sm ${showSetup ? 'pointer-events-none' : ''}`}>
-        <div className="relative flex justify-center items-center">
+        <div className="flex justify-center items-center">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg shadow-sm">
               <Brain className="h-8 w-8 text-primary" />

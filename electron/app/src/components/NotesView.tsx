@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Card } from "./ui/card";
-import { Brain, StickyNote } from "lucide-react";
+import { Brain, StickyNote, Mic } from "lucide-react";
 import { api } from "../lib/api";
+import { Button } from "./ui/button";
 
 interface NotesViewProps {
   onQueryClick?: (query: string) => void;
@@ -13,6 +14,37 @@ export function NotesView({ onQueryClick }: NotesViewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isOverDropzone, setIsOverDropzone] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
+        recognitionInstance.lang = 'en-US';
+
+        recognitionInstance.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setQuickNote((prev) => prev + (prev ? ' ' : '') + transcript);
+        };
+
+        recognitionInstance.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          setIsRecording(false);
+        };
+
+        recognitionInstance.onend = () => {
+          setIsRecording(false);
+        };
+
+        setRecognition(recognitionInstance);
+      }
+    }
+  }, []);
 
   // Reset drag states on ANY mouse interaction to recover from stuck states
   useEffect(() => {
@@ -67,6 +99,21 @@ export function NotesView({ onQueryClick }: NotesViewProps) {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [isDragging, isOverDropzone]);
+
+  const toggleVoiceRecording = () => {
+    if (!recognition) {
+      alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+      return;
+    }
+
+    if (isRecording) {
+      recognition.stop();
+      setIsRecording(false);
+    } else {
+      recognition.start();
+      setIsRecording(true);
+    }
+  };
 
   const handleSubmitNote = async () => {
     if (quickNote.trim()) {
@@ -205,14 +252,46 @@ export function NotesView({ onQueryClick }: NotesViewProps) {
                 }}
               >
               <Card className="p-8 shadow-2xl h-full min-h-[400px] flex flex-col bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-amber-900/20 border-yellow-200 dark:border-yellow-800">
-                <div className="flex items-center gap-3 mb-6">
-                  <StickyNote className="h-6 w-6 text-yellow-600 dark:text-yellow-500" />
-                  <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100">Quick Note</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <StickyNote className="h-6 w-6 text-yellow-600 dark:text-yellow-500" />
+                    <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100">Quick Note</h3>
+                  </div>
+                  <Button
+                    onClick={toggleVoiceRecording}
+                    variant="ghost"
+                    size="icon"
+                    className={`rounded-full transition-colors ${
+                      isRecording
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700'
+                    }`}
+                    title={isRecording ? 'Stop recording' : 'Start voice input'}
+                  >
+                    <motion.div
+                      animate={isRecording ? {
+                        scale: [1, 1.2, 1],
+                      } : {
+                        scale: 1
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: isRecording ? Infinity : 0,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Mic className={`h-5 w-5 ${
+                        isRecording
+                          ? 'text-white'
+                          : 'text-yellow-800 dark:text-yellow-200'
+                      }`} />
+                    </motion.div>
+                  </Button>
                 </div>
                 <textarea
                   value={quickNote}
                   onChange={(e) => setQuickNote(e.target.value)}
-                  placeholder="Jot down a quick thought, idea, or reminder..."
+                  placeholder="Jot down or speak a quick thought, idea, or reminder..."
                   className="w-full flex-1 p-4 rounded-lg border-0 bg-white/50 dark:bg-black/20 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 text-base placeholder:text-yellow-600/60 dark:placeholder:text-yellow-400/60 text-yellow-900 dark:text-yellow-100 transition-all"
                 />
                 <AnimatePresence>
