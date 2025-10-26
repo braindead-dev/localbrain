@@ -168,5 +168,13 @@
 **Key Theme**[7]:
 - Kecia Ali addresses how sexuality and gender have been shaped through Islamic law and interpretation[7]
 
+
+
+**Additional Student Responses (Oct 22)**[8]:
+- Student reflection on Amal's journey with shyness from reading[8]
+- Student discussing Mahmood's challenge to Western feminist understanding of freedom and agency[8]
+- Student noting Mahmood's argument that freedom doesn't always mean resisting norms; devotion can represent agency[8]
+- Student discussing Mahmood's analysis of Muslim women in Egypt choosing religious lives as expression of strength rather than oppression[8]
+
 ## Related
 

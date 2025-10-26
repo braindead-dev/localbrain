@@ -191,5 +191,17 @@
 - **Graded Date**: October 23 at 9:39pm[16]
 - **Canvas Link**: https://elearn.ucr.edu/courses/192112/assignments/924349/submissions/131590[16]
 
+
+
+**Additional Student Responses (Oct 22)**[17]:
+- Computer Engineering major (formerly Animation/Fashion Design) sharing career pivot[17]
+- Statistics major (initially placed due to grades, now engaged with data science)[17]
+- Computer Science major (interested in math, now reconsidering fit)[17]
+- CS major (parental influence toward major, exploring alternatives)[17]
+- CS/Economics double major (long-standing interest in CS with IT job experience)[17]
+- Computer Science major (interested in programming, exploring specializations)[17]
+- Computer Science major (interested in how programs work, considering software engineering alternatives)[17]
+- Computer Engineering major (interested in embedded systems after EE/CS120B)[17]
+
 ## Related
 

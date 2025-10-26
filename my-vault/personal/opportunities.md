@@ -2920,6 +2920,37 @@ Anyone found in possession will be removed from event premises[81]:
 ### Program Overview
 Workshop for student organizations interested in applying for SIP Grants funding[97]. Grants are awarded for service or specific outreach activities[97].
 
+
+## Roblox Early Careers
+
+### Assessment Status
+- **Company**: Roblox[98]
+- **Program**: Early Careers[98]
+- **Assessment Completion Date**: October 23, 2025[98]
+- **Status**: All assessments completed[98]
+- **Next Steps**: Awaiting update from recruiting team[98]
+- **Email**: noreply@email.roblox.com[98]
+
+
+## Roblox Early Careers
+
+### Assessment Status
+- **Status**: Completed all assessments[99]
+- **Notification Date**: October 23, 2025[99]
+- **Next Steps**: Awaiting update from Roblox recruiting team[99]
+- **Email**: noreply@email.roblox.com[99]
+- **Resources**: Early Careers site, Gen AI technology information, company culture and values available[99]
+
+
+## Roblox Early Careers
+
+### Assessment Status
+- **Status**: Completed all assessments[100]
+- **Notification Date**: October 23, 2025[100]
+- **Source**: Roblox Assessment (noreply@email.roblox.com)[100]
+- **Next Steps**: Awaiting update from recruiting team[100]
+- **Resources**: Early Careers site, Gen AI technology information, company culture and values available[100]
+
 ## Related Offers
 - **Frontier Vacations**: Package booking for airfare, hotels, and transportation[89]
 - **Frontier Airlines Credit Card**: Rated Best Airline Card for Budget Travel by MONEY.com; earn 50,000 Travel Miles after qualifying activity[89]
