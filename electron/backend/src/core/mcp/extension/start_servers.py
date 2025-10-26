@@ -19,15 +19,31 @@ import argparse
 from pathlib import Path
 
 
-class ServerLauncher:
-    """Manages starting and stopping daemon and MCP server."""
+# Import tunnel manager
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from tunnel_manager import TunnelManager
+    TUNNEL_AVAILABLE = True
+except ImportError:
+    TUNNEL_AVAILABLE = False
+    TunnelManager = None
 
-    def __init__(self, stdio_mode=False):
+
+class ServerLauncher:
+    """Manages starting and stopping daemon, MCP server, and remote tunnel."""
+
+    def __init__(self, stdio_mode=False, enable_tunnel=True):
         self.daemon_process = None
         self.mcp_process = None
         self.stdio_process = None
+        self.tunnel_manager = None
         self.stdio_mode = stdio_mode
+        self.enable_tunnel = enable_tunnel and TUNNEL_AVAILABLE
         self.running = True
+
+        # Initialize tunnel manager if enabled
+        if self.enable_tunnel:
+            self.tunnel_manager = TunnelManager()
 
         # Register signal handlers for clean shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -93,7 +109,12 @@ class ServerLauncher:
 
     def stop_servers(self):
         """Stop all servers gracefully."""
-        # Stop stdio bridge first (if running)
+        # Stop tunnel first
+        if self.tunnel_manager and self.tunnel_manager.is_running():
+            print("🛑 Stopping remote MCP tunnel...", file=sys.stderr)
+            self.tunnel_manager.stop()
+        
+        # Stop stdio bridge (if running)
         if self.stdio_process:
             print("🛑 Stopping stdio bridge...", file=sys.stderr)
             try:
@@ -182,15 +203,29 @@ class ServerLauncher:
         print("⏳ Waiting for MCP server to initialize...")
         time.sleep(2)
 
+        # Start remote tunnel if enabled
+        tunnel_status = "❌ Disabled"
+        if self.enable_tunnel and self.tunnel_manager:
+            print("🚀 Starting remote MCP tunnel...")
+            if self.tunnel_manager.start():
+                time.sleep(2)  # Wait for tunnel to connect
+                tunnel_status = "✅ Connected"
+            else:
+                tunnel_status = "⚠️  Failed (local-only)"
+                print("⚠️  Tunnel failed to start, continuing in local-only mode...")
+
         print()
         print("=" * 70)
-        print("✅ Both servers are running!")
+        print("✅ LocalBrain MCP Ready!")
         print("=" * 70)
         print()
-        print("🌐 Daemon:     http://127.0.0.1:8765")
-        print("🌐 MCP Server: http://127.0.0.1:8766")
+        print("🌐 Daemon:       http://127.0.0.1:8765")
+        print("🌐 MCP Server:   http://127.0.0.1:8766")
+        print(f"🌍 Remote MCP:   {tunnel_status}")
+        if tunnel_status == "✅ Connected":
+            print("   Remote URL:   http://146.190.120.44:8767/mcp")
         print()
-        print("📝 Press Ctrl+C to stop both servers")
+        print("📝 Press Ctrl+C to stop all servers")
         print("=" * 70)
         print()
 

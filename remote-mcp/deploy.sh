@@ -13,12 +13,18 @@ echo ""
 
 # Upload new server
 echo "📤 Uploading server files..."
-scp server/mcp_http_server.py $SERVER:$REMOTE_DIR/
-scp server/.env.example $SERVER:$REMOTE_DIR/ 2>/dev/null || echo "  (no .env.example)"
+scp server/mcp_http_server.py $SERVER:~/
+scp server/.env.example $SERVER:~/ 2>/dev/null || echo "  (no .env.example)"
 
 echo ""
-echo "🔄 Updating systemd service..."
-ssh $SERVER << 'EOF'
+echo "🔄 Setting up server directory..."
+ssh -t $SERVER << 'EOF'
+# Create directory and move files
+sudo mkdir -p ~/localbrain/remote-mcp/server
+sudo chown -R mcpuser:mcpuser ~/localbrain/remote-mcp
+mv ~/mcp_http_server.py ~/localbrain/remote-mcp/server/
+mv ~/.env.example ~/localbrain/remote-mcp/server/ 2>/dev/null || true
+
 cd ~/localbrain/remote-mcp
 
 # Stop old service
@@ -33,9 +39,9 @@ After=network.target
 [Service]
 Type=simple
 User=mcpuser
-WorkingDirectory=/home/mcpuser/localbrain/remote-mcp
+WorkingDirectory=/home/mcpuser/localbrain/remote-mcp/server
 Environment="PATH=/home/mcpuser/localbrain/remote-mcp/venv/bin"
-ExecStart=/home/mcpuser/localbrain/remote-mcp/venv/bin/python mcp_http_server.py
+ExecStart=/home/mcpuser/localbrain/remote-mcp/venv/bin/python /home/mcpuser/localbrain/remote-mcp/server/mcp_http_server.py
 Restart=always
 RestartSec=10
 

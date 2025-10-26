@@ -15,6 +15,7 @@ import sys
 import json
 import logging
 import asyncio
+import subprocess
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, unquote
 from datetime import datetime
@@ -57,6 +58,9 @@ PORT = CONFIG.get('port', 8765)
 
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
+
+# MCP process tracking
+mcp_process: Optional[subprocess.Popen] = None
 
 # Include connector plugin routes
 from connectors.connector_api import create_connector_router
@@ -158,6 +162,69 @@ async def startup_event():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "localbrain-daemon"}
+
+
+@app.post("/mcp/start")
+async def start_mcp():
+    """Start the MCP server with remote tunnel."""
+    global mcp_process
+    
+    if mcp_process and mcp_process.poll() is None:
+        return {"success": True, "message": "MCP already running", "pid": mcp_process.pid}
+    
+    try:
+        # Start the MCP server launcher (includes tunnel)
+        backend_dir = Path(__file__).parent.parent
+        launcher_path = backend_dir / "src" / "core" / "mcp" / "extension" / "start_servers.py"
+        
+        mcp_process = subprocess.Popen(
+            [sys.executable, str(launcher_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=backend_dir
+        )
+        
+        logger.info(f"✅ MCP server started (PID: {mcp_process.pid})")
+        return {
+            "success": True,
+            "message": "MCP server starting",
+            "pid": mcp_process.pid
+        }
+    except Exception as e:
+        logger.error(f"Failed to start MCP: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/mcp/stop")
+async def stop_mcp():
+    """Stop the MCP server."""
+    global mcp_process
+    
+    if not mcp_process or mcp_process.poll() is not None:
+        return {"success": True, "message": "MCP not running"}
+    
+    try:
+        mcp_process.terminate()
+        mcp_process.wait(timeout=5)
+        logger.info("✅ MCP server stopped")
+        mcp_process = None
+        return {"success": True, "message": "MCP server stopped"}
+    except subprocess.TimeoutExpired:
+        mcp_process.kill()
+        logger.warning("⚠️ MCP server force killed")
+        mcp_process = None
+        return {"success": True, "message": "MCP server force stopped"}
+    except Exception as e:
+        logger.error(f"Failed to stop MCP: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@app.get("/mcp/status")
+async def mcp_status():
+    """Get MCP server status."""
+    if mcp_process and mcp_process.poll() is None:
+        return {"running": True, "pid": mcp_process.pid}
+    return {"running": False}
 
 
 @app.get("/config")
