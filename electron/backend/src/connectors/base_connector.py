@@ -289,46 +289,50 @@ class BaseConnector(ABC):
     
     def _ingest_data(self, items: List[ConnectorData]) -> int:
         """
-        Ingest data into LocalBrain vault.
+        Ingest data into LocalBrain via the ingestion API.
         
-        Converts ConnectorData objects to markdown files in the vault.
+        Sends ConnectorData to the ingestion agent which will:
+        1. Analyze and synthesize the data into insights
+        2. Determine appropriate storage location and structure
+        3. Connect it to existing knowledge in the vault
+        
         Returns number of items successfully ingested.
         """
-        if not self.vault_path:
+        if not items:
             return 0
         
-        metadata = self.get_metadata()
-        platform_dir = self.vault_path / 'Connectors' / metadata.name
-        platform_dir.mkdir(parents=True, exist_ok=True)
+        import requests
         
+        metadata = self.get_metadata()
         ingested = 0
+        
         for item in items:
             try:
-                # Create safe filename from timestamp and source_id
-                timestamp_str = item.timestamp.strftime('%Y%m%d_%H%M%S')
-                safe_id = "".join(c if c.isalnum() else '_' for c in item.source_id[:20])
-                filename = f"{timestamp_str}_{safe_id}.md"
-                filepath = platform_dir / filename
+                # Prepare ingestion payload
+                ingestion_text = f"[Source: {metadata.name}] "
+                ingestion_text += f"[Timestamp: {item.timestamp.isoformat()}] "
+                ingestion_text += item.content
                 
-                # Build markdown content
-                content = f"# {item.metadata.get('title', 'Untitled')}\n\n"
-                content += f"**Source**: {metadata.name}\n"
-                content += f"**Date**: {item.timestamp.isoformat()}\n"
+                # Add metadata as context
+                if item.metadata:
+                    ingestion_text += f"\n\nMetadata: {item.metadata}"
                 
-                if 'author' in item.metadata:
-                    content += f"**From**: {item.metadata['author']}\n"
+                # Call ingestion API
+                # This will trigger the LLM-powered ingestion agent
+                response = requests.post(
+                    'http://127.0.0.1:8765/protocol/ingest',
+                    json={
+                        'text': ingestion_text,
+                        'source': metadata.name,
+                        'metadata': item.metadata,
+                    },
+                    timeout=30
+                )
                 
-                if 'url' in item.metadata:
-                    content += f"**Link**: {item.metadata['url']}\n"
-                
-                content += "\n---\n\n"
-                content += item.content
-                
-                # Write to file
-                with open(filepath, 'w', encoding='utf-8') as f:
-                    f.write(content)
-                
-                ingested += 1
+                if response.status_code == 200:
+                    ingested += 1
+                else:
+                    print(f"Ingestion API error for {item.source_id}: {response.text}")
                 
             except Exception as e:
                 # Log error but continue processing

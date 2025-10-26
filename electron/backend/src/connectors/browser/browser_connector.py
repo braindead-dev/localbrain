@@ -7,6 +7,7 @@ Ingests browsing history from Chromium-based browsers (Chrome, Edge, Brave, etc.
 import sqlite3
 import shutil
 import os
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -46,13 +47,11 @@ class BrowserConnector(BaseConnector):
     
     def _save_credentials(self, credentials: Dict[str, Any]):
         """Save credentials to file"""
-        import json
         with open(self.credentials_file, 'w') as f:
             json.dump(credentials, f, indent=2)
     
     def _load_credentials(self) -> Optional[Dict[str, Any]]:
         """Load credentials from file"""
-        import json
         if self.credentials_file.exists():
             with open(self.credentials_file, 'r') as f:
                 return json.load(f)
@@ -62,6 +61,18 @@ class BrowserConnector(BaseConnector):
         """Delete credentials file"""
         if self.credentials_file.exists():
             self.credentials_file.unlink()
+    
+    def _load_state(self) -> Optional[Dict[str, Any]]:
+        """Load state from file"""
+        if self.state_file.exists():
+            with open(self.state_file, 'r') as f:
+                return json.load(f)
+        return None
+    
+    def _save_state(self, state: Dict[str, Any]):
+        """Save state to file"""
+        with open(self.state_file, 'w') as f:
+            json.dump(state, f, indent=2)
     
     def get_metadata(self) -> ConnectorMetadata:
         """Return connector metadata"""
@@ -156,22 +167,38 @@ class BrowserConnector(BaseConnector):
         return True  # Browser history always has potential updates
     
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
-        """Fetch browser history updates"""
+        """Fetch browser history updates and format for ingestion"""
         hours = 24 if since is None else int((datetime.now() - since).total_seconds() / 3600)
-        result = self.sync(limit=limit or 100, hours=hours)
+        result = self._fetch_history(limit=limit or 100, hours=hours)
         
         if not result.get("success"):
             return []
         
-        # Convert to ConnectorData format
+        # Convert to ConnectorData format for ingestion agent
+        # The ingestion agent will synthesize this into insights
         items = []
         for item in result.get("items", []):
-            content = f"# {item['title']}\n\n**URL**: {item['url']}\n**Last Visited**: {item['last_visit']}\n**Visit Count**: {item['visit_count']}\n"
+            # Natural language format for ingestion
+            content = f"Visited: {item['title']} at {item['url']} on {item['last_visit']}. "
+            content += f"Visit count: {item['visit_count']}. "
+            
+            # Extract domain for categorization
+            from urllib.parse import urlparse
+            domain = urlparse(item['url']).netloc
+            content += f"Domain: {domain}."
+            
             items.append(ConnectorData(
                 content=content,
                 source_id=item['url'],
                 timestamp=datetime.fromisoformat(item['timestamp']),
-                metadata=item,
+                metadata={
+                    "source": "browser_history",
+                    "browser": self.browser_name,
+                    "url": item['url'],
+                    "title": item['title'],
+                    "domain": domain,
+                    "visit_count": item['visit_count'],
+                },
             ))
         return items
     
@@ -192,13 +219,16 @@ class BrowserConnector(BaseConnector):
             total_items_synced=state.get('total_items_synced', 0) if state else 0,
         )
     
-    def sync(self, limit: int = 100, hours: int = 24) -> Dict[str, Any]:
+    def _fetch_history(self, limit: int = 100, hours: int = 24) -> Dict[str, Any]:
         """
-        Sync recent browser history
+        Fetch recent browser history from SQLite database
         
         Args:
-            limit: Maximum number of URLs to sync
+            limit: Maximum number of URLs to fetch
             hours: Look back this many hours
+        
+        Returns:
+            Dict with success, count, items, browser
         """
         if not self.is_authenticated():
             raise Exception("Browser not configured. Please authenticate first.")
@@ -264,75 +294,6 @@ class BrowserConnector(BaseConnector):
                 "items": [],
             }
     
-    def format_for_ingestion(self, items: List[Dict]) -> List[Dict[str, Any]]:
-        """
-        Format browser history for ingestion into vault
-        
-        Args:
-            items: List of history items from sync()
-        
-        Returns:
-            List of formatted items ready for ingestion
-        """
-        formatted = []
-        
-        for item in items:
-            # Create markdown content
-            content = f"# {item['title']}\n\n"
-            content += f"**URL**: {item['url']}\n\n"
-            content += f"**Last Visited**: {item['last_visit']}\n"
-            content += f"**Visit Count**: {item['visit_count']}\n\n"
-            
-            # Extract domain for categorization
-            from urllib.parse import urlparse
-            domain = urlparse(item['url']).netloc
-            
-            formatted.append({
-                "content": content,
-                "metadata": {
-                    "source": "browser",
-                    "browser": self.browser_name,
-                    "url": item['url'],
-                    "title": item['title'],
-                    "domain": domain,
-                    "visit_count": item['visit_count'],
-                    "last_visit": item['last_visit'],
-                    "timestamp": item['timestamp'],
-                },
-                "tags": ["browser", "web", domain],
-                "filename": f"browser_{domain}_{item['last_visit'][:10]}.md",
-            })
-        
-        return formatted
-    
-    def get_status(self) -> Dict[str, Any]:
-        """Get connector status"""
-        status = super().get_status()
-        
-        if self.is_authenticated():
-            status["browser"] = self.browser_name
-            status["history_path"] = self.history_path
-            
-            # Check if we can read history
-            try:
-                temp_path = "/tmp/localbrain_browser_test.db"
-                shutil.copy2(self.history_path, temp_path)
-                conn = sqlite3.connect(temp_path)
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM urls")
-                total_urls = cursor.fetchone()[0]
-                conn.close()
-                os.remove(temp_path)
-                
-                status["total_urls"] = total_urls
-                status["readable"] = True
-            except Exception as e:
-                status["readable"] = False
-                status["error"] = str(e)
-        
-        return status
-
-
 # Register connector
 def get_connector_class():
     """Return the connector class for registration"""

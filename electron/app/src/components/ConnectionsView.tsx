@@ -102,23 +102,6 @@ export function ConnectionsView() {
     }
   };
 
-  const handleConnect = async (connectorId: string) => {
-    try {
-      // Start OAuth flow for the connector
-      const authResult = await api.connectorAuthStart(connectorId);
-      if (authResult.success && authResult.auth_url) {
-        // Open OAuth URL in new window
-        window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
-        // Reload connectors after a short delay to check for new connections
-        setTimeout(() => {
-          loadConnectors();
-        }, 2000);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start connection");
-    }
-  };
-
   const handleDisconnect = async (connectorId: string) => {
     try {
       await api.connectorRevoke(connectorId);
@@ -138,19 +121,36 @@ export function ConnectionsView() {
     if (!selectedConnector) return;
 
     try {
-      // For browser connector: auto-detect or use path
-      const credentials = connectPath.trim() 
-        ? { history_path: connectPath.trim() }
-        : {}; // Empty will trigger auto-detection
-      
-      const result = await api.connectorAuth(selectedConnector.id, credentials);
-      
-      if (result.success) {
-        toast.success(`Connected to ${selectedConnector.name}!`);
-        setShowConnectDialog(false);
-        await loadConnectors();
+      // Check if this is an OAuth connector (Gmail, Calendar, etc.)
+      if (selectedConnector.auth_type === 'oauth') {
+        // Start OAuth flow
+        const authResult = await api.connectorAuthStart(selectedConnector.id);
+        if (authResult.success && authResult.auth_url) {
+          // Open OAuth URL in browser
+          window.open(authResult.auth_url, '_blank', 'width=600,height=700');
+          toast.success('OAuth window opened! Complete authorization in the browser.');
+          setShowConnectDialog(false);
+          
+          // Poll for connection status
+          setTimeout(async () => {
+            await loadConnectors();
+          }, 3000);
+        }
       } else {
-        toast.error(result.message || "Authentication failed");
+        // Path-based auth (Browser connector)
+        const credentials = connectPath.trim() 
+          ? { history_path: connectPath.trim() }
+          : {}; // Empty will trigger auto-detection
+        
+        const result = await api.connectorAuth(selectedConnector.id, credentials);
+        
+        if (result.success) {
+          toast.success(`Connected to ${selectedConnector.name}!`);
+          setShowConnectDialog(false);
+          await loadConnectors();
+        } else {
+          toast.error(result.message || "Authentication failed");
+        }
       }
     } catch (err) {
       console.error("Connection error:", err);
@@ -305,9 +305,8 @@ export function ConnectionsView() {
                         </>
                       ) : (
                         <Button 
-                          size="sm" 
-                          onClick={() => handleConnect(connector.id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          size="sm"
+                          onClick={() => handleConnect(connector)}
                         >
                           Connect
                         </Button>
@@ -327,7 +326,11 @@ export function ConnectionsView() {
           <DialogHeader>
             <DialogTitle>Connect to {selectedConnector?.name}</DialogTitle>
             <DialogDescription>
-              {selectedConnector?.id === 'browser' ? (
+              {selectedConnector?.auth_type === 'oauth' ? (
+                <>
+                  Click Connect to authorize {selectedConnector?.name} access via OAuth
+                </>
+              ) : selectedConnector?.id === 'browser' ? (
                 <>
                   Leave blank to auto-detect Chrome, or enter custom browser history path
                 </>
@@ -338,7 +341,14 @@ export function ConnectionsView() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {selectedConnector?.id === 'browser' && (
+            {selectedConnector?.auth_type === 'oauth' ? (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  You will be redirected to {selectedConnector?.name} to authorize access.
+                  After authorization, you'll be redirected back to LocalBrain.
+                </p>
+              </div>
+            ) : selectedConnector?.id === 'browser' && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Browser History Path (optional)
