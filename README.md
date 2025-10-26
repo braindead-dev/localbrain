@@ -13,7 +13,7 @@ For users:
 
 This gap is only getting bigger as we move to an AI-adjusted world.
 
-LocalBrain is the open-source layer that fixes this gap; it automatically organizes your personal digital footprint into a **local, source-backed, readable knowledge base** that any AI app can query to understand you, safely and privately.
+LocalBrain bridges this gap; it automatically organizes personal context from your connectors into a **local, readable knowledge base** that any AI app can query to safely understand you.
 
 <img width="1035" height="543" alt="high level architecture" src="https://github.com/user-attachments/assets/87795413-06c2-4da5-8f74-ece0c9fbb09f" />
 
