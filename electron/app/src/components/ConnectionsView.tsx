@@ -123,25 +123,40 @@ export function ConnectionsView() {
   const handleConnect = async (connectorIdOrConnector: string | Connector) => {
     try {
       // Handle both string ID and Connector object for backward compatibility
-      const connector = typeof connectorIdOrConnector === 'string' 
+      const connector = typeof connectorIdOrConnector === 'string'
         ? connectors.find(c => c.id === connectorIdOrConnector)
         : connectorIdOrConnector;
-      
+
       if (!connector) {
+        toast.error("Connector not found");
         setError("Connector not found");
         return;
       }
+
+      console.log(`🔵 Connecting ${connector.id}...`, { auth_type: connector.auth_type });
 
       if (connector.id === 'imessage' || connector.id === 'browser_history') {
         setSelectedConnector(connector);
         setShowFileDialog(true);
       } else if (connector.auth_type === 'oauth') {
         console.log(`🔵 Starting OAuth flow for ${connector.id}...`);
+        toast.loading(`Opening authentication window for ${connector.name}...`);
+
         const authResult = await api.connectorAuthStart(connector.id);
+        console.log(`🔵 Auth result for ${connector.id}:`, authResult);
+
         if (authResult.success && authResult.auth_url) {
           console.log(`🔵 Opening OAuth window for ${connector.id}:`, authResult.auth_url);
+          toast.success(`Opening authentication window...`);
+
           // Open OAuth URL in new window
-          window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
+          const authWindow = window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
+
+          if (!authWindow) {
+            toast.error("Failed to open authentication window. Please check your popup blocker.");
+            return;
+          }
+
           // Reload connectors and auto-sync after OAuth completes
           console.log(`🔵 Setting up auto-sync timer for ${connector.id} (3 seconds)...`);
           setTimeout(async () => {
@@ -154,6 +169,7 @@ export function ConnectionsView() {
               console.log(`🔵 Status for ${connector.id}:`, status);
               if (status.status?.connected) {
                 console.log(`✅ ${connector.id} is connected! Starting auto-sync...`);
+                toast.success(`${connector.name} connected successfully!`);
                 await handleSync(connector.id);
                 console.log(`✅ Auto-sync triggered for ${connector.id}`);
               } else {
@@ -163,6 +179,8 @@ export function ConnectionsView() {
               console.error(`❌ Auto-sync failed for ${connector.id}:`, err);
             }
           }, 3000); // Wait 3 seconds for OAuth to complete
+        } else {
+          toast.error(`Failed to start authentication for ${connector.name}`);
         }
       } else {
         // For other connectors, show dialog
@@ -170,7 +188,10 @@ export function ConnectionsView() {
         setShowConnectDialog(true);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start connection");
+      console.error("❌ Connection error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to start connection";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
