@@ -9,9 +9,10 @@ import os
 import json
 import base64
 from pathlib import Path
-from datetime import datetime, timedelta 
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -125,24 +126,27 @@ class GmailConnector(BaseConnector):
             return len(messages) > 0
             
         except Exception as e:
-            print(f"Error checking for Gmail updates: {e}")
+            logger.warning(f"Error checking for Gmail updates: {e}")
             return False
     
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
         """Fetch new emails since last sync."""
-        print(f"\n📧 [Gmail] Starting fetch_updates...")
-        print(f"   - since: {since}")
-        print(f"   - limit: {limit}")
-        
+        logger.info(f"[Gmail] fetch_updates since={since} limit={limit}")
+
         if not self.is_authenticated():
-            print("❌ [Gmail] Not authenticated, cannot fetch updates")
+            logger.warning("[Gmail] Not authenticated, cannot fetch updates")
             return []
         
         try:
-            # Use existing _sync_emails method but adapt the return format
-            # ALWAYS fetch just the most recent 1 email - no bulk syncing
-            print(f"   - Fetching 1 most recent email")
-            result = self._sync_emails(max_results=1, minutes=None)  # No time filter, just get latest
+            # Use the since timestamp to compute a minutes-based lookback window.
+            # Fall back to 24 hours if no since is recorded (first sync).
+            if since:
+                delta_minutes = max(1, int((datetime.now() - since.replace(tzinfo=None)).total_seconds() / 60))
+            else:
+                delta_minutes = 1440  # 24 hours on first sync
+            fetch_limit = limit or 50
+            logger.info(f"[Gmail] Fetching up to {fetch_limit} emails from the last {delta_minutes} minutes")
+            result = self._sync_emails(max_results=fetch_limit, minutes=delta_minutes)
             
             # Convert to ConnectorData format
             connector_data = []
@@ -154,23 +158,12 @@ class GmailConnector(BaseConnector):
                     metadata=email_data['metadata']
                 ))
             
-            print(f"✅ [Gmail] Fetched {len(connector_data)} emails")
-            if len(connector_data) > 0:
-                print(f"   📬 Email subjects:")
-                for i, email in enumerate(connector_data[:5], 1):  # Show first 5
-                    subject = email.metadata.get('quote', 'No subject')
-                    print(f"      {i}. {subject[:60]}...")
-                if len(connector_data) > 5:
-                    print(f"      ... and {len(connector_data) - 5} more")
-            else:
-                print(f"   ℹ️  No new emails found")
+            logger.info(f"[Gmail] Fetched {len(connector_data)} emails")
             
             return connector_data
             
         except Exception as e:
-            print(f"❌ [Gmail] Error fetching updates: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.exception(f"[Gmail] Error fetching updates: {e}")
             return []
     
     def _parse_email_timestamp(self, timestamp_str: str) -> datetime:
@@ -197,34 +190,33 @@ class GmailConnector(BaseConnector):
         - Uses proper citations and formatting
         - Follows vault structure (personal/, career/, etc.)
         """
-        print(f"\n🔄 [Gmail Ingestion] Starting agentic ingestion for {len(items)} emails...")
-        
+        logger.info(f"[Gmail Ingestion] Starting agentic ingestion for {len(items)} emails")
+
         if not self.vault_path:
-            print(f"❌ [Gmail Ingestion] No vault path configured, skipping ingestion")
+            logger.warning("[Gmail Ingestion] No vault path configured, skipping ingestion")
             return 0
-        
+
         if not items:
-            print(f"ℹ️  [Gmail Ingestion] No items to ingest")
+            logger.info("[Gmail Ingestion] No items to ingest")
             return 0
-        
+
         try:
             # Import the agentic ingestion pipeline
             import sys
             sys.path.insert(0, str(Path(__file__).parent.parent.parent))
             from agentic_ingest import AgenticIngestionPipeline
-            
-            print(f"   - Vault path: {self.vault_path}")
-            print(f"   - Initializing agentic ingestion pipeline...")
-            
+
+            logger.debug(f"[Gmail Ingestion] Vault path: {self.vault_path}")
+
             # Initialize pipeline
             pipeline = AgenticIngestionPipeline(self.vault_path)
-            
+
             ingested_count = 0
             for i, item in enumerate(items, 1):
                 try:
                     subject = item.metadata.get('quote', 'No subject')
-                    print(f"\n   📝 [{i}/{len(items)}] Ingesting: {subject[:60]}...")
-                    
+                    logger.info(f"[Gmail Ingestion] [{i}/{len(items)}] Ingesting: {subject[:60]}")
+
                     # Prepare source metadata for the pipeline
                     source_metadata = {
                         'platform': 'Gmail',
@@ -232,37 +224,31 @@ class GmailConnector(BaseConnector):
                         'url': item.metadata.get('url'),
                         'quote': item.metadata.get('quote', item.content[:200] + '...' if len(item.content) > 200 else item.content)
                     }
-                    
-                    print(f"      - Analyzing content and determining vault location...")
-                    
+
                     # Use the agentic pipeline to ingest
                     result = pipeline.ingest(
                         context=item.content,
                         source_metadata=source_metadata
                     )
-                    
+
                     if result.get('success', False):
                         ingested_count += 1
                         file_path = result.get('file_path', 'unknown')
-                        print(f"      ✅ Successfully ingested to: {file_path}")
+                        logger.info(f"[Gmail Ingestion] Ingested to: {file_path}")
                     else:
                         errors = result.get('errors', ['Unknown error'])
-                        print(f"      ⚠️  Failed to ingest: {errors}")
-                        
+                        logger.warning(f"[Gmail Ingestion] Failed to ingest: {errors}")
+
                 except Exception as e:
-                    print(f"      ❌ Error ingesting item: {e}")
-                    import traceback
-                    traceback.print_exc()
+                    logger.exception(f"[Gmail Ingestion] Error ingesting item: {e}")
                     continue
-            
-            print(f"\n✅ [Gmail Ingestion] Completed: {ingested_count}/{len(items)} emails successfully ingested")
+
+            logger.info(f"[Gmail Ingestion] Completed: {ingested_count}/{len(items)} emails ingested")
             return ingested_count
-            
+
         except Exception as e:
-            print(f"❌ [Gmail Ingestion] Agentic ingestion failed: {e}")
-            import traceback
-            traceback.print_exc()
-            print(f"   - Falling back to simple ingestion...")
+            logger.exception(f"[Gmail Ingestion] Agentic ingestion failed: {e}")
+            logger.info("[Gmail Ingestion] Falling back to simple ingestion")
             # Fallback to simple ingestion if agentic pipeline fails
             return self._ingest_data(items)
     
@@ -271,52 +257,38 @@ class GmailConnector(BaseConnector):
         Override BaseConnector sync to handle Gmail-specific time windows.
         Gmail often wants to fetch emails from a specific time window rather than incremental sync.
         """
-        print(f"\n" + "="*60)
-        print(f"🔄 [Gmail Sync] Starting sync...")
-        print(f"   - auto_ingest: {auto_ingest}")
-        print(f"   - limit: {limit}")
-        print(f"   - vault_path: {self.vault_path}")
-        print("="*60)
-        
+        logger.info(f"[Gmail Sync] Starting sync | auto_ingest={auto_ingest} limit={limit} vault={self.vault_path}")
+
         try:
             # Always fetch updates (Gmail doesn't follow strict incremental sync)
             items = self.fetch_updates(limit=limit)
-            
+
             # Optionally ingest using Agentic Ingestion Pipeline
             ingested_count = 0
             if auto_ingest:
                 if self.vault_path:
-                    print(f"\n🔄 [Gmail Sync] Auto-ingest enabled, starting ingestion...")
+                    logger.info("[Gmail Sync] Auto-ingest enabled, starting ingestion")
                     ingested_count = self._ingest_data_agentic(items)
                 else:
-                    print(f"⚠️  [Gmail Sync] Auto-ingest enabled but no vault path configured")
+                    logger.warning("[Gmail Sync] Auto-ingest enabled but no vault path configured")
             else:
-                print(f"ℹ️  [Gmail Sync] Auto-ingest disabled, skipping ingestion")
-            
+                logger.info("[Gmail Sync] Auto-ingest disabled, skipping ingestion")
+
             # Update last sync timestamp
             now = datetime.now()
             self._save_last_sync(now)
-            
-            print(f"\n" + "="*60)
-            print(f"✅ [Gmail Sync] Completed successfully")
-            print(f"   - Emails fetched: {len(items)}")
-            print(f"   - Emails ingested: {ingested_count}")
-            print(f"   - Last sync: {now.isoformat()}")
-            print("="*60 + "\n")
-            
+
+            logger.info(f"[Gmail Sync] Completed | fetched={len(items)} ingested={ingested_count}")
+
             return SyncResult(
                 success=True,
                 items_fetched=len(items),
                 items_ingested=ingested_count,
                 last_sync_timestamp=now
             )
-            
+
         except Exception as e:
-            print(f"\n❌ [Gmail Sync] Failed: {e}")
-            import traceback
-            traceback.print_exc()
-            print("="*60 + "\n")
-            
+            logger.exception(f"[Gmail Sync] Failed: {e}")
             return SyncResult(
                 success=False,
                 errors=[str(e)]
@@ -478,8 +450,8 @@ class GmailConnector(BaseConnector):
                     headers={'content-type': 'application/x-www-form-urlencoded'}
                 )
             except Exception as e:
-                print(f"Error revoking token: {e}")
-        
+                logger.warning(f"Error revoking Gmail token: {e}")
+
         # Delete local files
         if self.token_file.exists():
             self.token_file.unlink()
@@ -529,7 +501,7 @@ class GmailConnector(BaseConnector):
             return creds if creds and creds.valid else None
             
         except Exception as e:
-            print(f"Error loading credentials: {e}")
+            logger.warning(f"Error loading Gmail credentials: {e}")
             return None
     
     # ========================================================================
@@ -565,7 +537,7 @@ class GmailConnector(BaseConnector):
                 email_data = self._email_to_structured_data(email)
                 processed_emails.append(email_data)
             except Exception as e:
-                print(f"Error processing email {email.get('id')}: {e}")
+                logger.warning(f"Error processing email {email.get('id')}: {e}")
                 continue
         
         # Update config with initial sync completion
@@ -589,22 +561,25 @@ class GmailConnector(BaseConnector):
             'emails': processed_emails
         }
 
-    def _sync_emails(self, max_results: int = 1, minutes: Optional[int] = None) -> Dict:
+    def _sync_emails(self, max_results: int = 50, minutes: Optional[int] = None) -> Dict:
         """
-        Sync most recent emails from inbox.
-        
+        Sync emails from inbox, optionally filtered by a lookback window.
+
         Args:
-            max_results: Maximum number of emails to fetch (default: 1)
-            minutes: NOT USED - we just fetch most recent emails
-            
+            max_results: Maximum number of emails to fetch
+            minutes: If set, only fetch emails from the last N minutes
+
         Returns:
             Dict with sync statistics
         """
         if not self.is_authenticated():
             raise Exception("Not authenticated. Please connect Gmail first.")
-        
-        # Simple query - just get most recent emails from inbox, no time filtering
-        query = f'in:inbox -in:spam -in:trash'
+
+        if minutes is not None:
+            after_ts = int((datetime.now() - timedelta(minutes=minutes)).timestamp())
+            query = f'after:{after_ts} in:inbox -in:spam -in:trash'
+        else:
+            query = 'in:inbox -in:spam -in:trash'
         
         # Fetch emails
         emails = self._fetch_emails(query, max_results)
@@ -616,7 +591,7 @@ class GmailConnector(BaseConnector):
                 email_data = self._email_to_structured_data(email)
                 processed_emails.append(email_data)
             except Exception as e:
-                print(f"Error processing email {email.get('id')}: {e}")
+                logger.warning(f"Error processing email {email.get('id')}: {e}")
                 continue
         
         # Update config with sync stats
@@ -661,7 +636,7 @@ class GmailConnector(BaseConnector):
                 email_data = self._email_to_structured_data(email)
                 processed_emails.append(email_data)
             except Exception as e:
-                print(f"Error processing email {email.get('id')}: {e}")
+                logger.warning(f"Error processing email {email.get('id')}: {e}")
                 continue
         
         return processed_emails
@@ -694,7 +669,7 @@ class GmailConnector(BaseConnector):
                 'connectedAt': config.get('connected_at')
             }
         except Exception as e:
-            print(f"Error getting status: {e}")
+            logger.warning(f"Error getting Gmail status: {e}")
             return {'connected': False, 'error': str(e)}
     
     # ========================================================================
@@ -722,13 +697,11 @@ class GmailConnector(BaseConnector):
         Returns:
             List of full email objects
         """
-        print(f"\n🔍 [Gmail API] Executing query...")
-        print(f"   - Query: {query}")
-        print(f"   - Max results: {max_results}")
-        
+        logger.debug(f"[Gmail API] query={query!r} max_results={max_results}")
+
         emails = []
         service = self._get_service()
-        
+
         try:
             # List message IDs
             results = service.users().messages().list(
@@ -736,19 +709,16 @@ class GmailConnector(BaseConnector):
                 q=query,
                 maxResults=max_results
             ).execute()
-            
+
             messages = results.get('messages', [])
             result_size_estimate = results.get('resultSizeEstimate', 0)
-            
-            print(f"   ✅ Gmail API returned {len(messages)} message IDs (resultSizeEstimate: {result_size_estimate})")
-            
+            logger.info(f"[Gmail API] {len(messages)} message IDs (estimate: {result_size_estimate})")
+
             if len(messages) == 0:
-                print(f"   ⚠️  No messages found matching the query")
-                print(f"   💡 Tip: Check if you have emails in your inbox from the specified time range")
+                logger.info("[Gmail API] No messages found matching the query")
                 return []
-            
+
             # Fetch full message for each ID
-            print(f"   📥 Fetching full content for {len(messages)} emails...")
             for i, msg in enumerate(messages, 1):
                 try:
                     message = service.users().messages().get(
@@ -757,22 +727,19 @@ class GmailConnector(BaseConnector):
                         format='full'
                     ).execute()
                     emails.append(message)
-                    if i % 10 == 0:  # Progress indicator every 10 emails
-                        print(f"      - Fetched {i}/{len(messages)} emails...")
+                    if i % 10 == 0:
+                        logger.debug(f"[Gmail API] Fetched {i}/{len(messages)} emails")
                 except HttpError as e:
-                    print(f"      ❌ Error fetching message {msg['id']}: {e}")
+                    logger.warning(f"[Gmail API] Error fetching message {msg['id']}: {e}")
                     continue
-            
-            print(f"   ✅ Successfully fetched {len(emails)} complete emails\n")
-        
+
+            logger.info(f"[Gmail API] Fetched {len(emails)} complete emails")
+
         except HttpError as e:
-            print(f"   ❌ Gmail API error: {e}")
-            print(f"   Details: {e.resp.status} - {e.reason}\n")
+            logger.error(f"[Gmail API] HTTP error: {e.resp.status} - {e.reason}")
         except Exception as e:
-            print(f"   ❌ Unexpected error: {e}")
-            import traceback
-            traceback.print_exc()
-        
+            logger.exception(f"[Gmail API] Unexpected error: {e}")
+
         return emails
     
     def _email_to_structured_data(self, email: Dict) -> Dict:
@@ -875,7 +842,7 @@ Gmail URL: {gmail_url}
             decoded = base64.urlsafe_b64decode(data)
             return decoded.decode('utf-8', errors='ignore')
         except Exception as e:
-            print(f"Error decoding base64: {e}")
+            logger.warning(f"Error decoding base64: {e}")
             return "(Error decoding content)"
     
     def _html_to_text(self, html: str) -> str:
@@ -887,7 +854,7 @@ Gmail URL: {gmail_url}
             h.ignore_emphasis = False
             return h.handle(html)
         except Exception as e:
-            print(f"Error converting HTML: {e}")
+            logger.warning(f"Error converting HTML: {e}")
             return html
     
     def _get_header(self, headers: List[Dict], name: str) -> Optional[str]:

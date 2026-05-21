@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, field
+from loguru import logger
 
 
 @dataclass
@@ -326,17 +327,16 @@ class BaseConnector(ABC):
                         'source': metadata.name,
                         'metadata': item.metadata,
                     },
-                    timeout=30
+                    timeout=120  # Agentic ingestion pipeline can take up to ~60s with retries
                 )
                 
                 if response.status_code == 200:
                     ingested += 1
                 else:
-                    print(f"Ingestion API error for {item.source_id}: {response.text}")
-                
+                    logger.error(f"Ingestion API error for {item.source_id}: {response.text}")
+
             except Exception as e:
-                # Log error but continue processing
-                print(f"Error ingesting item {item.source_id}: {e}")
+                logger.warning(f"Error ingesting item {item.source_id}: {e}")
                 continue
         
         return ingested

@@ -11,6 +11,7 @@ from typing import List, Dict
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from loguru import logger
 from utils.llm_client import LLMClient
 from utils.file_ops import list_vault_files, read_file
 
@@ -204,7 +205,7 @@ Remember:
             return response
             
         except Exception as e:
-            print(f"⚠️  Content analysis failed: {e}")
+            logger.warning(f"Content analysis failed: {e}")
             # Fallback
             return {
                 "source_citation": {

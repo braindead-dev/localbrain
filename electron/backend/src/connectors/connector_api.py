@@ -7,6 +7,8 @@ No more hardcoded routes per connector!
 All routes follow the pattern: /connectors/{connector_id}/{action}
 """
 
+import asyncio
+
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse
 from typing import Optional
@@ -262,7 +264,9 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
             should_ingest = ingest if ingest is not None else auto_ingest
             
             # Use generic sync for all connectors (BaseConnector handles ingestion)
-            result = manager.sync_connector(
+            # Run in thread pool to avoid blocking the async event loop
+            result = await asyncio.to_thread(
+                manager.sync_connector,
                 connector_id=connector_id,
                 auto_ingest=should_ingest,
                 limit=limit or max_results
@@ -294,7 +298,7 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
     async def sync_all_connectors(auto_ingest: bool = True):
         """Sync all connected connectors."""
         try:
-            results = manager.sync_all(auto_ingest=auto_ingest)
+            results = await asyncio.to_thread(manager.sync_all, auto_ingest=auto_ingest)
             
             return {
                 "success": True,
@@ -351,7 +355,8 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
             action_method = getattr(connector, f"action_{action_name}")
             
             # Parse request data
-            data = await request.json() if request.headers.get("content-type") == "application/json" else {}
+            content_type = request.headers.get("content-type", "")
+            data = await request.json() if content_type.startswith("application/json") else {}
             
             # Execute action
             result = action_method(**data)

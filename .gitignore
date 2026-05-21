@@ -8,7 +8,11 @@ credentials/*.json
 *.key
 *.secret
 
+# All .env files (any directory depth)
 *.env
+/.env
+remote-mcp/.env
+slack-bot/.env
 __pycache__/
 __pycache__
 electron/backend/src/core/mcp/__pycache__/
@@ -37,3 +41,6 @@ electron/backend/longmemeval_test/progress.log
 
 venv
 /electron/dist
+*.tex
+**/.DS_Store
+status.md

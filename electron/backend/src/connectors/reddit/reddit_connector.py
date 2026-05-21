@@ -13,6 +13,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -123,7 +124,7 @@ class RedditConnector(BaseConnector):
             return True
 
         except Exception as e:
-            print(f"Error checking for Reddit updates: {e}")
+            logger.warning(f"Error checking for Reddit updates: {e}")
             return False
 
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -163,7 +164,7 @@ class RedditConnector(BaseConnector):
                     ))
 
                 except Exception as e:
-                    print(f"Error processing Reddit post: {e}")
+                    logger.warning(f"Error processing Reddit post: {e}")
                     continue
 
             # Process comments
@@ -186,7 +187,7 @@ class RedditConnector(BaseConnector):
                     ))
 
                 except Exception as e:
-                    print(f"Error processing Reddit comment: {e}")
+                    logger.warning(f"Error processing Reddit comment: {e}")
                     continue
 
             # Sort by timestamp (most recent first)
@@ -195,7 +196,7 @@ class RedditConnector(BaseConnector):
             return connector_data
 
         except Exception as e:
-            print(f"Error fetching Reddit updates: {e}")
+            logger.error(f"Error fetching Reddit updates: {e}")
             return []
 
     def get_status(self) -> ConnectorStatus:
@@ -431,7 +432,7 @@ class RedditConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Token refresh failed: {response.text}")
+                logger.error(f"Reddit token refresh failed: {response.text}")
                 return None
 
             new_token_data = response.json()
@@ -442,7 +443,7 @@ class RedditConnector(BaseConnector):
             return new_token_data
 
         except Exception as e:
-            print(f"Error refreshing token: {e}")
+            logger.error(f"Error refreshing Reddit token: {e}")
             return None
 
     # ========================================================================
@@ -483,7 +484,7 @@ class RedditConnector(BaseConnector):
         )
 
         if response.status_code != 200:
-            print(f"Error fetching posts: {response.text}")
+            logger.error(f"Error fetching Reddit posts: {response.text}")
             return []
 
         data = response.json()
@@ -503,7 +504,7 @@ class RedditConnector(BaseConnector):
         )
 
         if response.status_code != 200:
-            print(f"Error fetching comments: {response.text}")
+            logger.error(f"Error fetching Reddit comments: {response.text}")
             return []
 
         data = response.json()

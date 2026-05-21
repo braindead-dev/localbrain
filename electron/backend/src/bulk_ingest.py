@@ -20,6 +20,7 @@ dotenv_path = Path(__file__).parent.parent / '.env'
 load_dotenv(dotenv_path)
 
 from anthropic import Anthropic
+from loguru import logger
 from utils.file_ops import read_file, write_file
 
 
@@ -29,14 +30,12 @@ class BulkIngestionPipeline:
     def __init__(self, vault_path: Path, model: str = "claude-haiku-4-5-20251001"):
         self.vault_path = Path(vault_path)
         self.model = model
-        self.client = Anthropic()
+        self.client = Anthropic(timeout=60.0)
         
         # Ensure vault exists
         self.vault_path.mkdir(parents=True, exist_ok=True)
         
-        print(f"🚀 Initialized bulk ingestion pipeline")
-        print(f"📂 Vault: {vault_path}")
-        print(f"🧠 Model: {model}")
+        logger.info(f"Initialized bulk ingestion pipeline | vault={vault_path} model={model}")
     
     def bulk_ingest(self, items: List[Dict[str, Any]], batch_size: int = 10) -> Dict:
         """
@@ -49,7 +48,7 @@ class BulkIngestionPipeline:
         Returns:
             Results dict with stats
         """
-        print(f"\n📥 Bulk ingesting {len(items)} items (batch_size={batch_size})")
+        logger.info(f"Bulk ingesting {len(items)} items (batch_size={batch_size})")
         
         # Group by source/platform for better batching
         grouped = self._group_by_source(items)
@@ -65,13 +64,13 @@ class BulkIngestionPipeline:
         
         # Process each group in batches
         for source, source_items in grouped.items():
-            print(f"\n📦 Processing {source}: {len(source_items)} items")
+            logger.info(f"Processing {source}: {len(source_items)} items")
             
             for i in range(0, len(source_items), batch_size):
                 batch = source_items[i:i+batch_size]
                 stats['batches_processed'] += 1
                 
-                print(f"  Batch {stats['batches_processed']}: {len(batch)} items")
+                logger.debug(f"Batch {stats['batches_processed']}: {len(batch)} items")
                 
                 try:
                     result = self._process_batch(batch, source)
@@ -80,14 +79,14 @@ class BulkIngestionPipeline:
                         stats['successful'] += len(batch)
                         stats['files_created'].update(result.get('files_created', []))
                         stats['files_updated'].update(result.get('files_updated', []))
-                        print(f"    ✅ Success: {result.get('files_affected', [])}")
+                        logger.info(f"Batch success: {result.get('files_affected', [])}")
                     else:
                         stats['failed'] += len(batch)
-                        print(f"    ❌ Failed: {result.get('error')}")
-                
+                        logger.warning(f"Batch failed: {result.get('error')}")
+
                 except Exception as e:
                     stats['failed'] += len(batch)
-                    print(f"    ❌ Error: {e}")
+                    logger.exception(f"Batch error: {e}")
         
         return {
             'success': True,

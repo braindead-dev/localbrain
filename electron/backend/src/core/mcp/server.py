@@ -461,7 +461,8 @@ if __name__ == "__main__":
     
     # Load environment variables from .env file
     # This MUST be done before loading the config
-    print(f"Loading environment variables from: {dotenv_path}")
+    # (loguru not available here since this runs before the server starts — using stderr)
+    import sys; print(f"Loading environment variables from: {dotenv_path}", file=sys.stderr)
     load_dotenv(dotenv_path=dotenv_path)
 
     # Load configuration

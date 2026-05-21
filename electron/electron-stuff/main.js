@@ -26,6 +26,41 @@ const DAEMON_URL = `http://127.0.0.1:${DAEMON_PORT}`;
 const MCP_PORT = 8766;
 const MCP_URL = `http://127.0.0.1:${MCP_PORT}`;
 
+// In production, backend is bundled as an extraResource under process.resourcesPath.
+// In development, it lives at electron/backend relative to this file's directory.
+const backendDir = isDev
+  ? path.join(__dirname, '../backend')
+  : path.join(process.resourcesPath, 'backend');
+
+// Locate the conda/venv Python, falling back to system python3.
+function findPythonCmd() {
+  const homeDir = require('os').homedir();
+  const condaPaths = [
+    // Homebrew-installed Anaconda/Miniconda (common on Apple Silicon Macs)
+    '/opt/homebrew/anaconda3/envs/localbrain/bin/python',
+    '/opt/homebrew/miniconda3/envs/localbrain/bin/python',
+    // Intel Mac Homebrew
+    '/usr/local/anaconda3/envs/localbrain/bin/python',
+    '/usr/local/miniconda3/envs/localbrain/bin/python',
+    // Home-directory installs
+    path.join(homeDir, 'miniconda3', 'envs', 'localbrain', 'bin', 'python'),
+    path.join(homeDir, 'anaconda3', 'envs', 'localbrain', 'bin', 'python'),
+    path.join(homeDir, 'miniforge3', 'envs', 'localbrain', 'bin', 'python'),
+    path.join(homeDir, 'mambaforge', 'envs', 'localbrain', 'bin', 'python'),
+    // /opt prefix variants
+    '/opt/miniconda3/envs/localbrain/bin/python',
+    '/opt/anaconda3/envs/localbrain/bin/python',
+  ];
+  for (const p of condaPaths) {
+    if (fs.existsSync(p)) {
+      console.log('Using conda python:', p);
+      return p;
+    }
+  }
+  console.log('⚠️  Could not find conda environment, using system python3');
+  return 'python3';
+}
+
 function createWindow() {
   // Create the browser window
   mainWindow = new BrowserWindow({
@@ -152,42 +187,17 @@ async function startDaemon() {
   const isPortInUse = await checkDaemonHealth();
   if (isPortInUse) {
     console.log('✅ Daemon already running on port 8765');
-    updateTrayStatus(true);
+    updateTrayStatus(true, false);
     return;
   }
 
-  const backendDir = path.join(__dirname, '../backend');
   const daemonScript = path.join(backendDir, 'src', 'daemon.py');
-  
+  const pythonCmd = findPythonCmd();
+
   console.log('Starting Python daemon...');
   console.log('Backend dir:', backendDir);
   console.log('Daemon script:', daemonScript);
 
-  // Use conda environment's python
-  // Check for conda environment first
-  const homeDir = require('os').homedir();
-  const condaPaths = [
-    path.join(homeDir, 'miniconda3', 'envs', 'localbrain', 'bin', 'python'),
-    path.join(homeDir, 'anaconda3', 'envs', 'localbrain', 'bin', 'python'),
-    path.join(homeDir, 'miniforge3', 'envs', 'localbrain', 'bin', 'python'),
-  ];
-  
-  let pythonCmd = 'python3'; // Fallback
-  
-  // Find conda python
-  for (const condaPath of condaPaths) {
-    if (fs.existsSync(condaPath)) {
-      pythonCmd = condaPath;
-      console.log('Using conda python:', pythonCmd);
-      break;
-    }
-  }
-  
-  if (pythonCmd === 'python3') {
-    console.log('⚠️  Could not find conda environment, using system python3');
-    console.log('   Make sure to run: conda create -n localbrain python=3.10');
-  }
-  
   daemonProcess = spawn(pythonCmd, [daemonScript], {
     cwd: backendDir,
     env: { ...process.env },
@@ -261,27 +271,11 @@ async function startMCPServer() {
     return;
   }
 
-  const backendDir = path.join(__dirname, '../backend');
   const mcpScript = 'src.core.mcp.server';
-  
+  const pythonCmd = findPythonCmd();
+
   console.log('Starting MCP server...');
 
-  // Use same conda python as daemon
-  const homeDir = require('os').homedir();
-  const condaPaths = [
-    path.join(homeDir, 'miniconda3', 'envs', 'localbrain', 'bin', 'python'),
-    path.join(homeDir, 'anaconda3', 'envs', 'localbrain', 'bin', 'python'),
-    path.join(homeDir, 'miniforge3', 'envs', 'localbrain', 'bin', 'python'),
-  ];
-  
-  let pythonCmd = 'python3';
-  for (const condaPath of condaPaths) {
-    if (fs.existsSync(condaPath)) {
-      pythonCmd = condaPath;
-      break;
-    }
-  }
-  
   mcpProcess = spawn(pythonCmd, ['-m', mcpScript], {
     cwd: backendDir,
     env: { ...process.env },

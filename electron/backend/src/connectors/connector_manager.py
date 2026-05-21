@@ -10,6 +10,7 @@ import inspect
 from pathlib import Path
 from typing import Dict, List, Optional, Type
 from datetime import datetime
+from loguru import logger
 
 from .base_connector import BaseConnector, ConnectorMetadata, ConnectorStatus, SyncResult
 
@@ -87,13 +88,11 @@ class ConnectorManager:
                         
                         # Register connector
                         self._registry[metadata.id] = obj
-                        print(f"✅ Discovered connector: {metadata.name} ({metadata.id})")
+                        logger.info(f"Discovered connector: {metadata.name} ({metadata.id})")
                         break
-                        
+
             except Exception as e:
-                print(f"⚠️  Failed to load connector from {item.name}: {e}")
-                import traceback
-                traceback.print_exc()
+                logger.warning(f"Failed to load connector from {item.name}: {e}")
                 continue
     
     def list_connectors(self) -> List[ConnectorMetadata]:
@@ -137,7 +136,7 @@ class ConnectorManager:
             self._instances[connector_id] = instance
             return instance
         except Exception as e:
-            print(f"Error creating connector instance for {connector_id}: {e}")
+            logger.error(f"Error creating connector instance for {connector_id}: {e}")
             return None
     
     def get_status(self, connector_id: str) -> Optional[ConnectorStatus]:

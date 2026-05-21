@@ -12,6 +12,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -33,10 +34,13 @@ REDIRECT_URI = 'http://localhost:8765/connectors/github/auth/callback'
 # GitHub API configuration
 GITHUB_API_BASE = 'https://api.github.com'
 
-# Scopes required for reading repositories and activity
+# NOTE: 'repo' grants full write access to private repos. GitHub OAuth has no
+# read-only private repo scope; fine-grained PATs would be more appropriate
+# but require a different auth flow. Users who only need public activity can
+# swap 'repo' for 'public_repo'.
 SCOPES = [
-    'repo',  # Full control of private repositories
-    'read:user'  # Read user profile data
+    'repo',       # Access private repo events (overly broad — no read-only alternative in OAuth)
+    'read:user',  # Read user profile data
 ]
 
 
@@ -118,7 +122,7 @@ class GitHubConnector(BaseConnector):
             return True
 
         except Exception as e:
-            print(f"Error checking for GitHub updates: {e}")
+            logger.warning(f"Error checking for GitHub updates: {e}")
             return False
 
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -158,13 +162,13 @@ class GitHubConnector(BaseConnector):
                         ))
 
                 except Exception as e:
-                    print(f"Error processing GitHub event {event.get('id')}: {e}")
+                    logger.warning(f"Error processing GitHub event {event.get('id')}: {e}")
                     continue
 
             return connector_data
 
         except Exception as e:
-            print(f"Error fetching GitHub updates: {e}")
+            logger.error(f"Error fetching GitHub updates: {e}")
             return []
 
     def get_status(self) -> ConnectorStatus:
@@ -389,7 +393,7 @@ class GitHubConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Error fetching events: {response.text}")
+                logger.error(f"Error fetching GitHub events: {response.text}")
                 break
 
             page_events = response.json()

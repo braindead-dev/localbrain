@@ -16,6 +16,7 @@ from datetime import datetime
 
 import os
 from anthropic import Anthropic
+from loguru import logger
 
 try:
     from src.utils.file_ops import read_file
@@ -43,7 +44,7 @@ class Search:
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY not found in environment")
-        self.client = Anthropic(api_key=api_key)
+        self.client = Anthropic(api_key=api_key, timeout=60.0)
         
     def search(self, query: str, max_results: int = 5) -> Dict:
         """
@@ -55,7 +56,7 @@ class Search:
         3. LLM reads relevant files
         4. LLM synthesizes answer
         """
-        print(f"🔍 Agentic search: {query}")
+        logger.info(f"Agentic search: {query}")
         
         # System prompt for search agent (OpenCode-inspired: ultra-concise)
         system_prompt = f"""You are a search agent. Answer questions by searching markdown files. Be direct.
@@ -153,7 +154,7 @@ Vault: {self.vault_path}"""
                         tool_input = content_block.input
                         tool_use_id = content_block.id
                         
-                        print(f"  🔧 Tool call: {tool_name}({tool_input})")
+                        logger.debug(f"Tool call: {tool_name}({tool_input})")
                         
                         # Execute tool
                         if tool_name == "grep_vault":
@@ -180,7 +181,7 @@ Vault: {self.vault_path}"""
                 
             else:
                 # LLM is done - extract context chunks
-                print(f"✅ Search complete ({iteration} iterations)")
+                logger.info(f"Search complete ({iteration} iterations)")
                 
                 # Extract files that were read
                 contexts = self._extract_contexts(messages)
@@ -303,7 +304,7 @@ Vault: {self.vault_path}"""
                     })
                     
                 except Exception as e:
-                    print(f"  ⚠️  Error extracting context: {e}")
+                    logger.warning(f"Error extracting context: {e}")
                     continue
         
         return contexts

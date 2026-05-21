@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
+from loguru import logger
 
 from connectors.base_connector import (
     BaseConnector,
@@ -95,7 +96,7 @@ class IMessageConnector(BaseConnector):
             return count > 0
 
         except Exception as e:
-            print(f"Error checking for iMessage updates: {e}")
+            logger.warning(f"Error checking for iMessage updates: {e}")
             return False
 
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -148,7 +149,7 @@ class IMessageConnector(BaseConnector):
                         }
                     ))
                 except Exception as e:
-                    print(f"Error processing message {msg.get('rowid')}: {e}")
+                    logger.warning(f"Error processing message {msg.get('rowid')}: {e}")
                     continue
 
             # Update last processed ROWID
@@ -158,7 +159,7 @@ class IMessageConnector(BaseConnector):
             return connector_data
 
         except Exception as e:
-            print(f"Error fetching iMessage updates: {e}")
+            logger.error(f"Error fetching iMessage updates: {e}")
             return []
 
     def get_status(self) -> ConnectorStatus:
@@ -322,7 +323,7 @@ class IMessageConnector(BaseConnector):
             conn.close()
 
         except Exception as e:
-            print(f"Error fetching messages from database: {e}")
+            logger.error(f"Error fetching messages from database: {e}")
 
         return messages
 

@@ -174,7 +174,7 @@ class MCPTools:
             response = await self.client.post(
                 f"{self.daemon_url}/protocol/ingest",
                 json={
-                    "context": request.content,
+                    "text": request.content,
                     "source_metadata": request.source_metadata or {},
                     "filename": request.filename
                 }

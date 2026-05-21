@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from loguru import logger
 from utils.llm_client import LLMClient
 from utils.file_ops import read_file, get_next_citation_number
 from utils.fuzzy_matcher import find_best_section_match
@@ -150,7 +151,7 @@ Return JSON with operations list."""
             return operations
             
         except Exception as e:
-            print(f"⚠️  Edit determination failed: {e}")
+            logger.warning(f"Edit determination failed: {e}")
             # Fallback: simple append
             return [{
                 "type": "append_to_end",
@@ -232,7 +233,7 @@ Return JSON with operations list."""
         
         if matched_section:
             section_name = matched_section
-            print(f"   Fuzzy matched '{section_name}' to '{matched_section}'")
+            logger.debug(f"Fuzzy matched section '{section_name}' to '{matched_section}'")
         
         lines = content.split('\n')
         

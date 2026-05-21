@@ -7,13 +7,14 @@ Stores config in ~/.localbrain/config.json
 import json
 from pathlib import Path
 from typing import Dict, Any, Optional
+from loguru import logger
 
 
 CONFIG_DIR = Path.home() / ".localbrain"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 DEFAULT_CONFIG = {
-    "vault_path": str(Path.home() / "Documents" / "GitHub" / "localbrain" / "my-vault"),
+    "vault_path": str(Path.home() / "LocalBrain"),
     "port": 8765,
     "auto_start": True,
 }
@@ -47,8 +48,7 @@ def load_config() -> Dict[str, Any]:
         
         return merged
     except Exception as e:
-        print(f"Error loading config: {e}")
-        print("Using default config")
+        logger.warning(f"Error loading config: {e} — using defaults")
         return DEFAULT_CONFIG.copy()
 
 
@@ -70,7 +70,7 @@ def save_config(config: Dict[str, Any]) -> bool:
         
         return True
     except Exception as e:
-        print(f"Error saving config: {e}")
+        logger.error(f"Error saving config: {e}")
         return False
 
 

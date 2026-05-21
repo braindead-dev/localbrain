@@ -8,6 +8,7 @@ from typing import Dict, Tuple
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from loguru import logger
 from utils.llm_client import LLMClient
 from utils.file_ops import read_file, get_next_citation_number
 
@@ -139,7 +140,7 @@ Now format the content:"""
             return markdown, citations
             
         except Exception as e:
-            print(f"⚠️  Content formatting failed: {e}")
+            logger.warning(f"Content formatting failed: {e}")
             # Fallback: simple format
             return f"{context} [{next_num}].", {
                 str(next_num): {
@@ -208,7 +209,7 @@ Content here with citations [1].
             return markdown, citations
             
         except Exception as e:
-            print(f"⚠️  New file formatting failed: {e}")
+            logger.warning(f"New file formatting failed: {e}")
             # Fallback: basic template
             markdown = f"""# {filename}
 

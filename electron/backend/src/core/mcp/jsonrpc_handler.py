@@ -201,11 +201,11 @@ class JSONRPCHandler:
         elif tool_name == "open":
             # Create OpenRequest object
             open_req = OpenRequest(file_path=arguments.get("file_path"))
-            result = await self.tools.open_file(open_req)
+            result = await self.tools.open(open_req)
         elif tool_name == "list":
             # Create ListRequest object
-            list_req = ListRequest(directory_path=arguments.get("directory_path", ""))
-            result = await self.tools.list_directory(list_req)
+            list_req = ListRequest(path=arguments.get("directory_path") or arguments.get("path") or None)
+            result = await self.tools.list(list_req)
         else:
             raise ValueError(f"Unknown tool: {tool_name}")
         

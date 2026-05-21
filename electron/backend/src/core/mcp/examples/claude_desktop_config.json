@@ -5,19 +5,7 @@
       "args": [
         "/absolute/path/to/localbrain/electron/backend/src/core/mcp/extension/start_servers.py",
         "--stdio"
-      ],
-      "env": {
-        "VAULT_PATH": "/absolute/path/to/your/vault"
-      }
-    },
-    "localbrain-remote": {
-      "url": "http://146.190.120.44:8767/mcp",
-      "transport": {
-        "type": "http"
-      },
-      "headers": {
-        "Authorization": "Bearer lb_test_key_123"
-      }
+      ]
     }
   }
 }

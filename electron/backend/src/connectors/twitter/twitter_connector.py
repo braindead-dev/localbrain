@@ -13,6 +13,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -125,7 +126,7 @@ class TwitterConnector(BaseConnector):
             return True
 
         except Exception as e:
-            print(f"Error checking for Twitter updates: {e}")
+            logger.warning(f"Error checking for Twitter updates: {e}")
             return False
 
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -163,13 +164,13 @@ class TwitterConnector(BaseConnector):
                     ))
 
                 except Exception as e:
-                    print(f"Error processing tweet {tweet.get('id')}: {e}")
+                    logger.warning(f"Error processing tweet {tweet.get('id')}: {e}")
                     continue
 
             return connector_data
 
         except Exception as e:
-            print(f"Error fetching Twitter updates: {e}")
+            logger.error(f"Error fetching Twitter updates: {e}")
             return []
 
     def get_status(self) -> ConnectorStatus:
@@ -407,7 +408,7 @@ class TwitterConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Token refresh failed: {response.text}")
+                logger.error(f"Twitter token refresh failed: {response.text}")
                 return None
 
             new_token_data = response.json()
@@ -418,7 +419,7 @@ class TwitterConnector(BaseConnector):
             return new_token_data
 
         except Exception as e:
-            print(f"Error refreshing token: {e}")
+            logger.error(f"Error refreshing Twitter token: {e}")
             return None
 
     # ========================================================================
@@ -481,7 +482,7 @@ class TwitterConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Error fetching tweets: {response.text}")
+                logger.error(f"Error fetching tweets: {response.text}")
                 break
 
             data = response.json()

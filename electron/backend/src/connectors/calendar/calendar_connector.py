@@ -11,6 +11,7 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -113,7 +114,7 @@ class CalendarConnector(BaseConnector):
             return len(events) > 0
             
         except Exception as e:
-            print(f"Error checking for Calendar updates: {e}")
+            logger.warning(f"Error checking for Calendar updates: {e}")
             return False
     
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -145,7 +146,7 @@ class CalendarConnector(BaseConnector):
             return connector_data
             
         except Exception as e:
-            print(f"Error fetching Calendar updates: {e}")
+            logger.error(f"Error fetching Calendar updates: {e}")
             return []
     
     def get_status(self) -> ConnectorStatus:
@@ -216,11 +217,11 @@ class CalendarConnector(BaseConnector):
             if is_first_sync:
                 # First sync: Get 1 week of past data
                 days_to_fetch = 7  # 1 week
-                print(f"📅 First Calendar sync - fetching {days_to_fetch} days of events...")
+                logger.info(f"[Calendar Sync] First sync — fetching {days_to_fetch} days of events")
             else:
                 # Regular sync: Get last 7 days
                 days_to_fetch = 7
-                print(f"📅 Regular Calendar sync - fetching {days_to_fetch} days of events...")
+                logger.info(f"[Calendar Sync] Regular sync — fetching {days_to_fetch} days of events")
             
             # Calculate time range
             now = datetime.now(timezone.utc)
@@ -241,17 +242,17 @@ class CalendarConnector(BaseConnector):
                         metadata=event_data['metadata']
                     ))
                 except Exception as e:
-                    print(f"Error processing event: {e}")
+                    logger.warning(f"Error processing Calendar event: {e}")
                     continue
-            
-            print(f"📥 Fetched {len(connector_data)} calendar events")
-            
+
+            logger.info(f"[Calendar Sync] Fetched {len(connector_data)} events")
+
             # Optionally ingest using Agentic Ingestion Pipeline
             ingested_count = 0
             if auto_ingest and self.vault_path:
-                print(f"🔄 Ingesting {len(connector_data)} events into vault...")
+                logger.info(f"[Calendar Sync] Ingesting {len(connector_data)} events")
                 ingested_count = self._ingest_data_agentic(connector_data)
-                print(f"✅ Ingested {ingested_count} events")
+                logger.info(f"[Calendar Sync] Ingested {ingested_count} events")
             
             # Update last sync timestamp
             now_timestamp = datetime.now()
@@ -363,7 +364,7 @@ class CalendarConnector(BaseConnector):
             
             user_email = primary_calendar.get('id', 'unknown@gmail.com') if primary_calendar else 'unknown@gmail.com'
         except Exception as e:
-            print(f"Error getting calendar info: {e}")
+            logger.warning(f"Error getting calendar info: {e}")
             user_email = 'unknown@gmail.com'
         
         # Initialize config
@@ -403,7 +404,7 @@ class CalendarConnector(BaseConnector):
                     headers={'content-type': 'application/x-www-form-urlencoded'}
                 )
             except Exception as e:
-                print(f"Error revoking token: {e}")
+                logger.warning(f"Error revoking Calendar token: {e}")
         
         # Delete local files
         if self.token_file.exists():
@@ -454,7 +455,7 @@ class CalendarConnector(BaseConnector):
             return creds if creds and creds.valid else None
             
         except Exception as e:
-            print(f"Error loading credentials: {e}")
+            logger.warning(f"Error loading Calendar credentials: {e}")
             return None
     
     # ========================================================================
@@ -488,7 +489,7 @@ class CalendarConnector(BaseConnector):
                 event_data = self._event_to_structured_data(event)
                 processed_events.append(event_data)
             except Exception as e:
-                print(f"Error processing event {event.get('id')}: {e}")
+                logger.warning(f"Error processing Calendar event {event.get('id')}: {e}")
                 continue
         
         # Update config with initial sync completion
@@ -542,7 +543,7 @@ class CalendarConnector(BaseConnector):
                 event_data = self._event_to_structured_data(event)
                 processed_events.append(event_data)
             except Exception as e:
-                print(f"Error processing event {event.get('id')}: {e}")
+                logger.warning(f"Error processing Calendar event {event.get('id')}: {e}")
                 continue
         
         # Update config with sync stats
@@ -590,7 +591,7 @@ class CalendarConnector(BaseConnector):
                 event_data = self._event_to_structured_data(event)
                 processed_events.append(event_data)
             except Exception as e:
-                print(f"Error processing event {event.get('id')}: {e}")
+                logger.warning(f"Error processing Calendar event {event.get('id')}: {e}")
                 continue
         
         return processed_events
@@ -630,7 +631,7 @@ class CalendarConnector(BaseConnector):
                 'connectedAt': config.get('connected_at')
             }
         except Exception as e:
-            print(f"Error getting status: {e}")
+            logger.warning(f"Error getting Calendar status: {e}")
             return {'connected': False, 'error': str(e)}
     
     # ========================================================================
@@ -690,11 +691,11 @@ class CalendarConnector(BaseConnector):
                     events.extend(calendar_events)
                     
                 except HttpError as e:
-                    print(f"Error fetching events from calendar {calendar_id}: {e}")
+                    logger.warning(f"Error fetching events from calendar {calendar_id}: {e}")
                     continue
-        
+
         except HttpError as e:
-            print(f"Error listing calendars: {e}")
+            logger.error(f"Error listing calendars: {e}")
         
         return events
     
@@ -739,18 +740,18 @@ class CalendarConnector(BaseConnector):
                     
                     if result.get('success', False):
                         ingested_count += 1
-                        print(f"✅ Ingested Calendar event: {item.metadata.get('quote', 'Event')[:50]}...")
+                        logger.info(f"Ingested Calendar event: {item.metadata.get('quote', 'Event')[:50]}")
                     else:
-                        print(f"⚠️  Failed to ingest Calendar event: {result.get('errors', ['Unknown error'])}")
-                        
+                        logger.warning(f"Failed to ingest Calendar event: {result.get('errors', ['Unknown error'])}")
+
                 except Exception as e:
-                    print(f"⚠️  Error ingesting Calendar item: {e}")
+                    logger.warning(f"Error ingesting Calendar item: {e}")
                     continue
-            
+
             return ingested_count
-            
+
         except Exception as e:
-            print(f"⚠️  Agentic ingestion failed, falling back to simple ingestion: {e}")
+            logger.warning(f"Agentic ingestion failed, falling back to simple ingestion: {e}")
             # Fallback to simple ingestion if agentic pipeline fails
             return self._ingest_data(items)
     

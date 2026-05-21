@@ -21,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
+from loguru import logger
 
 # Add src directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -129,10 +130,7 @@ class AgenticIngestionPipeline:
         self.citations = CitationManager()
         self.validator = MarkdownValidator()
         
-        print(f"🤖 Initialized agentic ingestion pipeline")
-        print(f"📂 Vault: {self.vault_path}")
-        print(f"🧠 Model: claude-haiku-4-5-20251001")
-        print(f"✨ Features: fuzzy matching, validation, retry (95% success)\n")
+        logger.info(f"Initialized agentic ingestion pipeline | vault={self.vault_path}")
     
     def ingest(
         self,
@@ -151,8 +149,7 @@ class AgenticIngestionPipeline:
         Returns:
             Dict with results {success, files_modified, files_created, errors}
         """
-        print(f"📥 Ingesting content...")
-        print(f"   Context preview: {context[:100]}...\n")
+        logger.info(f"Ingesting content: {context[:100]}...")
         
         # Default source metadata
         if source_metadata is None:
@@ -165,26 +162,22 @@ class AgenticIngestionPipeline:
         
         # Retry loop
         for attempt in range(max_retries):
-            print(f"{'='*60}")
-            print(f"🔄 Attempt {attempt + 1}/{max_retries}")
-            print(f"{'='*60}\n")
-            
+            logger.debug(f"Ingestion attempt {attempt + 1}/{max_retries}")
+
             try:
                 result = self._ingest_attempt(context, source_metadata)
-                
+
                 if result['success']:
                     # Validate all modified files
                     validation_errors = self._validate_all_files(result)
-                    
+
                     if not validation_errors:
-                        print(f"\n✅ SUCCESS on attempt {attempt + 1}")
+                        logger.info(f"Ingestion succeeded on attempt {attempt + 1}")
                         return result
-                    
+
                     # Validation failed, try to fix
-                    print(f"\n⚠️  Validation errors on attempt {attempt + 1}:")
-                    for error in validation_errors:
-                        print(f"   - {error}")
-                    
+                    logger.warning(f"Validation errors on attempt {attempt + 1}: {validation_errors}")
+
                     if attempt < max_retries - 1:
                         # Feed errors back for retry
                         context = self._create_retry_context(
@@ -192,13 +185,13 @@ class AgenticIngestionPipeline:
                             validation_errors,
                             source_metadata
                         )
-                        print(f"\n🔁 Retrying with error feedback...\n")
+                        logger.debug("Retrying with error feedback...")
                     else:
                         result['errors'].extend(validation_errors)
                         return result
                 else:
                     # Ingestion failed
-                    print(f"\n❌ Attempt {attempt + 1} failed: {result['errors']}")
+                    logger.warning(f"Attempt {attempt + 1} failed: {result['errors']}")
                     if attempt < max_retries - 1:
                         context = self._create_retry_context(
                             context,
@@ -207,12 +200,10 @@ class AgenticIngestionPipeline:
                         )
                     else:
                         return result
-                        
+
             except Exception as e:
                 error_msg = f"Attempt {attempt + 1} exception: {str(e)}"
-                print(f"\n❌ {error_msg}")
-                import traceback
-                traceback.print_exc()
+                logger.exception(error_msg)
                 
                 if attempt == max_retries - 1:
                     return {
@@ -239,35 +230,26 @@ class AgenticIngestionPipeline:
         }
         
         # STEP 1: Analyze and create edit plans
-        print("🎯 Analyzing content...")
+        logger.debug("Analyzing content...")
         analysis = self.analyzer.analyze_and_route(
             self.vault_path,
             context,
             source_metadata
         )
-        
+
         source_citation = analysis['source_citation']
         edit_plans = analysis['edits']
-        
-        print(f"   Created {len(edit_plans)} edit plan(s):")
-        for plan in edit_plans:
-            print(f"   - {plan['action'].upper()}: {plan['file']} ({plan['priority']})")
-            if plan['action'] == 'update_citation':
-                print(f"     Search: {plan.get('search_text', '')[:40]}...")
-                print(f"     Replace: {plan.get('replace_with', '')[:40]}...")
-            else:
-                print(f"     Content: {plan.get('content', '')[:60]}...")
-            print(f"     Reason: {plan.get('reason', 'N/A')}")
-        
+
+        logger.debug(f"Created {len(edit_plans)} edit plan(s)")
+
         # STEP 2: Apply each edit
-        print()
         for plan in edit_plans:
             file_path = self.vault_path / plan['file']
             action = plan['action']
             content = plan.get('content', '')
-            
-            print(f"📝 Processing: {plan['file']}")
-            
+
+            logger.debug(f"Processing {plan['action'].upper()}: {plan['file']}")
+
             try:
                 if action == 'create':
                     success = self._create_file(file_path, content, plan)
@@ -287,31 +269,29 @@ class AgenticIngestionPipeline:
             
             except Exception as e:
                 error_msg = f"Error processing {plan['file']}: {str(e)}"
-                print(f"   ⚠️  {error_msg}")
+                logger.warning(error_msg)
                 results['errors'].append(error_msg)
-        
+
         # STEP 3: Add citations
-        print()
-        print("📚 Adding citations...")
+        logger.debug("Adding citations...")
         files_with_citation = self._add_citation_to_files(
             edit_plans,
             source_citation
         )
-        print(f"   ✅ Added citation to {len(files_with_citation)} file(s)")
-        
+        logger.debug(f"Added citation to {len(files_with_citation)} file(s)")
+
         # Success if we made changes OR if no edits (duplicate detection)
         files_changed = len(results['files_modified']) + len(results['files_created'])
         results['success'] = files_changed > 0 or len(edit_plans) == 0
-        
-        # Provide feedback on duplicate detection
+
         if len(edit_plans) == 0:
-            print(f"\n💡 No edits needed - content appears to be duplicate or already exists")
+            logger.debug("No edits needed - content appears to be duplicate or already exists")
         
         return results
     
     def _create_file(self, file_path: Path, content: str, plan: Dict) -> bool:
         """Create new file with content."""
-        print(f"   Creating new file...")
+        logger.debug(f"Creating new file: {file_path.name}")
         
         filename = file_path.stem
         
@@ -327,17 +307,14 @@ class AgenticIngestionPipeline:
         # Write file
         file_path.parent.mkdir(parents=True, exist_ok=True)
         write_file(file_path, full_content)
-        print(f"   ✅ Created: {file_path.name}")
+        logger.info(f"Created: {file_path.name}")
         
         return True
     
     def _edit_file(self, file_path: Path, content: str, plan: Dict) -> bool:
         """Edit existing file by appending content."""
-        print(f"   Appending to file...")
-        
-        # Check if file exists
         if not file_path.exists():
-            print(f"   File doesn't exist, creating instead...")
+            logger.debug(f"File doesn't exist, creating: {file_path.name}")
             return self._create_file(file_path, content, plan)
         
         # Read existing content
@@ -353,16 +330,14 @@ class AgenticIngestionPipeline:
         
         # Write updated file
         write_file(file_path, new_content)
-        print(f"   ✅ Updated: {file_path.name}")
+        logger.info(f"Updated: {file_path.name}")
         
         return True
     
     def _update_citation(self, file_path: Path, plan: Dict, source_citation: Dict) -> bool:
         """Update existing text to add citation reference."""
-        print(f"   Updating citation on existing fact...")
-        
         if not file_path.exists():
-            print(f"   File doesn't exist, skipping...")
+            logger.debug(f"File doesn't exist, skipping citation update: {file_path.name}")
             return False
         
         content = read_file(file_path)
@@ -370,11 +345,11 @@ class AgenticIngestionPipeline:
         replace_with = plan.get('replace_with', '')
         
         if not search_text or not replace_with:
-            print(f"   Missing search_text or replace_with, skipping...")
+            logger.debug("Missing search_text or replace_with, skipping citation update")
             return False
-        
+
         if search_text not in content:
-            print(f"   Search text not found, skipping...")
+            logger.debug(f"Search text not found in {file_path.name}, skipping")
             return False
         
         # Get next citation number
@@ -399,7 +374,7 @@ class AgenticIngestionPipeline:
         # Replace and write
         new_content = content.replace(search_text, replace_with_correct)
         write_file(file_path, new_content)
-        print(f"   ✅ Updated citation in: {file_path.name} (added [{next_num}])")
+        logger.info(f"Updated citation in {file_path.name} (added [{next_num}])")
         
         return True
     

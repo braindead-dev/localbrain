@@ -1,9 +1,7 @@
-import logging
 from datetime import datetime
 from typing import List, Dict
+from loguru import logger
 from agentic_ingest import AgenticIngestionPipeline
-
-logger = logging.getLogger(__name__)
 
 def ingest_browser_data(items: List[Dict], vault_path: str) -> Dict:
     """

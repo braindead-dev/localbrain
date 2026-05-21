@@ -135,6 +135,6 @@ Critical guardrails:
             if len(text) > 1000:
                 text = text[:1000] + "..."
 
-            formatted.append(f"[Source {idx}: {file}]\\n{text}")
+            formatted.append(f"[Source {idx}: {file}]\n{text}")
 
-        return "\\n\\n---\\n\\n".join(formatted)
+        return "\n\n---\n\n".join(formatted)

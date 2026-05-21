@@ -129,7 +129,7 @@ def main():
     except requests.exceptions.ConnectionError:
         logger.error("Failed to connect to daemon. Is it running?")
         print("Error: LocalBrain daemon is not running")
-        print("Start it with: python src/tray.py")
+        print("Start it with: python src/daemon.py")
         sys.exit(1)
     
     except Exception as e:

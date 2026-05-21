@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from loguru import logger
 from utils.llm_client import LLMClient
 from utils.file_ops import list_vault_files
 
@@ -122,7 +123,7 @@ Return the JSON array of file selections."""
             return selections
             
         except Exception as e:
-            print(f"⚠️  File selection failed: {e}")
+            logger.warning(f"File selection failed: {e}")
             # Fallback: create a simple selection
             return [{
                 "action": "append",

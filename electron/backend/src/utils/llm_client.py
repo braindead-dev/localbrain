@@ -20,7 +20,7 @@ class LLMClient:
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY not found in environment")
         
-        self.client = Anthropic(api_key=api_key)
+        self.client = Anthropic(api_key=api_key, timeout=60.0)
         self.model = model
     
     def call(self, prompt: str, system: str = None, max_tokens: int = 2048, temperature: float = 0.0) -> str:

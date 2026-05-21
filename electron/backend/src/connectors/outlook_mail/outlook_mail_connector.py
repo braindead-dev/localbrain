@@ -12,6 +12,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -116,14 +117,14 @@ class OutlookMailConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Error checking for updates: {response.text}")
+                logger.warning(f"Error checking for Outlook Mail updates: {response.text}")
                 return False
 
             data = response.json()
             return len(data.get('value', [])) > 0
 
         except Exception as e:
-            print(f"Error checking for Outlook Mail updates: {e}")
+            logger.warning(f"Error checking for Outlook Mail updates: {e}")
             return False
 
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -160,13 +161,13 @@ class OutlookMailConnector(BaseConnector):
                     ))
 
                 except Exception as e:
-                    print(f"Error processing email {email.get('id')}: {e}")
+                    logger.warning(f"Error processing Outlook Mail email {email.get('id')}: {e}")
                     continue
 
             return connector_data
 
         except Exception as e:
-            print(f"Error fetching Outlook Mail updates: {e}")
+            logger.error(f"Error fetching Outlook Mail updates: {e}")
             return []
 
     def get_status(self) -> ConnectorStatus:
@@ -395,7 +396,7 @@ class OutlookMailConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Token refresh failed: {response.text}")
+                logger.error(f"Outlook Mail token refresh failed: {response.text}")
                 return None
 
             new_token_data = response.json()
@@ -406,7 +407,7 @@ class OutlookMailConnector(BaseConnector):
             return new_token_data
 
         except Exception as e:
-            print(f"Error refreshing token: {e}")
+            logger.error(f"Error refreshing Outlook Mail token: {e}")
             return None
 
     # ========================================================================
@@ -464,7 +465,7 @@ class OutlookMailConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Error fetching emails: {response.text}")
+                logger.error(f"Error fetching Outlook Mail emails: {response.text}")
                 break
 
             data = response.json()

@@ -11,9 +11,9 @@ Usage:
     python src/daemon.py
 """
 
+import os
 import sys
 import json
-import logging
 import asyncio
 import subprocess
 from pathlib import Path
@@ -24,8 +24,12 @@ from typing import Dict, Optional, List
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import uvicorn
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment
 dotenv_path = Path(__file__).parent.parent / '.env'
@@ -43,16 +47,8 @@ from utils.file_ops import read_file
 from config import load_config, update_config, get_vault_path
 from connectors.browser.ingest import ingest_browser_data
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/tmp/localbrain-daemon.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger('localbrain-daemon')
+# Setup loguru — write to both stderr and a log file
+logger.add('/tmp/localbrain-daemon.log', rotation='10 MB', retention='7 days', level='INFO')
 
 # Load config first
 CONFIG = load_config()
@@ -61,6 +57,11 @@ PORT = CONFIG.get('port', 8765)
 
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
+
+# Rate limiting — prevents runaway Claude API cost from looping clients
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # MCP process tracking
 mcp_process: Optional[subprocess.Popen] = None
@@ -158,12 +159,12 @@ async def auto_sync_calendar():
         # Wait 1 hour before next sync
         await asyncio.sleep(3600)  # 3600 seconds = 1 hour
 
-@app.on_event("startup")
+@app.on_event("startup")  # type: ignore[arg-type]  # FastAPI deprecated but still functional until v1
 async def startup_event():
     """Start background tasks on app startup."""
-    # DISABLED: Auto-sync removed - all syncing is now manual only
-    # asyncio.create_task(auto_sync_connectors())
-    logger.info("⚠️  Auto-sync DISABLED - all syncing is manual only")
+    asyncio.create_task(auto_sync_connectors())
+    asyncio.create_task(auto_sync_calendar())
+    logger.info("✅ Auto-sync enabled: all connectors every 10min, calendar every 1hr")
 
 
 @app.get("/health")
@@ -174,14 +175,14 @@ async def health_check():
 
 @app.post("/mcp/start")
 async def start_mcp():
-    """Start the MCP server with remote tunnel."""
+    """Start the local MCP server."""
     global mcp_process
     
     if mcp_process and mcp_process.poll() is None:
         return {"success": True, "message": "MCP already running", "pid": mcp_process.pid}
     
     try:
-        # Start the MCP server launcher (includes tunnel)
+        # Start the local MCP server launcher
         backend_dir = Path(__file__).parent.parent
         launcher_path = backend_dir / "src" / "core" / "mcp" / "extension" / "start_servers.py"
         
@@ -306,6 +307,7 @@ async def update_config_endpoint(request: Request):
 
 
 @app.post("/protocol/ingest")
+@limiter.limit("10/minute")
 async def handle_ingest(request: Request):
     """
     Handle localbrain://ingest protocol requests.
@@ -493,6 +495,7 @@ async def handle_bulk_ingest(request: Request):
 
 
 @app.post("/protocol/search")
+@limiter.limit("30/minute")
 async def handle_search(request: Request):
     """
     Handle localbrain://search protocol requests.
@@ -551,6 +554,7 @@ async def handle_search(request: Request):
 
 
 @app.post("/protocol/ask")
+@limiter.limit("20/minute")
 async def handle_ask(request: Request):
     """
     Handle conversational queries with answer synthesis.
@@ -676,16 +680,12 @@ def _should_respond_to_message(
         topics_str = ",".join(triggered_topics)
         return True, f"trending_topic:{topics_str}"
 
-    # If we found relevant contexts with good scores, user likely has knowledge about this
+    # If we found any relevant contexts, assume user has knowledge about this
+    # NOTE: agentic search does not return a score field; using context count as proxy
     if contexts and len(contexts) > 0:
-        # Check if any context has a good relevance score
-        top_score = max(ctx.get('score', 0) for ctx in contexts)
-        if top_score > 0.7:  # High relevance threshold
-            return True, f"high_relevance:{top_score:.2f}"
-        elif top_score > 0.5:  # Medium relevance
-            return True, f"medium_relevance:{top_score:.2f}"
+        return True, f"has_contexts:{len(contexts)}"
 
-    # If no good contexts found, user probably doesn't have relevant info
+    # If no contexts found, user probably doesn't have relevant info
     return False, "no_relevant_knowledge"
 
 
@@ -824,6 +824,22 @@ async def handle_slack_answer(request: Request):
         )
 
 
+def _verify_slack_signature(signing_secret: str, timestamp: str, raw_body: str, slack_sig: str) -> bool:
+    """Verify Slack request using HMAC-SHA256 signing secret."""
+    import hashlib, hmac as _hmac, time as _time
+    try:
+        # Reject stale requests (>5 minutes old) to prevent replay attacks
+        if abs(_time.time() - int(timestamp)) > 300:
+            return False
+        sig_base = f"v0:{timestamp}:{raw_body}"
+        expected = "v0=" + _hmac.new(
+            signing_secret.encode(), sig_base.encode(), hashlib.sha256
+        ).hexdigest()
+        return _hmac.compare_digest(expected, slack_sig)
+    except Exception:
+        return False
+
+
 @app.post("/protocol/slack/webhook")
 async def handle_slack_webhook(request: Request):
     """
@@ -854,11 +870,22 @@ async def handle_slack_webhook(request: Request):
             ...
         }
 
-    Note: For production use, you should verify the Slack request signature
-    using the signing secret. This basic implementation is for development.
+    Requires SLACK_SIGNING_SECRET env var for request signature verification.
     """
     try:
-        body = await request.json()
+        raw_body = await request.body()
+        body = json.loads(raw_body)
+
+        # Verify Slack request signature (skip for url_verification challenge if secret not set)
+        signing_secret = os.getenv("SLACK_SIGNING_SECRET", "")
+        if signing_secret:
+            slack_sig = request.headers.get("X-Slack-Signature", "")
+            slack_ts = request.headers.get("X-Slack-Request-Timestamp", "")
+            if not _verify_slack_signature(signing_secret, slack_ts, raw_body.decode(), slack_sig):
+                logger.warning("Slack webhook: invalid signature — request rejected")
+                return JSONResponse(status_code=403, content={"error": "Invalid signature"})
+        else:
+            logger.warning("SLACK_SIGNING_SECRET not set — skipping signature verification")
 
         # Handle URL verification challenge (initial Slack setup)
         if body.get('type') == 'url_verification':
@@ -910,13 +937,17 @@ async def handle_slack_webhook(request: Request):
 
             if not search_result.get('success'):
                 error_msg = "Sorry, I'm having trouble searching my notes right now."
-                # TODO: In production, post this response back to Slack via chat.postMessage API
                 logger.error(f"Search failed for Slack webhook: {search_result.get('error')}")
-                return JSONResponse(content={
-                    'ok': True,
-                    'response': error_msg,
-                    'note': 'Post this response to Slack via chat.postMessage API'
-                })
+                slack_bot_token = os.getenv("SLACK_BOT_TOKEN")
+                if slack_bot_token and channel_id:
+                    try:
+                        from slack_sdk import WebClient as SlackWebClient
+                        SlackWebClient(token=slack_bot_token).chat_postMessage(
+                            channel=channel_id, text=error_msg, thread_ts=thread_ts
+                        )
+                    except Exception:
+                        pass
+                return JSONResponse(content={'ok': True})
 
             contexts = search_result.get('contexts', [])
 
@@ -938,16 +969,24 @@ async def handle_slack_webhook(request: Request):
 
             logger.info(f"✅ Slack webhook answer generated: {answer[:100]}...")
 
-            # Return response
-            # Note: For actual Slack integration, you should POST the answer back to Slack
-            # using the Slack Web API (chat.postMessage) with the channel_id and thread_ts
-            return JSONResponse(content={
-                'ok': True,
-                'answer': answer,
-                'channel': channel_id,
-                'thread_ts': thread_ts,
-                'note': 'Use Slack Web API to post this answer back to the channel/thread'
-            })
+            # Post answer back to Slack
+            slack_bot_token = os.getenv("SLACK_BOT_TOKEN")
+            if slack_bot_token:
+                try:
+                    from slack_sdk import WebClient as SlackWebClient
+                    slack_client = SlackWebClient(token=slack_bot_token)
+                    slack_client.chat_postMessage(
+                        channel=channel_id,
+                        text=answer,
+                        thread_ts=thread_ts
+                    )
+                    logger.info(f"✅ Slack answer posted to channel {channel_id}")
+                except Exception as slack_err:
+                    logger.error(f"Failed to post Slack response: {slack_err}")
+            else:
+                logger.warning("SLACK_BOT_TOKEN not set — answer synthesized but not posted to Slack")
+
+            return JSONResponse(content={'ok': True})
 
         # Unknown event type
         logger.warning(f"Unknown Slack webhook type: {body.get('type')}")

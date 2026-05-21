@@ -9,6 +9,16 @@ Usage:
     python start_servers.py --stdio      # Claude Desktop mode (auto-starts servers + stdio bridge)
 
 Stop with Ctrl+C to cleanly shut down both servers.
+
+Claude Desktop config (~/.config/claude/claude_desktop_config.json):
+    {
+      "mcpServers": {
+        "localbrain": {
+          "command": "python",
+          "args": ["/absolute/path/to/localbrain/electron/backend/src/core/mcp/extension/start_servers.py", "--stdio"]
+        }
+      }
+    }
 """
 
 import sys
@@ -19,31 +29,15 @@ import argparse
 from pathlib import Path
 
 
-# Import tunnel manager
-try:
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-    from tunnel_manager import TunnelManager
-    TUNNEL_AVAILABLE = True
-except ImportError:
-    TUNNEL_AVAILABLE = False
-    TunnelManager = None
-
-
 class ServerLauncher:
-    """Manages starting and stopping daemon, MCP server, and remote tunnel."""
+    """Manages starting and stopping daemon and MCP server."""
 
-    def __init__(self, stdio_mode=False, enable_tunnel=True):
+    def __init__(self, stdio_mode=False):
         self.daemon_process = None
         self.mcp_process = None
         self.stdio_process = None
-        self.tunnel_manager = None
         self.stdio_mode = stdio_mode
-        self.enable_tunnel = enable_tunnel and TUNNEL_AVAILABLE
         self.running = True
-
-        # Initialize tunnel manager if enabled
-        if self.enable_tunnel:
-            self.tunnel_manager = TunnelManager()
 
         # Register signal handlers for clean shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -109,11 +103,6 @@ class ServerLauncher:
 
     def stop_servers(self):
         """Stop all servers gracefully."""
-        # Stop tunnel first
-        if self.tunnel_manager and self.tunnel_manager.is_running():
-            print("🛑 Stopping remote MCP tunnel...", file=sys.stderr)
-            self.tunnel_manager.stop()
-        
         # Stop stdio bridge (if running)
         if self.stdio_process:
             print("🛑 Stopping stdio bridge...", file=sys.stderr)
@@ -217,17 +206,6 @@ class ServerLauncher:
         print("⏳ Waiting for MCP server to initialize...")
         time.sleep(2)
 
-        # Start remote tunnel if enabled
-        tunnel_status = "❌ Disabled"
-        if self.enable_tunnel and self.tunnel_manager:
-            print("🚀 Starting remote MCP tunnel...")
-            if self.tunnel_manager.start():
-                time.sleep(2)  # Wait for tunnel to connect
-                tunnel_status = "✅ Connected"
-            else:
-                tunnel_status = "⚠️  Failed (local-only)"
-                print("⚠️  Tunnel failed to start, continuing in local-only mode...")
-
         print()
         print("=" * 70)
         print("✅ LocalBrain MCP Ready!")
@@ -235,9 +213,6 @@ class ServerLauncher:
         print()
         print("🌐 Daemon:       http://127.0.0.1:8765")
         print("🌐 MCP Server:   http://127.0.0.1:8766")
-        print(f"🌍 Remote MCP:   {tunnel_status}")
-        if tunnel_status == "✅ Connected":
-            print("   Remote URL:   http://146.190.120.44:8767/mcp")
         print()
         print("📝 Press Ctrl+C to stop all servers")
         print("=" * 70)
@@ -348,6 +323,7 @@ For Claude Desktop integration, add to claude_desktop_config.json:
 
     launcher = ServerLauncher(stdio_mode=args.stdio)
     success = launcher.run()
+
     sys.exit(0 if success else 1)
 
 

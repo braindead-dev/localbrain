@@ -13,6 +13,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 from dotenv import load_dotenv
+from loguru import logger
 
 # Load environment variables
 load_dotenv()
@@ -105,7 +106,7 @@ class NotionConnector(BaseConnector):
                 return len(results) > 0
 
         except Exception as e:
-            print(f"Error checking for Notion updates: {e}")
+            logger.warning(f"Error checking for Notion updates: {e}")
             return False
 
     def fetch_updates(self, since: Optional[datetime] = None, limit: Optional[int] = None) -> List[ConnectorData]:
@@ -141,13 +142,13 @@ class NotionConnector(BaseConnector):
                         ))
 
                 except Exception as e:
-                    print(f"Error processing Notion item {item.get('id')}: {e}")
+                    logger.warning(f"Error processing Notion item {item.get('id')}: {e}")
                     continue
 
             return connector_data
 
         except Exception as e:
-            print(f"Error fetching Notion updates: {e}")
+            logger.error(f"Error fetching Notion updates: {e}")
             return []
 
     def get_status(self) -> ConnectorStatus:
@@ -370,7 +371,7 @@ class NotionConnector(BaseConnector):
             )
 
             if response.status_code != 200:
-                print(f"Search failed: {response.text}")
+                logger.error(f"Notion search failed: {response.text}")
                 break
 
             data = response.json()
