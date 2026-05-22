@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, Tray, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Menu, Tray, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
@@ -465,6 +465,10 @@ function updateTrayStatus(daemonRunning, mcpRunning) {
 }
 
 // IPC handlers
+ipcMain.handle('open-external', (event, url) => {
+  shell.openExternal(url);
+});
+
 ipcMain.handle('select-directory', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory'],

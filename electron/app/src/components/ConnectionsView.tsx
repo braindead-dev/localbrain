@@ -5,13 +5,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { ScrollArea } from "./ui/scroll-area";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
-import { 
-  Plug, 
-  Search, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  Plug,
+  Search,
+  CheckCircle2,
+  XCircle,
   Loader2,
   Mail,
   MessageSquare,
@@ -44,16 +43,41 @@ const iconMap: Record<string, any> = {
   browser_history: Globe,
 };
 
+// Connectors to hide — stubs/unimplemented or merged into another entry
+const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar']);
+
+// Pinned connectors shown first, in order
+const PINNED_ORDER = ['gmail', 'calendar'];
+
+// Display name overrides (e.g. outlook_mail → "Outlook")
+const DISPLAY_NAME_OVERRIDES: Record<string, string> = {
+  outlook_mail: 'Outlook',
+};
+
+// After connecting these connectors, also silently connect their companion
+const COMPANION_CONNECTORS: Record<string, string> = {
+  outlook_mail: 'outlook_calendar',
+};
+
+// Button label for each connector's sign-in action
+const SIGN_IN_LABELS: Record<string, string> = {
+  gmail: 'Sign in with Google',
+  calendar: 'Sign in with Google',
+  github: 'Sign in with GitHub',
+  notion: 'Sign in with Notion',
+  reddit: 'Sign in with Reddit',
+  twitter: 'Connect X',
+  outlook_mail: 'Sign in with Microsoft',
+};
+
 export function ConnectionsView() {
   const [connectors, setConnectors] = useState<Connector[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Load connectors on mount
   useEffect(() => {
@@ -67,37 +91,26 @@ export function ConnectionsView() {
     try {
       const response = await api.listConnectors();
       if (response.success) {
-        // Get status for each connector
+        // Filter out stub/unimplemented connectors and get status for each
         const connectorsWithStatus = await Promise.all(
-          response.connectors.map(async (conn: any) => {
-            try {
-              const status = await api.connectorStatus(conn.id);
-              return {
-                ...conn,
-                connected: status.status?.connected || false,
-                authenticated: status.status?.authenticated || false,
-                last_sync: status.status?.last_sync,
-              };
-            } catch {
-              return { ...conn, connected: false, authenticated: false };
-            }
-          })
+          response.connectors
+            .filter((conn: any) => !HIDDEN_CONNECTORS.has(conn.id))
+            .map(async (conn: any) => {
+              try {
+                const status = await api.connectorStatus(conn.id);
+                return {
+                  ...conn,
+                  connected: status.status?.connected || false,
+                  authenticated: status.status?.authenticated || false,
+                  last_sync: status.status?.last_sync,
+                };
+              } catch {
+                return { ...conn, connected: false, authenticated: false };
+              }
+            })
         );
 
-        // Add dummy Browser History connector
-        const dummyBrowserHistoryConnector: Connector = {
-          id: "browser_history",
-          name: "Browser History",
-          description: "Connect to browser history to sync your browsing.",
-          version: "1.0.0",
-          auth_type: "file",
-          requires_config: true,
-          capabilities: ["history"],
-          connected: false,
-          authenticated: false,
-        };
-
-        setConnectors([...connectorsWithStatus, dummyBrowserHistoryConnector]);
+        setConnectors(connectorsWithStatus);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load connectors");
@@ -121,73 +134,75 @@ export function ConnectionsView() {
 
   const handleConnect = async (connectorIdOrConnector: string | Connector) => {
     try {
-      // Handle both string ID and Connector object for backward compatibility
       const connector = typeof connectorIdOrConnector === 'string'
         ? connectors.find(c => c.id === connectorIdOrConnector)
         : connectorIdOrConnector;
 
       if (!connector) {
         toast.error("Connector not found");
-        setError("Connector not found");
         return;
       }
 
-      console.log(`🔵 Connecting ${connector.id}...`, { auth_type: connector.auth_type });
-
-      if (connector.id === 'imessage' || connector.id === 'browser_history') {
+      if (connector.id === 'imessage') {
         setSelectedConnector(connector);
         setShowFileDialog(true);
-      } else if (connector.auth_type === 'oauth') {
-        console.log(`🔵 Starting OAuth flow for ${connector.id}...`);
-        const toastId = toast.loading(`Opening authentication window for ${connector.name}...`);
+        return;
+      }
+
+      if (connector.auth_type === 'oauth') {
+        const toastId = toast.loading(`Opening sign-in window...`);
 
         const authResult = await api.connectorAuthStart(connector.id);
-        console.log(`🔵 Auth result for ${connector.id}:`, authResult);
 
         if (authResult.success && authResult.auth_url) {
-          console.log(`🔵 Opening OAuth window for ${connector.id}:`, authResult.auth_url);
-          toast.success(`Opening authentication window...`, { id: toastId });
+          toast.dismiss(toastId);
 
-          // Open OAuth URL in new window
-          const authWindow = window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
+          // Open in the user's real system browser so passkeys, saved passwords,
+          // and existing sessions all work. Electron popups block WebAuthn/passkeys.
+          (window as any).electron?.openExternal(authResult.auth_url);
 
-          if (!authWindow) {
-            toast.error("Failed to open authentication window. Please check your popup blocker.", { id: toastId });
-            return;
-          }
-
-          // Reload connectors and auto-sync after OAuth completes
-          console.log(`🔵 Setting up auto-sync timer for ${connector.id} (3 seconds)...`);
-          setTimeout(async () => {
-            console.log(`🔵 Timer fired! Reloading connectors for ${connector.id}...`);
-            await loadConnectors();
-            // Auto-sync the newly connected connector
+          // Poll every 2s for up to 60s for the user to complete sign-in
+          let attempts = 0;
+          const maxAttempts = 30;
+          const pollInterval = setInterval(async () => {
+            attempts++;
             try {
-              console.log(`🔵 Checking connection status for ${connector.id}...`);
               const status = await api.connectorStatus(connector.id);
-              console.log(`🔵 Status for ${connector.id}:`, status);
               if (status.status?.connected) {
-                console.log(`✅ ${connector.id} is connected! Starting auto-sync...`);
-                toast.success(`${connector.name} connected successfully!`);
+                clearInterval(pollInterval);
+                const displayName = DISPLAY_NAME_OVERRIDES[connector.id] ?? connector.name;
+                toast.success(`${displayName} connected!`);
+                await loadConnectors();
                 await handleSync(connector.id);
-                console.log(`✅ Auto-sync triggered for ${connector.id}`);
-              } else {
-                console.log(`⚠️ ${connector.id} not connected yet. Status:`, status);
+
+                // Auto-connect companion connector (e.g. outlook_calendar alongside outlook_mail)
+                const companion = COMPANION_CONNECTORS[connector.id];
+                if (companion) {
+                  try {
+                    const companionResult = await api.connectorAuthStart(companion);
+                    if (companionResult.success && companionResult.auth_url) {
+                      (window as any).electron?.openExternal(companionResult.auth_url);
+                      setTimeout(async () => {
+                        await handleSync(companion);
+                        await loadConnectors();
+                      }, 5000);
+                    }
+                  } catch (err) {
+                    console.error(`Companion connect failed for ${companion}:`, err);
+                  }
+                }
+              } else if (attempts >= maxAttempts) {
+                clearInterval(pollInterval);
               }
-            } catch (err) {
-              console.error(`❌ Auto-sync failed for ${connector.id}:`, err);
+            } catch {
+              if (attempts >= maxAttempts) clearInterval(pollInterval);
             }
-          }, 3000); // Wait 3 seconds for OAuth to complete
+          }, 2000);
         } else {
-          toast.error(`Failed to start authentication for ${connector.name}`, { id: toastId });
+          toast.error(`Failed to open sign-in for ${connector.name}`, { id: toastId });
         }
-      } else {
-        // For other connectors, show dialog
-        setSelectedConnector(connector);
-        setShowConnectDialog(true);
       }
     } catch (err) {
-      console.error("❌ Connection error:", err);
       const errorMessage = err instanceof Error ? err.message : "Failed to start connection";
       setError(errorMessage);
       toast.error(errorMessage);
@@ -203,36 +218,19 @@ export function ConnectionsView() {
     }
   };
 
-  const handleConfirmConnect = async () => {
-    if (!selectedConnector) return;
-
-    try {
-      // Check if this is an OAuth connector (Gmail, Calendar, etc.)
-      if (selectedConnector.auth_type === 'oauth') {
-        // Start OAuth flow
-        const authResult = await api.connectorAuthStart(selectedConnector.id);
-        if (authResult.success && authResult.auth_url) {
-          // Open OAuth URL in browser
-          window.open(authResult.auth_url, '_blank', 'width=600,height=700');
-          toast.success('OAuth window opened! Complete authorization in the browser.');
-          setShowConnectDialog(false);
-          
-          // Poll for connection status
-          setTimeout(async () => {
-            await loadConnectors();
-          }, 3000);
-        }
-      } 
-    } catch (err) {
-      console.error("Connection error:", err);
-      toast.error(err instanceof Error ? err.message : "Connection failed");
-    }
-  };
-
-  const filteredConnectors = connectors.filter(conn =>
-    conn.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conn.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConnectors = connectors
+    .filter(conn =>
+      conn.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conn.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      const ai = PINNED_ORDER.indexOf(a.id);
+      const bi = PINNED_ORDER.indexOf(b.id);
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return 0;
+    });
 
   const getIcon = (connectorId: string) => {
     const Icon = iconMap[connectorId] || Plug;
@@ -313,7 +311,7 @@ export function ConnectionsView() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium">{connector.name}</h3>
+                        <h3 className="font-medium">{DISPLAY_NAME_OVERRIDES[connector.id] ?? connector.name}</h3>
                         {connector.connected ? (
                           <CheckCircle2 className="h-4 w-4 text-green-500" />
                         ) : (
@@ -378,12 +376,12 @@ export function ConnectionsView() {
                         </Button>
                       </>
                     ) : (
-                      <Button 
+                      <Button
                         size="sm"
                         onClick={() => handleConnect(connector)}
                         className="w-full"
                       >
-                        Connect
+                        {SIGN_IN_LABELS[connector.id] ?? 'Connect'}
                       </Button>
                     )}
                   </div>
@@ -394,74 +392,47 @@ export function ConnectionsView() {
         </div>
       </div>
 
-      {/* File Dialog */}
+      {/* iMessage Access Dialog */}
       <Dialog open={showFileDialog} onOpenChange={setShowFileDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Select File</DialogTitle>
+            <DialogTitle>Connect iMessage</DialogTitle>
             <DialogDescription>
-              Please select the appropriate file for {selectedConnector?.name}.
+              iMessage reads directly from your Mac's local Messages database — no account login required.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              This is a placeholder for a file dialog. In a real application, you would use a file input to select the file.
-            </p>
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
+              <p className="text-sm font-medium">Full Disk Access required</p>
+              <p className="text-sm text-muted-foreground">
+                macOS restricts access to <code className="text-xs bg-muted px-1 py-0.5 rounded">~/Library/Messages/chat.db</code>.
+                Grant LocalBrain Full Disk Access in System Settings to allow it to read your messages.
+              </p>
+            </div>
+            <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+              <li>Open System Settings → Privacy &amp; Security → Full Disk Access</li>
+              <li>Click the <strong>+</strong> button and add <strong>LocalBrain</strong> (or Electron in dev)</li>
+              <li>Restart LocalBrain, then click Connect below</li>
+            </ol>
+            <button
+              className="text-xs text-primary hover:underline underline-offset-2"
+              onClick={() => (window as any).electron?.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles')}
+            >
+              Open Full Disk Access settings →
+            </button>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowFileDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={() => setShowFileDialog(false)}>
-              Select
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Connect Dialog */}
-      <Dialog open={showConnectDialog} onOpenChange={setShowConnectDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Connect to {selectedConnector?.name}</DialogTitle>
-            <DialogDescription>
-              {selectedConnector?.auth_type === 'oauth' ? (
-                <>
-                  Click Connect to authorize {selectedConnector?.name} access via OAuth
-                </>
-              ) : (
-                <>Configure connection settings for {selectedConnector?.name}</>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            {selectedConnector?.auth_type === 'oauth' && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  You will be redirected to {selectedConnector?.name} to authorize access.
-                  After authorization, you'll be redirected back to LocalBrain.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowConnectDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmConnect}>
+            <Button variant="outline" onClick={() => setShowFileDialog(false)}>Cancel</Button>
+            <Button onClick={async () => {
+              setShowFileDialog(false);
+              if (selectedConnector) await handleSync(selectedConnector.id);
+            }}>
               Connect
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

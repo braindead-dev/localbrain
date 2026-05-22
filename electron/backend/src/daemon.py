@@ -35,6 +35,20 @@ from loguru import logger
 dotenv_path = Path(__file__).parent.parent / '.env'
 load_dotenv(dotenv_path)
 
+# Load bundled OAuth app credentials (shipped with the app, invisible to users).
+# These are LocalBrain's own registered OAuth app credentials for each provider.
+# The file is gitignored and populated at build/release time.
+_bundled_creds_path = Path(__file__).parent / 'bundled_credentials.json'
+if _bundled_creds_path.exists():
+    try:
+        with open(_bundled_creds_path) as _f:
+            _bundled = json.load(_f)
+        for _key, _val in _bundled.items():
+            if _val and not os.getenv(_key):
+                os.environ[_key] = _val
+    except Exception as _e:
+        pass  # Non-fatal — connectors will surface errors when user tries to connect
+
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -54,6 +68,10 @@ logger.add('/tmp/localbrain-daemon.log', rotation='10 MB', retention='7 days', l
 CONFIG = load_config()
 VAULT_PATH = get_vault_path()
 PORT = CONFIG.get('port', 8765)
+
+# Apply Anthropic API key from config if not already in environment
+if CONFIG.get('anthropic_api_key') and not os.getenv('ANTHROPIC_API_KEY'):
+    os.environ['ANTHROPIC_API_KEY'] = CONFIG['anthropic_api_key']
 
 # FastAPI app
 app = FastAPI(title="LocalBrain Background Service")
@@ -248,7 +266,8 @@ async def get_config():
     return JSONResponse(content={
         'vault_path': config['vault_path'],
         'port': config['port'],
-        'auto_start': config.get('auto_start', True)
+        'auto_start': config.get('auto_start', True),
+        'has_anthropic_key': bool(config.get('anthropic_api_key') or os.getenv('ANTHROPIC_API_KEY')),
     })
 
 
@@ -269,14 +288,19 @@ async def update_config_endpoint(request: Request):
     try:
         body = await request.json()
         
+        create_vault = body.pop('create_vault', False)
+
         # Validate vault_path if provided
         if 'vault_path' in body:
             vault_path = Path(body['vault_path']).expanduser()
             if not vault_path.exists():
-                return JSONResponse(
-                    status_code=400,
-                    content={'error': f'Path does not exist: {body["vault_path"]}'}
-                )
+                if create_vault:
+                    vault_path.mkdir(parents=True, exist_ok=True)
+                else:
+                    return JSONResponse(
+                        status_code=400,
+                        content={'error': f'Path does not exist: {body["vault_path"]}'}
+                    )
             if not vault_path.is_dir():
                 return JSONResponse(
                     status_code=400,
@@ -284,10 +308,14 @@ async def update_config_endpoint(request: Request):
                 )
             # Store absolute path
             body['vault_path'] = str(vault_path)
-        
+
+        # Apply Anthropic API key to environment immediately (no restart needed)
+        if 'anthropic_api_key' in body and body['anthropic_api_key']:
+            os.environ['ANTHROPIC_API_KEY'] = body['anthropic_api_key']
+
         # Update config
         updated_config = update_config(body)
-        
+
         # Check if restart needed
         restart_needed = 'vault_path' in body or 'port' in body
         

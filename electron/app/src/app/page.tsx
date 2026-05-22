@@ -28,6 +28,7 @@ import { NotesView } from "../components/NotesView";
 import { FileTree, TreeItem } from "../components/FileTree";
 import { HomeView } from "../components/HomeView";
 import { VaultIcon } from "../components/VaultIcon";
+import { SetupWalkthrough } from "../components/SetupWalkthrough";
 
 type TabValue = "home" | "ask" | "connections" | "search" | "notes" | "settings";
 
@@ -80,6 +81,10 @@ function AppContent() {
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState<TabValue>("home");
   const [setupOverlayVisible, setSetupOverlayVisible] = useState(false);
+  const [showWalkthrough, setShowWalkthrough] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !localStorage.getItem('localBrainSetupComplete');
+  });
   const [openedFile, setOpenedFile] = useState<TreeItem | null>(null);
   const [showLineNumbers, setShowLineNumbers] = useState(false);
   const [highlightedFilePath, setHighlightedFilePath] = useState<string | null>(null);
@@ -149,9 +154,17 @@ function AppContent() {
     setHighlightedFilePath(filePath);
   };
 
+  const handleWalkthroughComplete = () => {
+    localStorage.setItem('localBrainSetupComplete', 'true');
+    setShowWalkthrough(false);
+  };
+
   return (
     <div className="h-screen w-screen flex bg-background relative">
         <Toaster />
+        {showWalkthrough && (
+          <SetupWalkthrough onComplete={handleWalkthroughComplete} />
+        )}
         {/* Left Navigation Sidebar - Floating */}
         <div className={`fixed left-4 top-4 bottom-4 w-20 bg-card border border-border rounded-2xl flex flex-col items-center py-4 gap-3 shadow-2xl outline-none z-50 ${setupOverlayVisible ? 'pointer-events-none opacity-50' : ''}`}>
           {/* Navigation Icons */}

@@ -17,6 +17,7 @@ DEFAULT_CONFIG = {
     "vault_path": str(Path.home() / "LocalBrain"),
     "port": 8765,
     "auto_start": True,
+    "anthropic_api_key": "",
 }
 
 

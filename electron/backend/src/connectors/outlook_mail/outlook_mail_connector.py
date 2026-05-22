@@ -576,24 +576,32 @@ Attachments: {'Yes' if has_attachments else 'No'}
         with open(self.config_file, 'w') as f:
             json.dump(config, f, indent=2)
 
+    def _load_oauth_app(self) -> dict:
+        """Load user-stored OAuth app credentials."""
+        f = self.config_dir / 'oauth_app.json'
+        if f.exists():
+            with open(f) as fh:
+                return json.load(fh)
+        return {}
+
     def _get_client_id(self) -> str:
-        """Get Microsoft OAuth client ID from environment."""
+        """Get Microsoft OAuth client ID (stored config → env var)."""
+        stored = self._load_oauth_app()
+        if stored.get('client_id'):
+            return stored['client_id']
         client_id = os.getenv('OUTLOOK_CLIENT_ID') or os.getenv('MICROSOFT_CLIENT_ID')
         if not client_id:
-            raise ValueError(
-                "OUTLOOK_CLIENT_ID or MICROSOFT_CLIENT_ID environment variable not set.\n"
-                "Please set it with your Microsoft Azure application client ID."
-            )
+            raise ValueError("Outlook OAuth credentials not configured. Please add them in the LocalBrain Connections settings.")
         return client_id
 
     def _get_client_secret(self) -> str:
-        """Get Microsoft OAuth client secret from environment."""
+        """Get Microsoft OAuth client secret (stored config → env var)."""
+        stored = self._load_oauth_app()
+        if stored.get('client_secret'):
+            return stored['client_secret']
         client_secret = os.getenv('OUTLOOK_CLIENT_SECRET') or os.getenv('MICROSOFT_CLIENT_SECRET')
         if not client_secret:
-            raise ValueError(
-                "OUTLOOK_CLIENT_SECRET or MICROSOFT_CLIENT_SECRET environment variable not set.\n"
-                "Please set it with your Microsoft Azure application client secret."
-            )
+            raise ValueError("Outlook OAuth credentials not configured. Please add them in the LocalBrain Connections settings.")
         return client_secret
 
 

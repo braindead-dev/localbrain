@@ -59,6 +59,7 @@ export interface Config {
   vault_path: string;
   port: number;
   auto_start: boolean;
+  has_anthropic_key?: boolean;
 }
 
 export interface GmailStatus {
@@ -280,6 +281,32 @@ class ApiClient {
     if (limit) url += `&limit=${limit}`;
     const response = await fetch(url, { method: 'POST' });
     if (!response.ok) throw new Error(`Failed to sync ${connectorId}`);
+    return response.json();
+  }
+
+  /**
+   * Check if OAuth app credentials are configured for a connector
+   */
+  async connectorGetConfig(connectorId: string): Promise<{ success: boolean; configured: boolean }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/config`);
+      if (!response.ok) return { success: false, configured: false };
+      return response.json();
+    } catch {
+      return { success: false, configured: false };
+    }
+  }
+
+  /**
+   * Save OAuth app credentials for a connector
+   */
+  async connectorSaveConfig(connectorId: string, credentials: Record<string, string>): Promise<{ success: boolean }> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) throw new Error(`Failed to save ${connectorId} config`);
     return response.json();
   }
 

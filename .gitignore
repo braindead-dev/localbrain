@@ -7,6 +7,7 @@ credentials/*.json
 .env.local
 *.key
 *.secret
+electron/backend/src/bundled_credentials.json
 
 # All .env files (any directory depth)
 *.env

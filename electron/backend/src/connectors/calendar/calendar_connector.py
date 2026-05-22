@@ -158,12 +158,13 @@ class CalendarConnector(BaseConnector):
                     authenticated=False,
                     last_error="Not authenticated"
                 )
-            
-            # Get status from existing method
+
+            # Having valid credentials means connected. Try to enrich with live data,
+            # but don't let a failing API call override the connected state.
             status_data = self._get_status_data()
-            
+
             return ConnectorStatus(
-                connected=status_data.get('connected', False),
+                connected=True,
                 authenticated=True,
                 last_sync=self._get_last_sync(),
                 total_items_synced=status_data.get('totalProcessed', 0),
@@ -174,7 +175,7 @@ class CalendarConnector(BaseConnector):
                     'connectedAt': status_data.get('connectedAt')
                 }
             )
-            
+
         except Exception as e:
             return ConnectorStatus(
                 connected=False,
@@ -898,6 +899,35 @@ Calendar URL: {calendar_url}
         Raises:
             ValueError: If neither environment variables nor file are available
         """
+        def _build_google_config(client_id, client_secret, project_id='localbrain'):
+            return {
+                "installed": {
+                    "client_id": client_id,
+                    "project_id": project_id,
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_secret": client_secret,
+                    "redirect_uris": ["http://localhost"]
+                }
+            }
+
+        # Option 0: Check user-stored OAuth app credentials (calendar-specific)
+        oauth_app_file = self.config_dir / 'oauth_app.json'
+        if oauth_app_file.exists():
+            with open(oauth_app_file) as f:
+                stored = json.load(f)
+            if stored.get('client_id') and stored.get('client_secret'):
+                return _build_google_config(stored['client_id'], stored['client_secret'], stored.get('project_id', 'localbrain'))
+
+        # Option 0b: Fall back to Gmail stored credentials (same Google Cloud project)
+        gmail_oauth_app_file = self.config_dir.parent / 'gmail' / 'oauth_app.json'
+        if gmail_oauth_app_file.exists():
+            with open(gmail_oauth_app_file) as f:
+                stored = json.load(f)
+            if stored.get('client_id') and stored.get('client_secret'):
+                return _build_google_config(stored['client_id'], stored['client_secret'], stored.get('project_id', 'localbrain'))
+
         # Option 1: Try full JSON config from environment variable
         json_config = os.getenv('CALENDAR_CLIENT_CONFIG')
         if json_config:
@@ -905,7 +935,7 @@ Calendar URL: {calendar_url}
                 return json.loads(json_config)
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid JSON in CALENDAR_CLIENT_CONFIG: {e}")
-        
+
         # Option 2: Try individual environment variables
         client_id = os.getenv('CALENDAR_CLIENT_ID') or os.getenv('GMAIL_CLIENT_ID')
         client_secret = os.getenv('CALENDAR_CLIENT_SECRET') or os.getenv('GMAIL_CLIENT_SECRET')

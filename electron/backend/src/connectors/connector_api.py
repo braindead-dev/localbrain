@@ -8,6 +8,8 @@ All routes follow the pattern: /connectors/{connector_id}/{action}
 """
 
 import asyncio
+import json
+import os
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, HTMLResponse
@@ -15,6 +17,55 @@ from typing import Optional
 from pathlib import Path
 
 from .connector_manager import get_connector_manager
+
+# Directory for per-connector OAuth app credentials (client_id / client_secret)
+_CONNECTORS_DIR = Path.home() / '.localbrain' / 'connectors'
+
+# Connectors that inherit credentials from another connector
+_CREDENTIAL_FALLBACKS = {
+    'calendar': 'gmail',
+    'outlook_calendar': 'outlook_mail',
+}
+
+# Environment variable names for each connector's client_id
+_ENV_CLIENT_ID = {
+    'gmail': 'GMAIL_CLIENT_ID',
+    'calendar': 'GMAIL_CLIENT_ID',
+    'github': 'GITHUB_CLIENT_ID',
+    'twitter': 'TWITTER_CLIENT_ID',
+    'notion': 'NOTION_CLIENT_ID',
+    'reddit': 'REDDIT_CLIENT_ID',
+    'outlook_mail': 'OUTLOOK_CLIENT_ID',
+    'outlook_calendar': 'OUTLOOK_CLIENT_ID',
+}
+
+
+def _load_oauth_app(connector_id: str) -> dict:
+    """Load stored OAuth app credentials for a connector."""
+    f = _CONNECTORS_DIR / connector_id / 'oauth_app.json'
+    if f.exists():
+        with open(f) as fh:
+            return json.load(fh)
+    return {}
+
+
+def _is_configured(connector_id: str) -> bool:
+    """Return True if OAuth app credentials are available for this connector."""
+    # 1. Check user-stored credentials
+    config = _load_oauth_app(connector_id)
+    if config.get('client_id'):
+        return True
+    # 2. Check parent connector fallback (e.g. calendar → gmail)
+    parent = _CREDENTIAL_FALLBACKS.get(connector_id)
+    if parent:
+        parent_config = _load_oauth_app(parent)
+        if parent_config.get('client_id'):
+            return True
+    # 3. Check bundled/environment credentials
+    env_key = _ENV_CLIENT_ID.get(connector_id)
+    if env_key and os.getenv(env_key):
+        return True
+    return False
 
 
 def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
@@ -319,6 +370,31 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
                 content={"success": False, "error": str(e)}
             )
     
+    # ========================================================================
+    # OAuth App Credential Management
+    # ========================================================================
+
+    @router.get("/{connector_id}/config")
+    async def get_connector_config(connector_id: str):
+        """Return whether OAuth app credentials are configured for a connector."""
+        try:
+            return {"success": True, "configured": _is_configured(connector_id)}
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
+    @router.post("/{connector_id}/config")
+    async def save_connector_config(connector_id: str, request: Request):
+        """Save user-provided OAuth app credentials (client_id / client_secret)."""
+        try:
+            data = await request.json()
+            config_dir = _CONNECTORS_DIR / connector_id
+            config_dir.mkdir(parents=True, exist_ok=True)
+            with open(config_dir / 'oauth_app.json', 'w') as f:
+                json.dump(data, f, indent=2)
+            return {"success": True}
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+
     # ========================================================================
     # Connector-Specific Actions (passthrough)
     # ========================================================================

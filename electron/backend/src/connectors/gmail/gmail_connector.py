@@ -304,11 +304,12 @@ class GmailConnector(BaseConnector):
                     last_error="Not authenticated"
                 )
             
-            # Get status from existing method
+            # Having valid credentials means connected. Enrich with live data if
+            # available, but don't let a failing API call override connected state.
             status_data = self._get_status_data()
-            
+
             return ConnectorStatus(
-                connected=status_data.get('connected', False),
+                connected=True,
                 authenticated=True,
                 last_sync=self._get_last_sync(),
                 total_items_synced=status_data.get('totalProcessed', 0),
@@ -925,6 +926,24 @@ Gmail URL: {gmail_url}
         Raises:
             ValueError: If neither environment variables nor file are available
         """
+        # Option 0: Check user-stored OAuth app credentials
+        oauth_app_file = self.config_dir / 'oauth_app.json'
+        if oauth_app_file.exists():
+            with open(oauth_app_file) as f:
+                stored = json.load(f)
+            if stored.get('client_id') and stored.get('client_secret'):
+                return {
+                    "installed": {
+                        "client_id": stored['client_id'],
+                        "project_id": stored.get('project_id', 'localbrain'),
+                        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                        "token_uri": "https://oauth2.googleapis.com/token",
+                        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                        "client_secret": stored['client_secret'],
+                        "redirect_uris": ["http://localhost"]
+                    }
+                }
+
         # Option 1: Try full JSON config from environment variable
         json_config = os.getenv('GMAIL_CLIENT_CONFIG')
         if json_config:
@@ -932,7 +951,7 @@ Gmail URL: {gmail_url}
                 return json.loads(json_config)
             except json.JSONDecodeError as e:
                 raise ValueError(f"Invalid JSON in GMAIL_CLIENT_CONFIG: {e}")
-        
+
         # Option 2: Try individual environment variables
         client_id = os.getenv('GMAIL_CLIENT_ID')
         client_secret = os.getenv('GMAIL_CLIENT_SECRET')
