@@ -139,20 +139,20 @@ export function ConnectionsView() {
         setShowFileDialog(true);
       } else if (connector.auth_type === 'oauth') {
         console.log(`🔵 Starting OAuth flow for ${connector.id}...`);
-        toast.loading(`Opening authentication window for ${connector.name}...`);
+        const toastId = toast.loading(`Opening authentication window for ${connector.name}...`);
 
         const authResult = await api.connectorAuthStart(connector.id);
         console.log(`🔵 Auth result for ${connector.id}:`, authResult);
 
         if (authResult.success && authResult.auth_url) {
           console.log(`🔵 Opening OAuth window for ${connector.id}:`, authResult.auth_url);
-          toast.success(`Opening authentication window...`);
+          toast.success(`Opening authentication window...`, { id: toastId });
 
           // Open OAuth URL in new window
           const authWindow = window.open(authResult.auth_url, '_blank', 'width=600,height=700,scrollbars=yes,resizable=yes');
 
           if (!authWindow) {
-            toast.error("Failed to open authentication window. Please check your popup blocker.");
+            toast.error("Failed to open authentication window. Please check your popup blocker.", { id: toastId });
             return;
           }
 
@@ -179,7 +179,7 @@ export function ConnectionsView() {
             }
           }, 3000); // Wait 3 seconds for OAuth to complete
         } else {
-          toast.error(`Failed to start authentication for ${connector.name}`);
+          toast.error(`Failed to start authentication for ${connector.name}`, { id: toastId });
         }
       } else {
         // For other connectors, show dialog

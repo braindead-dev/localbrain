@@ -13,7 +13,7 @@
     "build:electron": "npm run build:next && electron-builder",
     "build": "npm run build:next && electron-builder",
     "dist": "npm run build",
-    "postinstall": "cd app && npm install"
+    "postinstall": "cd app && npm install && node ../scripts/patch-electron-icon.js"
   },
   "build": {
     "appId": "com.localbrain.app",

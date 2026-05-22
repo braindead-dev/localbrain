@@ -8,6 +8,11 @@ const isDev = process.env.NODE_ENV === 'development';
 // Set the app name for macOS dock
 app.setName('LocalBrain');
 
+// Set custom dock icon (needed in dev mode since we run the Electron binary directly)
+if (process.platform === 'darwin') {
+  app.dock.setIcon(path.join(__dirname, 'assets/icon.png'));
+}
+
 // Register protocol handler for localbrain://
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
