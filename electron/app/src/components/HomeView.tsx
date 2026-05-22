@@ -6,8 +6,20 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
-import { FolderOpen, Brain, Folder, X, Search, StickyNote, Lightbulb, CheckCircle2, AlertCircle, Activity, Database, HardDrive, ChevronLeft, ChevronRight, Zap, Shield, Boxes, Sparkles, Check, XCircle } from "lucide-react";
+import { FolderOpen, Brain, Folder, X, Search, StickyNote, Lightbulb, CheckCircle2, AlertCircle, Activity, Database, HardDrive, ChevronLeft, ChevronRight, Zap, Shield, Boxes, Sparkles, Check, XCircle, MessageSquare, Plug, Server } from "lucide-react";
 import { api } from "../lib/api";
+
+function formatTimeAgo(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return "yesterday";
+  return `${days}d ago`;
+}
 
 interface HomeViewProps {
   onSetupVisibilityChange: (visible: boolean) => void;
@@ -37,9 +49,25 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [hasSeenCarousel, setHasSeenCarousel] = useState(true);
   const [showCarousel, setShowCarousel] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [activityEvents, setActivityEvents] = useState<Array<{ type: string; title: string; detail: string; connector_id: string; timestamp: string }>>([]);
 
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // Fetch activity feed
+  useEffect(() => {
+    const fetchActivity = async () => {
+      try {
+        const data = await api.getActivity();
+        setActivityEvents(data.events || []);
+      } catch {
+        // Backend not available
+      }
+    };
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -525,107 +553,43 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
 
                   <ScrollArea className="h-[600px] pr-4">
                     <div className="space-y-3">
-                      {/* Recent Search */}
-                      <button
-                        onClick={() => onQueryClick("How to implement authentication in Next.js")}
-                        className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-all cursor-pointer text-left hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <div className="p-2 bg-blue-500/10 rounded-lg mt-1">
-                          <Search className="h-4 w-4 text-blue-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Search Query</h3>
-                            <span className="text-xs text-muted-foreground">2 min ago</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            "How to implement authentication in Next.js"
-                          </p>
-                        </div>
-                      </button>
+                      {activityEvents.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-8">No activity yet. Connect an app or ask a question to get started.</p>
+                      )}
+                      {activityEvents.map((event, i) => {
+                        const iconConfig: Record<string, { icon: any; color: string; bg: string }> = {
+                          sync: { icon: Database, color: "text-purple-500", bg: "bg-purple-500/10" },
+                          ask: { icon: MessageSquare, color: "text-blue-500", bg: "bg-blue-500/10" },
+                          connector: { icon: Plug, color: "text-green-500", bg: "bg-green-500/10" },
+                          mcp: { icon: Server, color: "text-amber-500", bg: "bg-amber-500/10" },
+                          note: { icon: StickyNote, color: "text-green-500", bg: "bg-green-500/10" },
+                        };
+                        const cfg = iconConfig[event.type] || iconConfig.sync;
+                        const Icon = cfg.icon;
+                        const ago = formatTimeAgo(event.timestamp);
 
-                      {/* Recent Note */}
-                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                        <div className="p-2 bg-green-500/10 rounded-lg mt-1">
-                          <StickyNote className="h-4 w-4 text-green-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Note Created</h3>
-                            <span className="text-xs text-muted-foreground">1 hour ago</span>
+                        return (
+                          <div
+                            key={`${event.timestamp}-${i}`}
+                            className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors"
+                          >
+                            <div className={`p-2 ${cfg.bg} rounded-lg mt-1`}>
+                              <Icon className={`h-4 w-4 ${cfg.color}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-medium">{event.title}</h3>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">{ago}</span>
+                              </div>
+                              {event.detail && (
+                                <p className="text-sm text-muted-foreground mt-1 break-words truncate">
+                                  {event.detail}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            Meeting notes: Project planning session
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Recent Insight */}
-                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                        <div className="p-2 bg-yellow-500/10 rounded-lg mt-1">
-                          <Lightbulb className="h-4 w-4 text-yellow-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Insight Generated</h3>
-                            <span className="text-xs text-muted-foreground">3 hours ago</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            Connected patterns found between React documentation and your recent code
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Recent Search */}
-                      <button
-                        onClick={() => onQueryClick("Best practices for Electron app development")}
-                        className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-all cursor-pointer text-left hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <div className="p-2 bg-blue-500/10 rounded-lg mt-1">
-                          <Search className="h-4 w-4 text-blue-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Search Query</h3>
-                            <span className="text-xs text-muted-foreground">5 hours ago</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            "Best practices for Electron app development"
-                          </p>
-                        </div>
-                      </button>
-
-                      {/* Recent Note */}
-                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                        <div className="p-2 bg-green-500/10 rounded-lg mt-1">
-                          <StickyNote className="h-4 w-4 text-green-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Note Created</h3>
-                            <span className="text-xs text-muted-foreground">Yesterday</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            Ideas for improving user interface
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Additional Activity Items */}
-                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                        <div className="p-2 bg-purple-500/10 rounded-lg mt-1">
-                          <Database className="h-4 w-4 text-purple-500" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium">Data Sync</h3>
-                            <span className="text-xs text-muted-foreground">Yesterday</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 break-words">
-                            Synced 127 new items from Gmail
-                          </p>
-                        </div>
-                      </div>
+                        );
+                      })}
                     </div>
                   </ScrollArea>
                 </Card>

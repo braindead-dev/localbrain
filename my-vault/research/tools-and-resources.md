@@ -131,5 +131,19 @@
 
 **Source**: Browser[19]
 
+
+
+## Notion
+
+**URL**: https://www.notion.so/Welcome-to-Notion-368472591075805e99b8de77e600bd0b[20]
+
+**Features**[20]:
+- Desktop app with offline mode
+- Notion Agent for quick workspace creation
+- Slash commands for creating headers, tables, to-do lists
+- Sidebar page organization
+
+**Source**: Notion[20]
+
 ## Related
 

@@ -24,7 +24,6 @@ _CONNECTORS_DIR = Path.home() / '.localbrain' / 'connectors'
 # Connectors that inherit credentials from another connector
 _CREDENTIAL_FALLBACKS = {
     'calendar': 'gmail',
-    'outlook_calendar': 'outlook_mail',
 }
 
 # Environment variable names for each connector's client_id
@@ -35,8 +34,6 @@ _ENV_CLIENT_ID = {
     'twitter': 'TWITTER_CLIENT_ID',
     'notion': 'NOTION_CLIENT_ID',
     'reddit': 'REDDIT_CLIENT_ID',
-    'outlook_mail': 'OUTLOOK_CLIENT_ID',
-    'outlook_calendar': 'OUTLOOK_CLIENT_ID',
 }
 
 
@@ -68,7 +65,7 @@ def _is_configured(connector_id: str) -> bool:
     return False
 
 
-def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
+def create_connector_router(vault_path: Optional[Path] = None, on_activity=None) -> APIRouter:
     """
     Create FastAPI router with generic connector endpoints.
     
@@ -194,6 +191,8 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
             if hasattr(connector, 'handle_callback'):
                 result = connector.handle_callback(callback_url)
                 
+                if on_activity:
+                    on_activity("connector", f"{connector_id.title()} connected", "", connector_id)
                 # Return success page
                 html_content = f"""
                 <html>
@@ -329,6 +328,9 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
                     detail=f"Connector {connector_id} not found"
                 )
             
+            if on_activity and result.success and result.items_fetched > 0:
+                on_activity("sync", f"Synced {connector_id}", f"{result.items_fetched} fetched, {result.items_ingested} ingested", connector_id)
+
             return {
                 "success": result.success,
                 "items_fetched": result.items_fetched,
@@ -336,7 +338,7 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
                 "errors": result.errors,
                 "last_sync": result.last_sync_timestamp.isoformat() if result.last_sync_timestamp else None
             }
-            
+
         except HTTPException:
             raise
         except Exception as e:
@@ -344,7 +346,7 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
                 status_code=500,
                 content={"success": False, "error": str(e)}
             )
-    
+
     @router.post("/sync-all")
     async def sync_all_connectors(auto_ingest: bool = True):
         """Sync all connected connectors."""
@@ -370,6 +372,33 @@ def create_connector_router(vault_path: Optional[Path] = None) -> APIRouter:
                 content={"success": False, "error": str(e)}
             )
     
+    # ========================================================================
+    # Sync Toggle
+    # ========================================================================
+
+    @router.get("/{connector_id}/sync-enabled")
+    async def get_sync_enabled(connector_id: str):
+        """Check if auto-sync is enabled for a connector."""
+        from config import load_config
+        config = load_config()
+        disabled = config.get("disabled_sync", [])
+        return {"enabled": connector_id not in disabled}
+
+    @router.put("/{connector_id}/sync-enabled")
+    async def set_sync_enabled(connector_id: str, request: Request):
+        """Enable or disable auto-sync for a connector."""
+        from config import load_config, update_config
+        body = await request.json()
+        enabled = body.get("enabled", True)
+        config = load_config()
+        disabled = set(config.get("disabled_sync", []))
+        if enabled:
+            disabled.discard(connector_id)
+        else:
+            disabled.add(connector_id)
+        update_config({"disabled_sync": sorted(disabled)})
+        return {"success": True, "enabled": enabled}
+
     # ========================================================================
     # OAuth App Credential Management
     # ========================================================================

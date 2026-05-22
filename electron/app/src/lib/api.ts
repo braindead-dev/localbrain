@@ -219,6 +219,36 @@ class ApiClient {
   }
 
   // ============================================================================
+  // Activity Feed
+  // ============================================================================
+
+  async getActivity(): Promise<{ events: Array<{ type: string; title: string; detail: string; connector_id: string; timestamp: string }> }> {
+    const response = await fetch(`${this.baseUrl}/activity`);
+    if (!response.ok) throw new Error('Failed to fetch activity');
+    return response.json();
+  }
+
+  // ============================================================================
+  // Connector Sync Toggle
+  // ============================================================================
+
+  async getSyncEnabled(connectorId: string): Promise<{ enabled: boolean }> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/sync-enabled`);
+    if (!response.ok) throw new Error('Failed to get sync status');
+    return response.json();
+  }
+
+  async setSyncEnabled(connectorId: string, enabled: boolean): Promise<{ success: boolean }> {
+    const response = await fetch(`${this.baseUrl}/connectors/${connectorId}/sync-enabled`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled }),
+    });
+    if (!response.ok) throw new Error('Failed to update sync status');
+    return response.json();
+  }
+
+  // ============================================================================
   // Generic Connector APIs (New Plugin System)
   // ============================================================================
 

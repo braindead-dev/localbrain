@@ -560,6 +560,7 @@ URL: https://twitter.com/{username}/status/{tweet_id}
         self.token_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.token_file, 'w') as f:
             json.dump(token_data, f, indent=2)
+        self.token_file.chmod(0o600)
 
     def _load_token(self) -> Optional[Dict]:
         """Load OAuth token from file."""

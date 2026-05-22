@@ -2,17 +2,22 @@
 
 # Housing
 
-## Luxer One Package Room
+## Station 21 Apartment
 
-### Package Delivery - October 24, 2025
-- **Status**: Package received[1]
-- **Access Code**: 586662[1]
-- **Location**: Upstairs in the game room[1]
-- **Address**: 3020 Iowa Ave, Unit 3302[1]
-- **Instructions**: Enter access code at package room, retrieve package, close door[1]
-- **Note**: All active codes deactivate after first use; pick up multiple packages at once if applicable[1]
-- **Contact**: support@luxerone.com or (415) 390-0123[1]
-
+### Flex Rent Payment Option
+- **Service**: Flex Rent payment plan available[10]
+- **Date Offered**: May 22, 2026[10]
+- **Features**[10]:
+  - Smaller, manageable monthly rent payments
+  - Full rent payment guaranteed on time
+  - Credit history building through on-time payments
+- **Costs**[10]:
+  - Monthly membership fee: $14.99
+  - Bill payment fee: 1% of total rent
+  - Additional card processing fee applies with credit card
+- **Provider**: Flex (Flexible Finance Brokering, Inc.)[10]
+- **Credit Reporting**: Positive rent payment history reported to national credit bureaus[10]
+- **Source**: Email from team@payments.getflex.com[10]
 
 ## Related
 

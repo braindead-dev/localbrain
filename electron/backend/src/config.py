@@ -18,6 +18,7 @@ DEFAULT_CONFIG = {
     "port": 8765,
     "auto_start": True,
     "anthropic_api_key": "",
+    "disabled_sync": [],
 }
 
 

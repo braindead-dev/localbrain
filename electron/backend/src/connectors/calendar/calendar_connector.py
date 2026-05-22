@@ -34,10 +34,13 @@ from connectors.base_connector import (
 )
 
 
-# OAuth 2.0 scopes
+# OAuth 2.0 scopes — includes Gmail scopes because both connectors share
+# the same Google OAuth client ID and Google merges granted scopes.
 SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
-    'https://www.googleapis.com/auth/calendar.events.readonly'
+    'https://www.googleapis.com/auth/calendar.events.readonly',
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.labels',
 ]
 
 # Redirect URI for OAuth callback
@@ -846,6 +849,7 @@ Calendar URL: {calendar_url}
         self.token_file.parent.mkdir(parents=True, exist_ok=True)
         with open(self.token_file, 'w') as f:
             f.write(credentials.to_json())
+        self.token_file.chmod(0o600)
     
     def _save_flow_state(self, flow: Flow, scopes: List[str]):
         """Save OAuth flow state for callback."""

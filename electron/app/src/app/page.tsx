@@ -20,6 +20,7 @@ import {
   PencilLine,
   MessageSquare,
 } from "lucide-react";
+import { api } from "../lib/api";
 import { ChatView } from "../components/ChatView";
 import { ConnectionsView } from "../components/ConnectionsView";
 import { EditorView } from "../components/EditorView";
@@ -130,6 +131,38 @@ function AppContent() {
   const [selectedConnection, setSelectedConnection] = useState<string | null>(null);
   const [autoQuery, setAutoQuery] = useState<string | null>(null);
   const [connectedIntegrations, setConnectedIntegrations] = useState<Array<{id: string, name: string, connected: boolean}>>([]);
+
+  const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar', 'outlook_mail']);
+
+  // Fetch connector statuses for home page
+  useEffect(() => {
+    const fetchConnectors = async () => {
+      try {
+        const data = await api.listConnectors();
+        const visible = (data.connectors || []).filter((c: any) => !HIDDEN_CONNECTORS.has(c.id));
+        const withStatus = await Promise.all(
+          visible.map(async (c: any) => {
+            try {
+              const s = await api.connectorStatus(c.id);
+              return {
+                id: c.id,
+                name: c.name,
+                connected: s.status?.connected || s.status?.authenticated || false,
+              };
+            } catch {
+              return { id: c.id, name: c.name, connected: false };
+            }
+          })
+        );
+        setConnectedIntegrations(withStatus);
+      } catch {
+        // Backend not available yet
+      }
+    };
+    fetchConnectors();
+    const interval = setInterval(fetchConnectors, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleFileOpen = (file: TreeItem) => {
     setOpenedFile(file);

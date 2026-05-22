@@ -18,6 +18,7 @@ import {
   Globe,
   RefreshCw
 } from "lucide-react";
+import { Switch } from "./ui/switch";
 import { api } from "../lib/api";
 import { toast } from "sonner";
 
@@ -44,20 +45,16 @@ const iconMap: Record<string, any> = {
 };
 
 // Connectors to hide — stubs/unimplemented or merged into another entry
-const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar']);
+const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar', 'outlook_mail']);
 
 // Pinned connectors shown first, in order
 const PINNED_ORDER = ['gmail', 'calendar'];
 
-// Display name overrides (e.g. outlook_mail → "Outlook")
-const DISPLAY_NAME_OVERRIDES: Record<string, string> = {
-  outlook_mail: 'Outlook',
-};
+// Display name overrides
+const DISPLAY_NAME_OVERRIDES: Record<string, string> = {};
 
 // After connecting these connectors, also silently connect their companion
-const COMPANION_CONNECTORS: Record<string, string> = {
-  outlook_mail: 'outlook_calendar',
-};
+const COMPANION_CONNECTORS: Record<string, string> = {};
 
 // Button label for each connector's sign-in action
 const SIGN_IN_LABELS: Record<string, string> = {
@@ -67,7 +64,6 @@ const SIGN_IN_LABELS: Record<string, string> = {
   notion: 'Sign in with Notion',
   reddit: 'Sign in with Reddit',
   twitter: 'Connect X',
-  outlook_mail: 'Sign in with Microsoft',
 };
 
 export function ConnectionsView() {
@@ -78,6 +74,7 @@ export function ConnectionsView() {
   const [error, setError] = useState<string | null>(null);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
+  const [syncEnabled, setSyncEnabled] = useState<Record<string, boolean>>({});
 
   // Load connectors on mount
   useEffect(() => {
@@ -111,6 +108,22 @@ export function ConnectionsView() {
         );
 
         setConnectors(connectorsWithStatus);
+
+        // Fetch sync-enabled state for connected connectors
+        const enabledMap: Record<string, boolean> = {};
+        await Promise.all(
+          connectorsWithStatus
+            .filter((c: any) => c.connected)
+            .map(async (c: any) => {
+              try {
+                const res = await api.getSyncEnabled(c.id);
+                enabledMap[c.id] = res.enabled;
+              } catch {
+                enabledMap[c.id] = true;
+              }
+            })
+        );
+        setSyncEnabled(enabledMap);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load connectors");
@@ -343,6 +356,26 @@ export function ConnectionsView() {
                     <p className="text-xs text-muted-foreground mb-3">
                       Last synced: {new Date(connector.last_sync).toLocaleString()}
                     </p>
+                  )}
+
+                  {/* Auto-sync toggle */}
+                  {connector.connected && connector.authenticated && (
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-muted-foreground">Auto-sync</span>
+                      <Switch
+                        checked={syncEnabled[connector.id] ?? true}
+                        onCheckedChange={async (checked) => {
+                          setSyncEnabled(prev => ({ ...prev, [connector.id]: checked }));
+                          try {
+                            await api.setSyncEnabled(connector.id, checked);
+                            toast.success(`Auto-sync ${checked ? 'enabled' : 'disabled'} for ${DISPLAY_NAME_OVERRIDES[connector.id] ?? connector.name}`);
+                          } catch {
+                            setSyncEnabled(prev => ({ ...prev, [connector.id]: !checked }));
+                            toast.error('Failed to update sync setting');
+                          }
+                        }}
+                      />
+                    </div>
                   )}
 
                   {/* Spacer to push actions to the bottom */}

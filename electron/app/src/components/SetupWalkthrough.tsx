@@ -15,7 +15,6 @@ const AVAILABLE_CONNECTORS = [
   { id: 'notion', name: 'Notion', description: 'Pages' },
   { id: 'reddit', name: 'Reddit', description: 'Posts' },
   { id: 'twitter', name: 'X / Twitter', description: 'Tweets' },
-  { id: 'outlook_mail', name: 'Outlook', description: 'Email & Calendar' },
   { id: 'imessage', name: 'iMessage', description: 'Messages' },
 ];
 

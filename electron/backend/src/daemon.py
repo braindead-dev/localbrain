@@ -61,8 +61,10 @@ from utils.file_ops import read_file
 from config import load_config, update_config, get_vault_path
 from connectors.browser.ingest import ingest_browser_data
 
-# Setup loguru — write to both stderr and a log file
-logger.add('/tmp/localbrain-daemon.log', rotation='10 MB', retention='7 days', level='INFO')
+# Setup loguru — write to both stderr and a log file in user-private directory
+_log_dir = Path.home() / '.localbrain' / 'logs'
+_log_dir.mkdir(parents=True, exist_ok=True)
+logger.add(str(_log_dir / 'daemon.log'), rotation='10 MB', retention='7 days', level='INFO')
 
 # Load config first
 CONFIG = load_config()
@@ -88,17 +90,55 @@ mcp_process: Optional[subprocess.Popen] = None
 conversation_history: List[Dict] = []
 MAX_CONVERSATION_HISTORY = 25
 
+# Activity log — recent events shown on the home page
+MAX_ACTIVITY = 50
+_ACTIVITY_FILE = Path.home() / '.localbrain' / 'activity.json'
+
+def _load_activity() -> List[Dict]:
+    """Load activity log from disk."""
+    try:
+        if _ACTIVITY_FILE.exists():
+            with open(_ACTIVITY_FILE) as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return []
+
+def _save_activity():
+    """Persist activity log to disk."""
+    try:
+        _ACTIVITY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(_ACTIVITY_FILE, 'w') as f:
+            json.dump(activity_log, f)
+    except Exception:
+        pass
+
+activity_log: List[Dict] = _load_activity()
+
+def log_activity(event_type: str, title: str, detail: str = "", connector_id: str = ""):
+    """Append an event to the activity log and persist to disk."""
+    activity_log.insert(0, {
+        "type": event_type,       # sync, ask, mcp, note, connector
+        "title": title,
+        "detail": detail,
+        "connector_id": connector_id,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    })
+    while len(activity_log) > MAX_ACTIVITY:
+        activity_log.pop()
+    _save_activity()
+
 # Include connector plugin routes
 from connectors.connector_api import create_connector_router
-app.include_router(create_connector_router(vault_path=VAULT_PATH))
+app.include_router(create_connector_router(vault_path=VAULT_PATH, on_activity=log_activity))
 
 # Add CORS middleware to allow frontend access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend origins
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Background task for auto-syncing all connectors
@@ -110,16 +150,34 @@ async def auto_sync_connectors():
         try:
             logger.info("🔄 Auto-sync: Checking all connectors...")
             from connectors.connector_manager import get_connector_manager
-            
+
+            # Respect per-connector sync toggles
+            config = load_config()
+            disabled = set(config.get("disabled_sync", []))
+
             manager = get_connector_manager(vault_path=VAULT_PATH)
-            results = manager.sync_all(auto_ingest=True)
-            
+            # Sync each connector individually, skipping disabled ones
+            results = {}
+            for cid in list(manager._registry.keys()):
+                if cid in disabled:
+                    logger.debug(f"⏭️  {cid}: sync disabled, skipping")
+                    continue
+                status = manager.get_status(cid)
+                if not status or not status.connected:
+                    continue
+                result = manager.sync_connector(cid, auto_ingest=True)
+                if result:
+                    results[cid] = result
+
             # Log results
             for connector_id, result in results.items():
                 if result.success:
                     logger.info(f"✅ {connector_id}: {result.items_fetched} fetched, {result.items_ingested} ingested")
+                    if result.items_fetched > 0:
+                        log_activity("sync", f"Synced {connector_id}", f"{result.items_fetched} fetched, {result.items_ingested} ingested", connector_id)
                 else:
                     logger.error(f"❌ {connector_id}: {', '.join(result.errors)}")
+                    log_activity("sync", f"Sync failed: {connector_id}", ", ".join(result.errors), connector_id)
                 
         except Exception as e:
             logger.error(f"Auto-sync error: {e}")
@@ -135,11 +193,18 @@ async def auto_sync_calendar():
     
     while True:
         try:
+            # Check if calendar sync is disabled
+            cal_config = load_config()
+            if 'calendar' in cal_config.get("disabled_sync", []):
+                logger.debug("⏭️  calendar: sync disabled, skipping")
+                await asyncio.sleep(3600)
+                continue
+
             logger.info("📅 Auto-sync: Checking Google Calendar...")
             from connectors.calendar.calendar_connector import CalendarConnector
-            
+
             connector = CalendarConnector(vault_path=VAULT_PATH)
-            
+
             if connector.is_authenticated():
                 # Check if initial sync is needed (first connection)
                 if connector.needs_initial_sync():
@@ -166,6 +231,7 @@ async def auto_sync_calendar():
                             logger.error(f"Failed to ingest calendar event: {e}")
                     
                     logger.info(f"✅ Auto-sync: Successfully ingested {ingested}/{len(result['events'])} calendar events")
+                    log_activity("sync", "Synced calendar", f"{ingested} events ingested", "calendar")
                 else:
                     logger.info("📅 Auto-sync: No new calendar events found")
             else:
@@ -183,6 +249,12 @@ async def startup_event():
     asyncio.create_task(auto_sync_connectors())
     asyncio.create_task(auto_sync_calendar())
     logger.info("✅ Auto-sync enabled: all connectors every 10min, calendar every 1hr")
+
+
+@app.get("/activity")
+async def get_activity():
+    """Return the recent activity log for the home page."""
+    return {"events": activity_log}
 
 
 @app.get("/health")
@@ -212,6 +284,7 @@ async def start_mcp():
         )
         
         logger.info(f"✅ MCP server started (PID: {mcp_process.pid})")
+        log_activity("mcp", "MCP server started", f"PID {mcp_process.pid}")
         return {
             "success": True,
             "message": "MCP server starting",
@@ -381,6 +454,7 @@ async def handle_ingest(request: Request):
         
         if result['success']:
             logger.info("Ingestion successful")
+            log_activity("sync", f"Ingested from {platform}", text[:80])
             return JSONResponse(content={
                 'success': True,
                 'files_created': result.get('files_created', []),
@@ -653,6 +727,7 @@ async def handle_ask(request: Request):
             conversation_history=conversation_history
         )
         logger.info("✅ Answer synthesis complete")
+        log_activity("ask", "Asked LocalBrain", query[:120])
 
         # 3. Update conversation history
         conversation_history.append({"role": "user", "content": query})
