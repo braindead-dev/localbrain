@@ -50,23 +50,28 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
   const [showCarousel, setShowCarousel] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [activityEvents, setActivityEvents] = useState<Array<{ type: string; title: string; detail: string; connector_id: string; timestamp: string }>>([]);
+  const [stats, setStats] = useState<{ total_files: number; total_size_bytes: number; total_ingested: number; connector_stats: Record<string, number>; last_modified: number | null }>({ total_files: 0, total_size_bytes: 0, total_ingested: 0, connector_stats: {}, last_modified: null });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Fetch activity feed
+  // Fetch activity feed and stats
   useEffect(() => {
-    const fetchActivity = async () => {
+    const fetchData = async () => {
       try {
-        const data = await api.getActivity();
-        setActivityEvents(data.events || []);
+        const [activityData, statsData] = await Promise.all([
+          api.getActivity(),
+          api.getStats(),
+        ]);
+        setActivityEvents(activityData.events || []);
+        setStats(statsData);
       } catch {
         // Backend not available
       }
     };
-    fetchActivity();
-    const interval = setInterval(fetchActivity, 10000);
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -441,8 +446,8 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
                           </motion.div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                          <p className="text-2xl font-bold">1,247</p>
-                          <p className="text-xs text-muted-foreground">Items indexed</p>
+                          <p className="text-2xl font-bold">{stats.total_ingested.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">Items ingested</p>
                         </div>
                       </button>
 
@@ -456,26 +461,19 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
                             className="overflow-hidden"
                           >
                             <div className="mt-4 pt-4 border-t border-border space-y-2">
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Documents</span>
-                                <span className="font-medium">523</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Emails</span>
-                                <span className="font-medium">384</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Code Files</span>
-                                <span className="font-medium">198</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Notes</span>
-                                <span className="font-medium">142</span>
-                              </div>
+                              {Object.entries(stats.connector_stats).map(([id, count]) => (
+                                <div key={id} className="flex items-center justify-between text-xs">
+                                  <span className="text-muted-foreground capitalize">{id.replace('_', ' ')}</span>
+                                  <span className="font-medium">{count.toLocaleString()}</span>
+                                </div>
+                              ))}
+                              {Object.keys(stats.connector_stats).length === 0 && (
+                                <p className="text-xs text-muted-foreground">No connectors synced yet</p>
+                              )}
                               <div className="pt-2 mt-2 border-t border-border">
                                 <div className="flex items-center justify-between text-xs">
                                   <span className="text-muted-foreground">Last sync</span>
-                                  <span className="font-medium">5 minutes ago</span>
+                                  <span className="font-medium">{stats.last_modified ? formatTimeAgo(new Date(stats.last_modified * 1000).toISOString()) : '—'}</span>
                                 </div>
                               </div>
                             </div>
@@ -519,15 +517,11 @@ export function HomeView({ onSetupVisibilityChange, onConnectionClick, onQueryCl
                             <div className="mt-4 pt-4 border-t border-border space-y-2">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground">Storage used</span>
-                                <span className="font-medium">2.4 GB</span>
+                                <span className="font-medium">{stats.total_size_bytes < 1024 * 1024 ? `${(stats.total_size_bytes / 1024).toFixed(0)} KB` : stats.total_size_bytes < 1024 * 1024 * 1024 ? `${(stats.total_size_bytes / (1024 * 1024)).toFixed(1)} MB` : `${(stats.total_size_bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`}</span>
                               </div>
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground">Total files</span>
-                                <span className="font-medium">1,247</span>
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <span className="text-muted-foreground">Embeddings</span>
-                                <span className="font-medium">3,842</span>
+                                <span className="font-medium">{stats.total_files.toLocaleString()}</span>
                               </div>
                               <div className="pt-2 mt-2 border-t border-border">
                                 <p className="text-xs text-muted-foreground break-all">

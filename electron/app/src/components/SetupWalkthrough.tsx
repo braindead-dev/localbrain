@@ -14,7 +14,6 @@ const AVAILABLE_CONNECTORS = [
   { id: 'github', name: 'GitHub', description: 'Activity' },
   { id: 'notion', name: 'Notion', description: 'Pages' },
   { id: 'reddit', name: 'Reddit', description: 'Posts' },
-  { id: 'twitter', name: 'X / Twitter', description: 'Tweets' },
   { id: 'imessage', name: 'iMessage', description: 'Messages' },
 ];
 

@@ -222,6 +222,12 @@ class ApiClient {
   // Activity Feed
   // ============================================================================
 
+  async getStats(): Promise<{ total_files: number; total_size_bytes: number; total_ingested: number; connector_stats: Record<string, number>; last_modified: number | null }> {
+    const response = await fetch(`${this.baseUrl}/stats`);
+    if (!response.ok) throw new Error('Failed to fetch stats');
+    return response.json();
+  }
+
   async getActivity(): Promise<{ events: Array<{ type: string; title: string; detail: string; connector_id: string; timestamp: string }> }> {
     const response = await fetch(`${this.baseUrl}/activity`);
     if (!response.ok) throw new Error('Failed to fetch activity');

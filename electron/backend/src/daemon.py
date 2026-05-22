@@ -257,6 +257,45 @@ async def get_activity():
     return {"events": activity_log}
 
 
+@app.get("/stats")
+async def get_stats():
+    """Return vault statistics for the home page."""
+    try:
+        total_files = 0
+        total_size = 0
+        last_modified = 0.0
+        if VAULT_PATH.exists():
+            for f in VAULT_PATH.rglob('*'):
+                if f.is_file() and not f.name.startswith('.'):
+                    total_files += 1
+                    stat = f.stat()
+                    total_size += stat.st_size
+                    if stat.st_mtime > last_modified:
+                        last_modified = stat.st_mtime
+
+        # Sum total_items_synced across connected connectors
+        from connectors.connector_manager import get_connector_manager
+        manager = get_connector_manager(vault_path=VAULT_PATH)
+        total_ingested = 0
+        connector_stats = {}
+        for cid in list(manager._registry.keys()):
+            status = manager.get_status(cid)
+            if status and status.connected:
+                count = status.total_items_synced or 0
+                total_ingested += count
+                connector_stats[cid] = count
+
+        return {
+            "total_files": total_files,
+            "total_size_bytes": total_size,
+            "total_ingested": total_ingested,
+            "connector_stats": connector_stats,
+            "last_modified": last_modified if last_modified > 0 else None,
+        }
+    except Exception as e:
+        return {"total_files": 0, "total_size_bytes": 0, "total_ingested": 0, "connector_stats": {}, "last_modified": None}
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""

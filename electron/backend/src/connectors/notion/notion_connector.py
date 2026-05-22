@@ -234,6 +234,11 @@ class NotionConnector(BaseConnector):
         """
         client_id = self._get_client_id()
 
+        # Generate random state for CSRF protection
+        import secrets
+        state = secrets.token_urlsafe(16)
+        self._save_state(state)
+
         # Build authorization URL
         auth_url = (
             f"{AUTHORIZATION_URL}"
@@ -241,6 +246,7 @@ class NotionConnector(BaseConnector):
             f"&response_type=code"
             f"&owner=user"
             f"&redirect_uri={REDIRECT_URI}"
+            f"&state={state}"
         )
 
         return auth_url
@@ -255,14 +261,20 @@ class NotionConnector(BaseConnector):
         Returns:
             User info dict with workspace info
         """
-        # Extract authorization code from URL
+        # Extract authorization code and state from URL
         from urllib.parse import urlparse, parse_qs
         parsed = urlparse(authorization_response)
         params = parse_qs(parsed.query)
         code = params.get('code', [None])[0]
+        state = params.get('state', [None])[0]
 
         if not code:
             raise ValueError("No authorization code in callback")
+
+        # Verify state for CSRF protection
+        saved_state = self._load_state()
+        if state != saved_state:
+            raise ValueError("State mismatch - possible CSRF attack")
 
         # Exchange code for token
         client_id = self._get_client_id()
@@ -517,6 +529,26 @@ Notion URL: {url}
         with open(self.token_file, 'w') as f:
             json.dump(token_data, f, indent=2)
         self.token_file.chmod(0o600)
+
+    def _save_state(self, state: str):
+        """Save OAuth state for CSRF protection."""
+        state_file = self.credentials_dir / 'notion_state.json'
+        with open(state_file, 'w') as f:
+            json.dump({'state': state}, f)
+
+    def _load_state(self) -> Optional[str]:
+        """Load and delete OAuth state."""
+        state_file = self.credentials_dir / 'notion_state.json'
+        if not state_file.exists():
+            return None
+        try:
+            with open(state_file) as f:
+                data = json.load(f)
+                state = data.get('state')
+            state_file.unlink()
+            return state
+        except Exception:
+            return None
 
     def _load_config(self) -> Dict:
         """Load connector configuration."""

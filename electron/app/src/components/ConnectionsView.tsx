@@ -45,7 +45,7 @@ const iconMap: Record<string, any> = {
 };
 
 // Connectors to hide — stubs/unimplemented or merged into another entry
-const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar', 'outlook_mail']);
+const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar', 'outlook_mail', 'twitter']);
 
 // Pinned connectors shown first, in order
 const PINNED_ORDER = ['gmail', 'calendar'];
@@ -63,7 +63,6 @@ const SIGN_IN_LABELS: Record<string, string> = {
   github: 'Sign in with GitHub',
   notion: 'Sign in with Notion',
   reddit: 'Sign in with Reddit',
-  twitter: 'Connect X',
 };
 
 export function ConnectionsView() {
@@ -314,7 +313,18 @@ export function ConnectionsView() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredConnectors.map((connector) => (
-                <Card key={connector.id} className="p-4 flex flex-col">
+                <Card key={connector.id} className="p-4 flex flex-col relative">
+                  {/* Disconnect button — top right */}
+                  {connector.connected && connector.authenticated && (
+                    <button
+                      onClick={() => handleDisconnect(connector.id)}
+                      className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Disconnect"
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  )}
+
                   <div className="flex items-start gap-4">
                     {/* Icon */}
                     <div className="p-3 bg-primary/10 rounded-lg flex-shrink-0">
@@ -384,30 +394,21 @@ export function ConnectionsView() {
                   {/* Actions */}
                   <div className="flex gap-2 mt-auto">
                     {connector.connected && connector.authenticated ? (
-                      <>
-                        <Button
-                          size="sm"
-                          onClick={() => handleSync(connector.id)}
-                          disabled={syncing === connector.id}
-                          className="w-full"
-                        >
-                          {syncing === connector.id ? (
-                            <>
-                              <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                              Syncing...
-                            </>
-                          ) : (
-                            "Sync Now"
-                          )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDisconnect(connector.id)}
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </Button>
-                      </>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSync(connector.id)}
+                        disabled={syncing === connector.id}
+                        className="w-full"
+                      >
+                        {syncing === connector.id ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                            Syncing...
+                          </>
+                        ) : (
+                          "Sync Now"
+                        )}
+                      </Button>
                     ) : (
                       <Button
                         size="sm"

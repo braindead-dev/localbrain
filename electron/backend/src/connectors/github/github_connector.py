@@ -254,6 +254,11 @@ class GitHubConnector(BaseConnector):
         """
         client_id = self._get_client_id()
 
+        # Generate random state for CSRF protection
+        import secrets
+        state = secrets.token_urlsafe(16)
+        self._save_state(state)
+
         # Build authorization URL
         scope_string = ' '.join(SCOPES)
         auth_url = (
@@ -261,6 +266,7 @@ class GitHubConnector(BaseConnector):
             f"?client_id={client_id}"
             f"&redirect_uri={REDIRECT_URI}"
             f"&scope={scope_string}"
+            f"&state={state}"
         )
 
         return auth_url
@@ -275,14 +281,20 @@ class GitHubConnector(BaseConnector):
         Returns:
             User info dict
         """
-        # Extract authorization code from URL
+        # Extract authorization code and state from URL
         from urllib.parse import urlparse, parse_qs
         parsed = urlparse(authorization_response)
         params = parse_qs(parsed.query)
         code = params.get('code', [None])[0]
+        state = params.get('state', [None])[0]
 
         if not code:
             raise ValueError("No authorization code in callback")
+
+        # Verify state for CSRF protection
+        saved_state = self._load_state()
+        if state != saved_state:
+            raise ValueError("State mismatch - possible CSRF attack")
 
         # Exchange code for token
         client_id = self._get_client_id()
@@ -517,6 +529,26 @@ Date: {created_at}
         try:
             with open(self.token_file) as f:
                 return json.load(f)
+        except Exception:
+            return None
+
+    def _save_state(self, state: str):
+        """Save OAuth state for CSRF protection."""
+        state_file = self.credentials_dir / 'github_state.json'
+        with open(state_file, 'w') as f:
+            json.dump({'state': state}, f)
+
+    def _load_state(self) -> Optional[str]:
+        """Load and delete OAuth state."""
+        state_file = self.credentials_dir / 'github_state.json'
+        if not state_file.exists():
+            return None
+        try:
+            with open(state_file) as f:
+                data = json.load(f)
+                state = data.get('state')
+            state_file.unlink()
+            return state
         except Exception:
             return None
 
