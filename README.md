@@ -17,157 +17,195 @@ LocalBrain bridges this gap; it automatically organizes personal context from al
 
 <img width="1035" height="543" alt="high level architecture" src="https://github.com/user-attachments/assets/87795413-06c2-4da5-8f74-ece0c9fbb09f" />
 
+---
+
+## Installation
+
+### From a pre-built release
+
+1. Download the latest `.dmg` (macOS) from the [Releases](https://github.com/braindead-dev/localbrain/releases) page
+   - **Apple Silicon (M1/M2/M3/M4):** `LocalBrain-x.x.x-arm64.dmg`
+   - **Intel Mac:** `LocalBrain-x.x.x.dmg`
+2. Open the DMG and drag **LocalBrain** to your Applications folder
+3. On first launch, macOS will warn about an unsigned app — right-click the app and select **Open**, then click **Open** in the dialog
+4. LocalBrain will prompt you to:
+   - Choose a vault folder (where your knowledge base lives)
+   - Enter your Anthropic API key (powers search and ingestion)
+   - Connect your apps (Gmail, GitHub, Notion, etc.)
+
+### Prerequisites
+
+LocalBrain requires:
+- **Python 3.10+** with the `localbrain` conda environment (for the backend daemon)
+- **Anthropic API key** (for Claude-powered search and ingestion)
+- **ripgrep** installed (`brew install ripgrep`)
+
+---
+
+## Development Setup
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/braindead-dev/localbrain.git
+cd localbrain/electron
+
+# Install Electron and build dependencies
+npm install
+
+# Install frontend dependencies
+cd app && npm install && cd ..
+
+# Create Python environment
+conda create -n localbrain python=3.11
+conda activate localbrain
+cd backend && pip install -r requirements.txt && cd ..
+```
+
+### 2. Configure credentials
+
+```bash
+# Create the bundled OAuth credentials file
+cp backend/src/bundled_credentials.json.example backend/src/bundled_credentials.json
+# Edit and fill in your OAuth app credentials (see docs/connector-setup-guide.md)
+```
+
+### 3. Run in development
+
+```bash
+# From electron/ directory:
+npm run dev
+```
+
+This starts the Next.js frontend (localhost:3000) and Electron in dev mode. The backend daemon starts automatically via Electron's main process.
+
+To run the backend independently:
+
+```bash
+conda activate localbrain
+cd backend
+python -m src.daemon
+```
+
+### 4. Build for distribution
+
+```bash
+# From electron/ directory:
+npm run build
+
+# Output in electron/dist/:
+#   LocalBrain-1.0.0-arm64.dmg    (Apple Silicon)
+#   LocalBrain-1.0.0.dmg          (Intel)
+#   LocalBrain-1.0.0-arm64-mac.zip
+#   LocalBrain-1.0.0-mac.zip
+```
+
+---
+
+## Connecting to Claude Desktop / Claude Code
+
+LocalBrain exposes an MCP server so Claude can search, read, and ingest into your vault.
+
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "localbrain": {
+      "command": "/opt/homebrew/anaconda3/envs/localbrain/bin/python",
+      "args": ["-m", "src.core.mcp.extension.start_servers", "--stdio"],
+      "cwd": "/absolute/path/to/localbrain/electron/backend"
+    }
+  }
+}
+```
+
+For Claude Code, add the same to `.claude/settings.json`.
+
+**MCP Tools exposed:** `search`, `open`, `ingest`, `list`
+
+---
+
+## Connectors
+
+| Connector | Auth | Notes |
+|-----------|------|-------|
+| Gmail | OAuth (bundled) | "Sign in with Google" — reads emails |
+| Google Calendar | OAuth (bundled) | Shares Gmail credentials — reads events |
+| GitHub | OAuth (bundled) | "Sign in with GitHub" — reads activity |
+| Notion | OAuth (bundled) | "Sign in with Notion" — reads pages |
+| iMessage | Local DB | macOS-only; requires Full Disk Access |
+| Browser | Chrome Extension | Ingests browsing history |
+
+All OAuth connectors use bundled credentials — users just click "Sign in" and authenticate in their browser. No client IDs or secrets to configure.
+
+To register your own OAuth apps (for forking/self-hosting), see [`docs/connector-setup-guide.md`](docs/connector-setup-guide.md).
+
+---
+
 ## Architecture
+
+LocalBrain is a three-layer system: **Electron frontend** (macOS app) -> **FastAPI daemon** -> **hybrid markdown vault**. An optional **MCP proxy server** enables AI apps to query the vault.
 
 ### Data Flow
 
 **Search Query:**
 ```
 User types "conferences attended"
-  ↓
-Frontend POST /protocol/search {"q": "conferences attended"}
-  ↓
-Daemon receives query
-  ↓
-Agentic search: LLM generates grep pattern "conference|attended|event"
-  ↓
-Execute ripgrep on vault files
-  ↓
-Read relevant file sections
-  ↓
-Synthesize answer with citations
-  ↓
-Return JSON response with results + metadata
+  -> Frontend POST /protocol/search {"q": "conferences attended"}
+  -> Daemon receives query
+  -> Agentic search: LLM generates grep pattern "conference|attended|event"
+  -> Execute ripgrep on vault files
+  -> Read relevant file sections
+  -> Synthesize answer with citations
+  -> Return JSON response with results + metadata
 ```
 
 **Ingestion:**
 ```
 Connector fetches new data (e.g., Gmail emails)
-  ↓
-Convert to ConnectorData format (title, content, timestamp, source_url)
-  ↓
-LLM analyzes: "Where does this belong in the vault?"
-  ↓
-Generate structured markdown with ## sections
-  ↓
-Fuzzy match existing files/sections (tolerance for typos)
-  ↓
-Apply changes to vault files
-  ↓
-Validate markdown structure (title, citations, sections)
-  ↓
-If errors: regenerate with feedback (max 3 retries)
-  ↓
-Save citation metadata to .json sidecar
+  -> Convert to ConnectorData format (title, content, timestamp, source_url)
+  -> LLM analyzes: "Where does this belong in the vault?"
+  -> Generate structured markdown with ## sections
+  -> Fuzzy match existing files/sections (tolerance for typos)
+  -> Apply changes to vault files
+  -> Validate markdown structure (title, citations, sections)
+  -> If errors: regenerate with feedback (max 3 retries)
+  -> Save citation metadata to .json sidecar
 ```
-
-LocalBrain is a three-layer system: **Electron frontend** (macOS app) → **FastAPI daemon** → **hybrid markdown vault**. Also an optional **MCP proxy server** enables AI apps to query the vault.
 
 ### Core Components
 
-**1. FastAPI Daemon**
-- Main service running as background process
-- Handles agentic search, ingestion, and connector management
-- Auto-syncs connected data sources every 10 minutes
-- Stateless HTTP API with CORS for frontend access
+**1. FastAPI Daemon** — Main service handling search, ingestion, connector management. Auto-syncs every 10 minutes with per-connector toggle.
 
-**2. Agentic Search Engine**
-- Uses Claude Haiku (claude-haiku-4-5-20251001) with tool calling
-    - *we chose this model since its fast, cheap, and accurate, but it can be swapped out for any LLM*
-- Tools: `grep_vault` (ripgrep-based regex search) and `read_file`
-- LLM decides search strategy: decompose query → generate patterns → grep files → read relevant sections → synthesize answer
-- No vector embeddings, no similarity scoring—pure regex + LLM reasoning
-- 95% accuracy on LongMemEval benchmark (19/20 questions)
-    - *this is a random sample of questions from the benchmark, not a full evaluation*
-- We took inspiration from how SoTA coding agents retrieve the most relevant info while being blazingly fast
+**2. Agentic Search Engine** — Claude Haiku with tool calling (`grep_vault` + `read_file`). No vector DB — pure ripgrep + LLM reasoning. 95% accuracy on LongMemEval benchmark.
 
-**3. Ingestion Pipeline**
-- LLM analyzes raw data (emails, messages, docs) and updates the structured markdown filesystem to include the new info if its releavant to the user
-- Fuzzy matching for section/file names using Levenshtein distance
-- Validation feedback loop: attempts ingestion → checks markdown structure → retries if errors (max 3 attempts)
-- Citations tracked in `.json` sidecars with source URLs, timestamps, and metadata
+**3. Ingestion Pipeline** — LLM-powered content analysis, fuzzy matching for existing sections, self-correcting validation loop (max 3 retries).
 
-**4. Connector Plugin System**
-- We made a standardized connector framework, so all connector plugins work nicely and are relatively easy to develop
-- Source can either be external (over the web, like Gmail, Discord, etc) or pull from a local source (browser history, iMessage database, etc)
-- Auto-discovery: drop `<name>_connector.py` in `connectors/<name>/` and it's loaded on startup
-- Interface: `BaseConnector` with 4 methods (`get_metadata`, `has_updates`, `fetch_updates`, `get_status`)
-- Generic REST routes (`/api/connectors/<id>/sync`, `/status`, etc.) work for all connectors
+**4. Connector Plugin System** — Drop `<name>_connector.py` in `connectors/<name>/` and it auto-loads. Generic REST routes for all connectors.
 
-**5. MCP Proxy Server**
-- This is how AI apps can safely query your local filesystem knowledge base
-- **Pure format translator**—zero business logic
-- Bridges Claude Desktop (stdio) ↔ Daemon (HTTP)
-- Handles authentication (API keys) and audit logging
-- Tools exposed to Claude: `search`, `open`, `summarize`, `list`
-- Packaged as `.mcpb` extension for one-click Claude Desktop installation
+**5. MCP Proxy Server** — Pure format translator bridging Claude Desktop (stdio) <-> Daemon (HTTP). Handles auth and audit logging.
 
-**6. Electron Frontend**
-- Next.js app wrapped in Electron for native desktop experience
-- Real-time status indicators for daemon and MCP server health
-- Resizable panels: file tree, editor, chat, connections, notes
-- Dark mode with shadcn/ui components and Tailwind CSS
+**6. Electron Frontend** — Next.js + Electron with real-time status, resizable panels, dark mode, shadcn/ui.
 
 ### Why This Architecture?
 
-**No vector database for search:**
-- Ripgrep is instant (<100ms on 10K files)
-- LLM generates optimal search patterns (better than embedding similarity)
-- Zero indexing overhead, works on any markdown vault
-- Transparent: see exactly what matched via grep results
+- **No vector database:** ripgrep is instant (<100ms on 10K files), LLM generates optimal patterns, zero indexing overhead
+- **LLM-powered ingestion:** handles ambiguity, self-corrects, maintains readable markdown
+- **Plugin architecture:** add connectors without touching daemon code
+- **MCP as pure proxy:** all intelligence in daemon, easy to debug
+- **Markdown as storage:** human-readable, git-friendly, portable, no lock-in
 
-**LLM-powered ingestion:**
-- Handles ambiguity and context (e.g., "Q3 launch" → finds correct project section)
-- Self-correcting via validation loops (95%+ success rate)
-- Maintains human-readable markdown structure
-- No brittle rules or templates—adapts to any content
-
-**Plugin architecture:**
-- Add new connectors without touching daemon code
-- Generic API routes scale to infinite connectors
-- Easy testing: each connector is isolated
-
-**MCP as pure proxy:**
-- All intelligence in daemon (single source of truth)
-- MCP just translates formats (no duplicate logic)
-- Easy to debug: test daemon directly, MCP is transparent layer
-
-**Markdown as storage:**
-- Human-readable and editable
-- Git-friendly (version control, diffs, branches)
-- Portable (works with any markdown editor)
-- No vendor lock-in, no database corruption
-
-### Performance Characteristics
+### Performance
 
 - **Search latency:** 1-3s (ripgrep ~50ms + LLM calls ~200ms each)
-- **Ingestion speed:** ~5s per item (LLM analysis + fuzzy matching + validation)
-- **Memory footprint:** ~200MB (FastAPI + Anthropic SDK)
-- **Disk usage:** Vault size + ~10% overhead for citation JSON files
-- **Concurrent requests:** FastAPI handles 100+ RPS easily
+- **Ingestion speed:** ~5s per item
+- **Memory footprint:** ~200MB
+- **Disk usage:** Vault size + ~10% for citation JSON sidecars
 
-### Tech Stack
+---
 
-**Backend:**
-- FastAPI (async Python web framework)
-- Anthropic SDK (Claude Haiku API client)
-- ripgrep (Rust-based regex search, 100x faster than grep)
-- Levenshtein (fuzzy string matching for section names)
-- python-dotenv (environment configuration)
-
-**Frontend:**
-- Next.js 15 (React SSR framework)
-- Electron 33 (native desktop wrapper)
-- TailwindCSS (utility-first styling)
-- shadcn/ui (component library)
-- Motion/Framer Motion (animations)
-
-**Integration:**
-- Model Context Protocol (Claude Desktop stdio bridge)
-- OAuth 2.0 (Gmail authentication)
-- Discord.py (Discord API wrapper)
-
-### Project Structure
+## Project Structure
 
 ```
 localbrain/
@@ -176,67 +214,64 @@ localbrain/
 │   │   ├── src/
 │   │   │   ├── app/page.tsx       # Main app layout
 │   │   │   └── components/        # React components
-│   │   └── package.json           # Frontend deps
+│   │   └── package.json
 │   │
-│   └── backend/                    # Python backend
-│       ├── src/
-│       │   ├── daemon.py           # Main FastAPI service
-│       │   ├── agentic_search.py   # Search engine (LLM + ripgrep)
-│       │   ├── agentic_ingest.py   # Ingestion pipeline (LLM + fuzzy match)
-│       │   ├── connectors/         # Plugin system
-│       │   │   ├── base_connector.py
-│       │   │   ├── connector_manager.py
-│       │   │   ├── gmail/
-│       │   │   ├── browser/
-│       │   │   └── ...
-│       │   ├── core/
-│       │   │   ├── mcp/            # MCP proxy server
-│       │   │   │   ├── server.py
-│       │   │   │   ├── stdio_server.py
-│       │   │   │   └── tools.py
-│       │   │   └── ingestion/      # Ingestion utilities
-│       │   └── utils/              # Shared utilities
-│       └── requirements.txt
+│   ├── electron-stuff/             # Electron main process
+│   │   ├── main.js
+│   │   ├── preload.js
+│   │   └── assets/icon.icns
+│   │
+│   ├── backend/                    # Python backend
+│   │   ├── src/
+│   │   │   ├── daemon.py           # Main FastAPI service
+│   │   │   ├── agentic_search.py   # Search engine
+│   │   │   ├── agentic_ingest.py   # Ingestion pipeline
+│   │   │   ├── config.py           # Config management
+│   │   │   ├── connectors/         # Plugin system
+│   │   │   │   ├── base_connector.py
+│   │   │   │   ├── connector_manager.py
+│   │   │   │   ├── connector_api.py
+│   │   │   │   ├── gmail/
+│   │   │   │   ├── calendar/
+│   │   │   │   ├── github/
+│   │   │   │   ├── notion/
+│   │   │   │   └── imessage/
+│   │   │   ├── core/mcp/           # MCP proxy server
+│   │   │   │   ├── server.py
+│   │   │   │   ├── stdio_server.py
+│   │   │   │   └── tools.py
+│   │   │   └── bundled_credentials.json  # OAuth creds (gitignored)
+│   │   └── requirements.txt
+│   │
+│   ├── package.json                # Electron + electron-builder config
+│   └── dist/                       # Build output (DMG/ZIP)
 │
-└── my-vault/                       # Markdown knowledge base
-    ├── projects/
-    ├── personal/
-    └── ...
+├── docs/
+│   └── connector-setup-guide.md    # OAuth app registration guide
+│
+└── status.md                       # Project status tracker
 ```
-
-### Implementation Details
-
-**Agentic Search Prompt Strategy:**
-- Ultra-concise system prompt (OpenCode-inspired)
-- Example-driven: shows LLM exactly how to use tools
-- "Minimize output, answer directly" → reduces token usage
-- Forces LLM to check line numbers before reading full files
-
-**Fuzzy Matching Algorithm:**
-- Levenshtein distance with configurable threshold (default: 0.7 similarity)
-- Tries exact match first, falls back to fuzzy if no match
-- Prevents duplicate sections from slight name variations
-
-**Validation Loop:**
-- After ingestion: parse markdown, check for required sections (# title, ## Related)
-- Verify citation markers `[1]` match entries in `.json` file
-- If errors found: pass to LLM with specific error messages
-- Max 3 retries → fail gracefully with detailed error log
-
-**Connector Auto-Discovery:**
-- Scan `connectors/` directory for `*_connector.py` files
-- Import and instantiate classes inheriting from `BaseConnector`
-- Register REST routes dynamically using FastAPI's router system
-- Maintain singleton `ConnectorManager` for lifecycle management
-
-**MCP Extension Packaging:**
-- `stdio_server.py` copied into `extension/server/` directory
-- `manifest.json` declares tool schemas (JSON Schema format)
-- `package.sh` creates `.mcpb` bundle (ZIP with manifest)
-- Claude Desktop loads bundle, spawns stdio server subprocess
-
-This architecture optimizes for **transparency** (see what's happening), **simplicity** (minimal abstractions), and **extensibility** (easy to add connectors/features). The markdown vault is the single source of truth, everything else is stateless logic.
 
 ---
 
-Made with ❤️ by Henry Wang, Sid Songirkar, Taymur Faruqui, and Pranav Balaji
+## Tech Stack
+
+**Backend:** FastAPI, Anthropic SDK (Claude Haiku), ripgrep, Levenshtein, loguru  
+**Frontend:** Next.js 15, Electron, TailwindCSS, shadcn/ui, Motion  
+**Integration:** Model Context Protocol (MCP), OAuth 2.0, PKCE
+
+---
+
+## Security
+
+- All data stays local — vault is a folder on your machine
+- OAuth tokens stored with `0600` permissions (owner-only)
+- Bundled credentials are gitignored and never committed
+- CORS restricted to localhost origins only
+- OAuth callbacks validate CSRF state parameters
+- Electron: `nodeIntegration: false`, `contextIsolation: true`
+- Daemon binds to `127.0.0.1` only (not exposed to network)
+
+---
+
+Made with love by Henry Wang, Sid Songirkar, Taymur Faruqui, and Pranav Balaji
