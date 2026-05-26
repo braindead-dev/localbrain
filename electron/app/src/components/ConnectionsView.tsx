@@ -45,7 +45,7 @@ const iconMap: Record<string, any> = {
 };
 
 // Connectors to hide — stubs/unimplemented or merged into another entry
-const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar', 'outlook_mail', 'twitter']);
+const HIDDEN_CONNECTORS = new Set(['browser_history', 'drive', 'linkedin', 'outlook_calendar', 'outlook_mail', 'twitter', 'reddit']);
 
 // Pinned connectors shown first, in order
 const PINNED_ORDER = ['gmail', 'calendar'];
@@ -62,7 +62,6 @@ const SIGN_IN_LABELS: Record<string, string> = {
   calendar: 'Sign in with Google',
   github: 'Sign in with GitHub',
   notion: 'Sign in with Notion',
-  reddit: 'Sign in with Reddit',
 };
 
 export function ConnectionsView() {

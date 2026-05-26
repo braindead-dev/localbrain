@@ -13,7 +13,6 @@ const AVAILABLE_CONNECTORS = [
   { id: 'calendar', name: 'Google Calendar', description: 'Events' },
   { id: 'github', name: 'GitHub', description: 'Activity' },
   { id: 'notion', name: 'Notion', description: 'Pages' },
-  { id: 'reddit', name: 'Reddit', description: 'Posts' },
   { id: 'imessage', name: 'iMessage', description: 'Messages' },
 ];
 

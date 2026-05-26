@@ -32,7 +32,6 @@ _ENV_CLIENT_ID = {
     'calendar': 'GMAIL_CLIENT_ID',
     'github': 'GITHUB_CLIENT_ID',
     'notion': 'NOTION_CLIENT_ID',
-    'reddit': 'REDDIT_CLIENT_ID',
 }
 
 

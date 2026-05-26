@@ -37,6 +37,7 @@
       }
     ],
     "mac": {
+      "icon": "electron-stuff/assets/icon.icns",
       "category": "public.app-category.productivity",
       "target": [
         {
